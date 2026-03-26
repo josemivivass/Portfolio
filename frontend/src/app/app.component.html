@@ -1,0 +1,30 @@
+<nav class="side-menu left-menu">
+  <span class="menu-label">PÁGINAS</span>
+  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">MI CURRÍCULUM</a>
+  <a routerLink="/proyectos" routerLinkActive="active" class="nav-link">PROYECTOS</a>
+  <a routerLink="/contacto" routerLinkActive="active" class="nav-link">CONTACTO</a>
+</nav>
+
+<nav class="side-menu right-menu">
+  <span class="menu-label">CUENTA</span>
+  
+  <ng-container *ngIf="isLoggedIn; else loggedOut">
+    <span class="user-status">● CONECTADO</span>
+    <button class="nav-link btn-logout" (click)="logout()">CERRAR SESIÓN</button>
+  </ng-container>
+  
+  <ng-template #loggedOut>
+    <a routerLink="/login" class="nav-link">INICIAR SESIÓN</a>
+    <a routerLink="/register" class="nav-link highlight">REGISTRARSE</a>
+  </ng-template>
+</nav>
+
+<main class="main-content">
+  <ng-container *ngIf="isHomeRoute">
+    <app-hero3d></app-hero3d>
+    <app-skills-rive></app-skills-rive>
+    <app-projects-gsap></app-projects-gsap>
+  </ng-container>
+
+  <router-outlet *ngIf="!isHomeRoute"></router-outlet>
+</main>

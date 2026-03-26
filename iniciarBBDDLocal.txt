@@ -1,0 +1,1 @@
+Iniciar xampp e iniciar los dos primeros, ir al admin de mysql y pegar el sql

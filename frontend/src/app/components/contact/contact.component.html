@@ -1,0 +1,39 @@
+<div class="contact-container">
+  <header class="contact-header">
+    <h1>Contacto</h1>
+    <p class="subtitle">¿Tienes un proyecto en mente? Hablemos.</p>
+  </header>
+
+  <div class="card contact-card">
+    <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="name">Nombre</label>
+        <input type="text" id="name" formControlName="name" class="form-control"
+               [ngClass]="{'is-invalid': contactForm.get('name')?.invalid && contactForm.get('name')?.touched}">
+        <span class="text-danger" *ngIf="contactForm.get('name')?.errors?.['required'] && contactForm.get('name')?.touched">El nombre es requerido.</span>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" formControlName="email" class="form-control"
+               [ngClass]="{'is-invalid': contactForm.get('email')?.invalid && contactForm.get('email')?.touched}">
+        <span class="text-danger" *ngIf="contactForm.get('email')?.errors?.['required'] && contactForm.get('email')?.touched">El email es requerido.</span>
+        <span class="text-danger" *ngIf="contactForm.get('email')?.errors?.['email'] && contactForm.get('email')?.touched">Formato de email inválido.</span>
+      </div>
+
+      <div class="form-group">
+        <label for="message">Mensaje</label>
+        <textarea id="message" formControlName="message" class="form-control" rows="5"
+                  [ngClass]="{'is-invalid': contactForm.get('message')?.invalid && contactForm.get('message')?.touched}"></textarea>
+        <span class="text-danger" *ngIf="contactForm.get('message')?.errors?.['required'] && contactForm.get('message')?.touched">El mensaje es requerido.</span>
+        <span class="text-danger" *ngIf="contactForm.get('message')?.errors?.['minlength'] && contactForm.get('message')?.touched">Mínimo 10 caracteres.</span>
+      </div>
+
+      <div *ngIf="successMessage" class="success-message">
+        {{ successMessage }}
+      </div>
+
+      <button type="submit" class="btn btn-primary mt-3" [disabled]="contactForm.invalid">Enviar Mensaje</button>
+    </form>
+  </div>
+</div>

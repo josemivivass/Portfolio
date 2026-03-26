@@ -1,0 +1,17 @@
+# Dependencias
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Entornos
+.env
+.env.*
+
+# Compilados de Angular
+dist/
+out-tsc/
+.angular/
+
+# Logs y SO
+*.log
+.DS_Store

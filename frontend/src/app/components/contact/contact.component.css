@@ -1,0 +1,50 @@
+.contact-container {
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.contact-header {
+  border-bottom: 2px solid #f4f7f6;
+  padding-bottom: 25px;
+  margin-bottom: 35px;
+  text-align: center;
+}
+
+.contact-header h1 {
+  font-size: 2.8rem;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.contact-card {
+  margin: 0 auto;
+  max-width: 100%;
+  box-shadow: none;
+  padding: 0;
+}
+
+textarea.form-control {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.success-message {
+  color: #155724;
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  padding: 15px;
+  border-radius: 5px;
+  margin-top: 20px;
+  text-align: center;
+  font-weight: 500;
+}
