@@ -1,17 +1,3 @@
-/* Ocultar barra de desplazamiento para Chrome, Safari y Opera */
-::-webkit-scrollbar {
-  display: none;
-}
-
-/* Ocultar barra de desplazamiento para IE, Edge y Firefox */
-html, body {
-  -ms-overflow-style: none;  /* IE y Edge */
-  scrollbar-width: none;  /* Firefox */
-  background-color: transparent !important; /* Mantiene el fondo transparente para el 3D */
-  margin: 0;
-  padding: 0;
-}
-
 * {
     box-sizing: border-box;
     margin: 0;
