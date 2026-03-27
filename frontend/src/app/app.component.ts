@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID, HostListener, NgZone } from '@angular/core';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 
@@ -23,10 +23,14 @@ import { RevealComplexComponent } from './components/reveal-complex/reveal-compl
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+  showPreloader: boolean = true;
+  preloaderClosing: boolean = false;
   showIntro: boolean = true;
-  isLoggedIn: boolean = false;
-  isHomeRoute: boolean = false; 
+  renderProjects: boolean = false; 
   
+  isLoggedIn: boolean = false;
+  isHomeRoute: boolean = true; 
+
   introScale: number = 1;
   introTranslateY: number = 0;
   introOpacity: number = 1;
@@ -35,20 +39,49 @@ export class AppComponent implements OnInit {
   disableReveal: boolean = false;
 
   constructor(
-    @Inject(PLATFORM_ID) private platformId: Object
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+
       this.isHomeRoute = window.location.pathname === '/';
       const token = localStorage.getItem('token');
       this.isLoggedIn = !!token;
+
+      if (!this.isHomeRoute) {
+        this.showPreloader = false;
+        this.showIntro = false;
+        this.mainTranslateY = 0;
+        this.renderProjects = true;
+      } else {
+        // Ejecución de la detección de cambios DE FORMA INTERNA al asincronismo
+        setTimeout(() => {
+          this.ngZone.run(() => {
+            this.preloaderClosing = true; 
+            this.cdr.detectChanges(); 
+            
+            setTimeout(() => {
+              this.ngZone.run(() => {
+                this.showPreloader = false; 
+                this.cdr.detectChanges(); 
+              });
+            }, 800); 
+          });
+        }, 2000); 
+      }
     }
   }
 
   @HostListener('window:scroll')
   onScroll(): void {
-    if (!this.showIntro || !this.isHomeRoute || !isPlatformBrowser(this.platformId)) return;
+    if (!this.showIntro || !this.isHomeRoute || this.showPreloader || !isPlatformBrowser(this.platformId)) return;
 
     const scrollY = window.scrollY;
     const vh = window.innerHeight;
@@ -62,11 +95,16 @@ export class AppComponent implements OnInit {
       this.showIntro = false;
       this.mainTranslateY = 0;
       
-      // Liberar el scroll y forzar a GSAP a recalcular sin crashear Angular
+      this.cdr.detectChanges(); 
+      
       setTimeout(() => {
         window.scrollTo(0, 0);
+        
+        this.renderProjects = true;
+        this.cdr.detectChanges();
+        
         window.dispatchEvent(new Event('resize')); 
-      }, 10);
+      }, 50);
       
       return;
     }

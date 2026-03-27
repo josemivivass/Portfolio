@@ -1,3 +1,46 @@
+/* --- ESTILOS DEL PRELOADER --- */
+.preloader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f4f7f6;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+  transform-origin: center center;
+}
+
+.spinner-circle {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(44, 62, 80, 0.2);
+  border-top-color: #2c3e50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  transition: all 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Animación de salida: Se hace gigante y desaparece */
+.preloader-overlay.closing {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preloader-overlay.closing .spinner-circle {
+  transform: scale(50);
+  opacity: 0;
+  border-width: 1px;
+}
+
+/* --- RESTO DEL CSS QUE YA TENÍAS --- */
 .global-geometric-background {
   position: fixed;
   top: 0;
@@ -73,7 +116,7 @@
 }
 
 .side-menu {
-  position: fixed; /* Mantiene los menús visibles al hacer scroll */
+  position: fixed; 
   top: 50vh; 
   transform: translateY(-50%);
   z-index: 3000;
@@ -152,6 +195,11 @@
   padding-left: 250px;
   padding-right: 250px;
   box-sizing: border-box;
+}
+
+.main-content.secondary-route {
+  padding-top: 120px;
+  min-height: 100vh;
 }
 
 .hero-container {

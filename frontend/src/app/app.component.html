@@ -1,3 +1,9 @@
+<div *ngIf="isHomeRoute && showPreloader" 
+     class="preloader-overlay" 
+     [class.closing]="preloaderClosing">
+  <div class="spinner-circle"></div>
+</div>
+
 <div class="global-geometric-background" *ngIf="isHomeRoute">
   <app-hero3d></app-hero3d>
 </div>
@@ -44,7 +50,7 @@
     </ng-template>
   </nav>
 
-  <main class="main-content">
+  <main class="main-content" [class.secondary-route]="!isHomeRoute">
     <ng-container *ngIf="isHomeRoute">
       
       <section class="hero-container">
@@ -54,8 +60,11 @@
         </div>
       </section>
 
-      <app-skills-rive></app-skills-rive>
-      <app-projects-gsap></app-projects-gsap>
+      <ng-container *ngIf="renderProjects">
+        <app-skills-rive></app-skills-rive>
+        <app-projects-gsap></app-projects-gsap>
+      </ng-container>
+
     </ng-container>
 
     <router-outlet *ngIf="!isHomeRoute"></router-outlet>
