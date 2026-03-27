@@ -1,10 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID, HostListener, NgZone } from '@angular/core';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import { Hero3dComponent } from './components/hero3d/hero3d.component';
 import { ProjectsGsapComponent } from './components/projects-gsap/projects-gsap.component';
-import { SkillsRiveComponent } from './components/skills-rive/skills-rive.component';
 import { RevealComplexComponent } from './components/reveal-complex/reveal-complex.component';
 
 @Component({
@@ -16,7 +16,6 @@ import { RevealComplexComponent } from './components/reveal-complex/reveal-compl
     CommonModule,
     Hero3dComponent,
     ProjectsGsapComponent,
-    SkillsRiveComponent,
     RevealComplexComponent
   ],
   templateUrl: './app.component.html',
@@ -26,7 +25,6 @@ export class AppComponent implements OnInit {
   showPreloader: boolean = true;
   preloaderClosing: boolean = false;
   showIntro: boolean = true;
-  renderProjects: boolean = false; 
   
   isLoggedIn: boolean = false;
   isHomeRoute: boolean = true; 
@@ -37,6 +35,9 @@ export class AppComponent implements OnInit {
   mainTranslateY: number = 100;
   overlayOpacity: number = 0;
   disableReveal: boolean = false;
+
+  private touchStartY = 0;
+  private isTransitioning: boolean = false; 
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -59,29 +60,27 @@ export class AppComponent implements OnInit {
         this.showPreloader = false;
         this.showIntro = false;
         this.mainTranslateY = 0;
-        this.renderProjects = true;
       } else {
-        // Ejecución de la detección de cambios DE FORMA INTERNA al asincronismo
-        setTimeout(() => {
-          this.ngZone.run(() => {
-            this.preloaderClosing = true; 
-            this.cdr.detectChanges(); 
-            
-            setTimeout(() => {
-              this.ngZone.run(() => {
+        this.ngZone.runOutsideAngular(() => {
+          setTimeout(() => {
+            this.ngZone.run(() => {
+              this.preloaderClosing = true; 
+              this.cdr.detectChanges(); 
+              
+              setTimeout(() => {
                 this.showPreloader = false; 
                 this.cdr.detectChanges(); 
-              });
-            }, 800); 
-          });
-        }, 2000); 
+              }, 800); 
+            });
+          }, 2000); 
+        });
       }
     }
   }
 
   @HostListener('window:scroll')
   onScroll(): void {
-    if (!this.showIntro || !this.isHomeRoute || this.showPreloader || !isPlatformBrowser(this.platformId)) return;
+    if (!this.showIntro || !this.isHomeRoute || this.showPreloader || this.isTransitioning || !isPlatformBrowser(this.platformId)) return;
 
     const scrollY = window.scrollY;
     const vh = window.innerHeight;
@@ -92,19 +91,23 @@ export class AppComponent implements OnInit {
     const phase2 = Math.max(0, Math.min((scrollY - vh) / vh, 1));
 
     if (scrollY >= 2 * vh) {
+      this.isTransitioning = true; 
       this.showIntro = false;
       this.mainTranslateY = 0;
       
       this.cdr.detectChanges(); 
+      window.scrollTo(0, 0);
       
+      // Retraso controlado para permitir al navegador expandir el DOM
       setTimeout(() => {
-        window.scrollTo(0, 0);
-        
-        this.renderProjects = true;
-        this.cdr.detectChanges();
-        
+        // Obliga a GSAP a escanear de nuevo toda la página
+        ScrollTrigger.refresh();
         window.dispatchEvent(new Event('resize')); 
-      }, 50);
+        
+        setTimeout(() => {
+          this.isTransitioning = false; 
+        }, 600);
+      }, 100);
       
       return;
     }
@@ -116,6 +119,45 @@ export class AppComponent implements OnInit {
     this.introOpacity = 1; 
     
     this.mainTranslateY = 100 - (phase2 * 100);
+  }
+
+  @HostListener('window:wheel', ['$event'])
+  onWheel(event: WheelEvent): void {
+    if (!this.showIntro && this.isHomeRoute && window.scrollY <= 0 && event.deltaY < -40 && !this.isTransitioning) {
+      this.returnToIntro();
+    }
+  }
+
+  @HostListener('window:touchstart', ['$event'])
+  onTouchStart(event: TouchEvent): void {
+    if (event.touches.length > 0) {
+      this.touchStartY = event.touches[0].clientY;
+    }
+  }
+
+  @HostListener('window:touchmove', ['$event'])
+  onTouchMove(event: TouchEvent): void {
+    if (!this.showIntro && this.isHomeRoute && window.scrollY <= 0 && event.touches.length > 0 && !this.isTransitioning) {
+      const touchEndY = event.touches[0].clientY;
+      if (touchEndY - this.touchStartY > 80) { 
+        this.returnToIntro();
+      }
+    }
+  }
+
+  private returnToIntro(): void {
+    if (this.isTransitioning || !isPlatformBrowser(this.platformId)) return;
+    this.isTransitioning = true;
+
+    this.showIntro = true;
+    this.cdr.detectChanges();
+
+    const vh = window.innerHeight;
+    window.scrollTo(0, Math.floor(2 * vh) - 50);
+
+    setTimeout(() => {
+      this.isTransitioning = false;
+    }, 500);
   }
 
   logout(): void {

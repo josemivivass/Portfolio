@@ -18,7 +18,6 @@
        [style.pointer-events]="disableReveal ? 'none' : 'auto'">
     
     <div class="dark-tint" [style.opacity]="overlayOpacity"></div>
-    
     <app-reveal-complex [disableInteraction]="disableReveal"></app-reveal-complex>
   </div>
 </div>
@@ -38,12 +37,10 @@
 
   <nav class="side-menu right-menu" *ngIf="!showIntro || !isHomeRoute || showIntro">
     <span class="menu-label">CUENTA</span>
-    
     <ng-container *ngIf="isLoggedIn; else loggedOut">
       <span class="user-status">● CONECTADO</span>
       <button class="nav-link btn-logout" (click)="logout()">CERRAR SESIÓN</button>
     </ng-container>
-    
     <ng-template #loggedOut>
       <a routerLink="/login" class="nav-link">INICIAR SESIÓN</a>
       <a routerLink="/register" class="nav-link highlight">REGISTRARSE</a>
@@ -60,10 +57,7 @@
         </div>
       </section>
 
-      <ng-container *ngIf="renderProjects">
-        <app-skills-rive></app-skills-rive>
-        <app-projects-gsap></app-projects-gsap>
-      </ng-container>
+      <app-projects-gsap></app-projects-gsap>
 
     </ng-container>
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRef, ElementRef, ViewChildren, QueryList } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ProjectService } from '../../services/project.service';
 import { gsap } from 'gsap';
@@ -11,7 +11,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
   templateUrl: './projects-gsap.component.html',
   styleUrls: ['./projects-gsap.component.css']
 })
-export class ProjectsGsapComponent implements OnInit, AfterViewInit {
+export class ProjectsGsapComponent implements OnInit {
   @ViewChildren('projectCard') projectCards!: QueryList<ElementRef>;
   projects: any[] = [];
   errorMessage: string = '';
@@ -45,32 +45,29 @@ export class ProjectsGsapComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit(): void {}
-
   private initGsapAnimations(): void {
-    if (!isPlatformBrowser(this.platformId) || this.projects.length === 0) return;
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
 
     setTimeout(() => {
+      if (!this.projectCards || this.projectCards.length === 0) return;
+
       this.projectCards.forEach((card, index) => {
         const element = card.nativeElement;
         
-        gsap.fromTo(element, 
-          { 
-            opacity: 0, 
-            x: index % 2 === 0 ? -100 : 100 
-          },
-          {
-            opacity: 1,
-            x: 0,
-            duration: 1,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: element,
-              start: "top 80%",
-              toggleActions: "play none none reverse"
-            }
+        // Uso de gsap.from(): GSAP se encarga de ponerlo en opacity 0 y lo anima a 1
+        gsap.from(element, {
+          opacity: 0,
+          x: index % 2 === 0 ? -100 : 100,
+          duration: 1,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: element,
+            start: "top 85%",
+            toggleActions: "play none none reverse"
           }
-        );
+        });
       });
       ScrollTrigger.refresh();
     }, 100);

@@ -39,10 +39,11 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  opacity: 0; /* Oculto inicialmente para GSAP */
+  /* ELIMINADO: opacity: 0; 
+     GSAP controlará la opacidad. Si GSAP falla, esto asegura que el contenido siga siendo visible */
+  opacity: 1; 
 }
 
-/* Alternar diseño de izquierda a derecha */
 .project-card-horizontal:nth-child(even) {
   flex-direction: row-reverse;
 }
