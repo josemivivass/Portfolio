@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, HostListener, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, HostListener, Inject, PLATFORM_ID, ChangeDetectorRef, Input } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 interface Particle {
@@ -24,6 +24,8 @@ interface TrailPoint {
 })
 export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   @ViewChild('trailCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  
+  @Input() disableInteraction: boolean = false;
 
   private ctx!: CanvasRenderingContext2D;
   private animationId: number = 0;
@@ -65,10 +67,20 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('mousemove', ['$event'])
   onMouseMove(event: MouseEvent): void {
+    if (this.disableInteraction) {
+      this.isMouseIn = false;
+      return;
+    }
+
     const canvas = this.canvasRef.nativeElement;
     const rect = canvas.getBoundingClientRect();
-    this.mouseX = event.clientX - rect.left;
-    this.mouseY = event.clientY - rect.top;
+
+    // Cálculo corregido para evitar el desfase con el transform: scale()
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    this.mouseX = (event.clientX - rect.left) * scaleX;
+    this.mouseY = (event.clientY - rect.top) * scaleY;
     this.isMouseIn = true;
 
     this.trailPoints.push({ x: this.mouseX, y: this.mouseY, opacity: 1 });
@@ -123,7 +135,8 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   private updateParticles(): void {
     this.particles = this.particles.filter(p => p.opacity > 0);
     
-    if (this.particles.length < 5) {
+    // Dejar de crear nuevas partículas si la interacción está desactivada
+    if (this.particles.length < 5 && !this.disableInteraction) {
       this.createParticles(1);
     }
 
@@ -182,7 +195,8 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
     this.updateTrailPoints();
     this.trailPoints.forEach(p => this.drawSpotlight(p.x, p.y, 40, p.opacity));
 
-    if (this.isMouseIn) {
+    // Solo dibujar el puntero si la interacción está activa
+    if (this.isMouseIn && !this.disableInteraction) {
       this.drawSpotlight(this.mouseX, this.mouseY, 200, 1);
     }
 

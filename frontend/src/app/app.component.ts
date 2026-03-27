@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 
@@ -27,14 +27,14 @@ export class AppComponent implements OnInit {
   isLoggedIn: boolean = false;
   isHomeRoute: boolean = false; 
   
-  // Variables para la animación combinada (Intro + Main)
   introScale: number = 1;
-  introOpacity: number = 1;
   introTranslateY: number = 0;
-  mainTranslateY: number = 100; // Empieza oculto en la parte inferior (100vh)
+  introOpacity: number = 1;
+  mainTranslateY: number = 100;
+  overlayOpacity: number = 0;
+  disableReveal: boolean = false;
 
   constructor(
-    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -52,25 +52,32 @@ export class AppComponent implements OnInit {
 
     const scrollY = window.scrollY;
     const vh = window.innerHeight;
-    const progress = scrollY / vh; // Va de 0 a 1
 
-    // Cuando el scroll completa 1 altura de pantalla, finaliza la intro
-    if (progress >= 1) {
+    this.disableReveal = scrollY > 250;
+
+    const phase1 = Math.min(scrollY / vh, 1);
+    const phase2 = Math.max(0, Math.min((scrollY - vh) / vh, 1));
+
+    if (scrollY >= 2 * vh) {
       this.showIntro = false;
       this.mainTranslateY = 0;
-      setTimeout(() => window.scrollTo(0, 0), 0);
+      
+      // Liberar el scroll y forzar a GSAP a recalcular sin crashear Angular
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        window.dispatchEvent(new Event('resize')); 
+      }, 10);
+      
       return;
     }
 
-    // --- CÁLCULOS DE ANIMACIÓN ---
+    this.introScale = 1 - (0.55 * phase1);
+    this.overlayOpacity = Math.min(phase1 * 1.5, 1); 
     
-    // 1. Intro: Se encoge (1 a 0), se desvanece y sube hacia arriba (0 a -50vh)
-    this.introScale = Math.max(0, 1 - progress);
-    this.introOpacity = Math.max(0, 1 - progress * 1.5); 
-    this.introTranslateY = -(progress * 50); 
-
-    // 2. Web Principal: Sube desde abajo (100vh a 0)
-    this.mainTranslateY = 100 - (progress * 100);
+    this.introTranslateY = -(phase2 * 100);
+    this.introOpacity = 1; 
+    
+    this.mainTranslateY = 100 - (phase2 * 100);
   }
 
   logout(): void {

@@ -1,3 +1,29 @@
+/* Ocultar barra de desplazamiento en Chrome, Safari y Opera */
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Ocultar barra de desplazamiento y fijar el fondo en elementos principales */
+html, body {
+  -ms-overflow-style: none !important;  /* IE y Edge */
+  scrollbar-width: none !important;  /* Firefox */
+  margin: 0;
+  padding: 0;
+  /* CAMBIA ESTE COLOR POR EL EXACTO DE TU FONDO */
+  background-color: #f4f7f6; 
+}
+
+* {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+*::-webkit-scrollbar {
+  display: none !important;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
