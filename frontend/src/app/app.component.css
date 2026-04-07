@@ -1,8 +1,8 @@
 /* --- ESTILOS DEL PRELOADER --- */
 .preloader-overlay {
   --s: 200px;
-  --c1: #eaf0ee;
-  --c2: #c4d4d1;
+  --c1: #d0e8ff;
+  --c2: #4a8fd4;
   --_s: calc(2 * var(--s)) calc(2 * var(--s));
   --_g: var(--_s) conic-gradient(at 40% 40%, #0000 75%, var(--c1) 0);
   --_p: var(--_s) conic-gradient(at 20% 20%, #0000 75%, var(--c2) 0);
@@ -19,13 +19,15 @@
     calc(-.3 * var(--s)) calc(-.3 * var(--s)) / var(--_g),
     conic-gradient(from 90deg at 20% 20%, var(--c2) 25%, var(--c1) 0)
       0 0 / var(--s) var(--s);
+  /* El patrón corre 1 sola vez (2s) y se congela → al empezar el scale
+     el fondo es estático y el navegador lo trata como textura GPU pura.
+     La expansión resultante es 100% composited = sin saltos de fotograma. */
   animation:
-    preloader-pattern 3s   infinite,
-    preloader-fade    0.5s  ease 2.7s forwards;
+    preloader-pattern  2s    linear                        0s  1  normal forwards,
+    preloader-expand   1.1s  cubic-bezier(0.4, 0, 0.2, 1) 2s     1  normal forwards;
   z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transform-origin: center center;
+  will-change: transform, opacity;
 }
 
 @keyframes preloader-pattern {
@@ -71,32 +73,10 @@
   }
 }
 
-.spinner-circle {
-  width: 80px;
-  height: 80px;
-  border: 5px solid rgba(44, 62, 80, 0.15);
-  border-top-color: #2c3e50;
-  border-radius: 50%;
-  background: transparent;
-  /* spin 2s → luego se amplía y desaparece */
-  animation:
-    spin          1s   linear                        infinite,
-    spinner-expand 0.9s cubic-bezier(0.4, 0, 0.2, 1) 2s forwards;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes spinner-expand {
-  0%   { transform: scale(1);  opacity: 1; border-width: 5px; }
-  55%  { opacity: 1; }
-  100% { transform: scale(60); opacity: 0; border-width: 1px; }
-}
-
-@keyframes preloader-fade {
-  from { opacity: 1; pointer-events: auto; }
-  to   { opacity: 0; pointer-events: none; visibility: hidden; }
+@keyframes preloader-expand {
+  0%   { transform: scale(1);   opacity: 1; pointer-events: auto;  }
+  50%  { opacity: 1; }
+  100% { transform: scale(2.8); opacity: 0; pointer-events: none; visibility: hidden; }
 }
 
 /* --- RESTO DEL CSS QUE YA TENÍAS --- */

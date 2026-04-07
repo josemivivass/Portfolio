@@ -4,32 +4,28 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 
-// Sub-círculo relativo al centro del blob
-interface SubCircle { dx: number; dy: number; r: number; }
-
-// Un blob con ciclo de vida: crece → aguanta → desaparece
 interface Blob {
   cx: number;
   cy: number;
-  circles: SubCircle[];
+  baseR: number;
+  radii: number[];   // radio por cada vértice angular — define la forma irregular
   startTime: number;
-  growDur:  number; // ms
-  holdDur:  number; // ms
-  fadeDur:  number; // ms
+  growDur: number;
+  holdDur: number;
+  fadeDur: number;
 }
 
-// ── Parámetros ────────────────────────────────────────────────────────────────
-const BLOB_INT_MIN  = 700;   // ms — intervalo mínimo entre blobs
-const BLOB_INT_MAX  = 1600;  // ms — intervalo máximo
-const BLOB_GROW_MIN = 450;   // ms — duración del crecimiento
-const BLOB_GROW_MAX = 850;
-const BLOB_HOLD_MIN = 600;   // ms — cuánto tiempo se mantiene visible
-const BLOB_HOLD_MAX = 1800;
-const BLOB_FADE_MIN = 550;   // ms — duración del desvanecimiento
-const BLOB_FADE_MAX = 1050;
-const BLOB_R_MIN    = 55;    // px — radio base mínimo del blob
-const BLOB_R_MAX    = 135;   // px — radio base máximo
-const MOUSE_GLOW    = 155;   // px — radio del halo del ratón
+const BLOB_INT_MIN  = 650;
+const BLOB_INT_MAX  = 1500;
+const BLOB_GROW_MIN = 400;
+const BLOB_GROW_MAX = 800;
+const BLOB_HOLD_MIN = 500;
+const BLOB_HOLD_MAX = 1600;
+const BLOB_FADE_MIN = 500;
+const BLOB_FADE_MAX = 1000;
+const BLOB_R_MIN    = 60;
+const BLOB_R_MAX    = 150;
+const MOUSE_GLOW    = 155;
 
 @Component({
   selector: 'app-reveal-complex',
@@ -50,7 +46,6 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
 
   private blobs: Blob[] = [];
   private nextBlobAt = 0;
-
   private mouseX = 0;
   private mouseY = 0;
   private isMouseIn = false;
@@ -70,8 +65,6 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void { cancelAnimationFrame(this.animationId); }
 
-  // ─── Eventos ────────────────────────────────────────────────────────────────
-
   @HostListener('window:resize')
   onResize(): void { if (isPlatformBrowser(this.platformId)) this.resize(); }
 
@@ -80,8 +73,8 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
     if (this.disableInteraction) { this.isMouseIn = false; return; }
     const el = this.canvasRef.nativeElement;
     const r  = el.getBoundingClientRect();
-    this.mouseX  = (e.clientX - r.left) * (el.width  / r.width);
-    this.mouseY  = (e.clientY - r.top)  * (el.height / r.height);
+    this.mouseX    = (e.clientX - r.left) * (el.width  / r.width);
+    this.mouseY    = (e.clientY - r.top)  * (el.height / r.height);
     this.isMouseIn = true;
   }
 
@@ -98,69 +91,70 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
 
   private loadImages(): void {
     let n = 0;
-    const done = () => { if (++n === 2) { this.isLoaded = true; this.cdr.detectChanges(); } };
+    const done = () => {
+      if (++n === 2) { this.isLoaded = true; this.cdr.detectChanges(); }
+    };
     this.image1.onload = done;
     this.image2.onload = done;
     this.image1.src = '/images/fondo1.png';
     this.image2.src = '/images/fondo2.png';
   }
 
-  // ─── Creación de blobs irregulares ──────────────────────────────────────────
+  // ─── Blob factory ───────────────────────────────────────────────────────────
 
-  private createBlob(cx: number, cy: number): Blob {
-    const mainR   = BLOB_R_MIN + Math.random() * (BLOB_R_MAX - BLOB_R_MIN);
-    const count   = 4 + Math.floor(Math.random() * 4); // 4–7 sub-círculos
-    const circles: SubCircle[] = [];
-
-    // Núcleo central (siempre presente)
-    circles.push({ dx: 0, dy: 0, r: mainR });
-
-    // Satélites: offsets aleatorios, radios variados → forma orgánica
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const dist  = mainR * (0.15 + Math.random() * 0.65);
-      const r     = mainR * (0.35 + Math.random() * 0.55);
-      circles.push({
-        dx: Math.cos(angle) * dist,
-        dy: Math.sin(angle) * dist,
-        r,
-      });
-    }
-
+  private makeBlob(cx: number, cy: number): Blob {
+    const baseR  = BLOB_R_MIN + Math.random() * (BLOB_R_MAX - BLOB_R_MIN);
+    const N      = 7 + Math.floor(Math.random() * 5); // 7–11 vértices
+    // Cada radio varía entre 40% y 130% del radio base → formas muy irregulares
+    const radii  = Array.from({ length: N }, () => baseR * (0.4 + Math.random() * 0.9));
     return {
-      cx, cy, circles,
+      cx, cy, baseR, radii,
       startTime: performance.now(),
-      growDur:  BLOB_GROW_MIN + Math.random() * (BLOB_GROW_MAX - BLOB_GROW_MIN),
-      holdDur:  BLOB_HOLD_MIN + Math.random() * (BLOB_HOLD_MAX - BLOB_HOLD_MIN),
-      fadeDur:  BLOB_FADE_MIN + Math.random() * (BLOB_FADE_MAX - BLOB_FADE_MIN),
+      growDur: BLOB_GROW_MIN + Math.random() * (BLOB_GROW_MAX - BLOB_GROW_MIN),
+      holdDur: BLOB_HOLD_MIN + Math.random() * (BLOB_HOLD_MAX - BLOB_HOLD_MIN),
+      fadeDur: BLOB_FADE_MIN + Math.random() * (BLOB_FADE_MAX - BLOB_FADE_MIN),
     };
   }
 
-  // ─── Dibujar un blob en el contexto actual ──────────────────────────────────
+  // ─── Dibujar blob irregular con blur ────────────────────────────────────────
+  //
+  // Construye un path de bezier cuadráticas a través de N vértices a radios
+  // distintos. El relleno blanco + blur del canvas crea bordes suaves orgánicos.
 
   private drawBlob(blob: Blob, scale: number, alpha: number): void {
-    const ctx = this.ctx;
+    const ctx  = this.ctx;
+    const N    = blob.radii.length;
+    const blur = Math.max(blob.baseR * 0.22 * scale, 6);
+
+    const pts = blob.radii.map((r, i) => {
+      const angle = (i / N) * Math.PI * 2;
+      return {
+        x: blob.cx + Math.cos(angle) * r * scale,
+        y: blob.cy + Math.sin(angle) * r * scale,
+      };
+    });
+
     ctx.save();
-    ctx.globalAlpha = alpha;
+    ctx.globalAlpha              = alpha;
     ctx.globalCompositeOperation = 'source-over';
+    ctx.filter                   = `blur(${blur.toFixed(1)}px)`;
+    ctx.fillStyle                = 'white';
 
-    for (const c of blob.circles) {
-      const x = blob.cx + c.dx * scale;
-      const y = blob.cy + c.dy * scale;
-      const r = c.r * scale;
-      if (r < 0.5) continue;
-
-      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0,    'rgba(255,255,255,1)');
-      g.addColorStop(0.55, 'rgba(255,255,255,0.75)');
-      g.addColorStop(0.85, 'rgba(255,255,255,0.2)');
-      g.addColorStop(1,    'rgba(255,255,255,0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
+    // Path suave: quadraticCurveTo hacia el punto medio entre vértices consecutivos
+    ctx.beginPath();
+    ctx.moveTo(
+      (pts[N - 1].x + pts[0].x) / 2,
+      (pts[N - 1].y + pts[0].y) / 2
+    );
+    for (let i = 0; i < N; i++) {
+      const p = pts[i];
+      const q = pts[(i + 1) % N];
+      ctx.quadraticCurveTo(p.x, p.y, (p.x + q.x) / 2, (p.y + q.y) / 2);
     }
+    ctx.closePath();
+    ctx.fill();
 
+    ctx.filter = 'none';
     ctx.restore();
   }
 
@@ -186,56 +180,49 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
     const ctx    = this.ctx;
     const W = canvas.width, H = canvas.height;
 
-    // Generar nuevo blob autónomo
+    // Spawn blob autónomo
     if (now >= this.nextBlobAt) {
-      this.blobs.push(this.createBlob(
-        Math.random() * W,
-        Math.random() * H
-      ));
+      this.blobs.push(this.makeBlob(Math.random() * W, Math.random() * H));
       this.nextBlobAt = now + BLOB_INT_MIN + Math.random() * (BLOB_INT_MAX - BLOB_INT_MIN);
     }
 
-    // ── Construir máscara del frame actual ──────────────────────────────────
+    // Construir máscara: blobs + halo del ratón
     ctx.clearRect(0, 0, W, H);
     ctx.globalCompositeOperation = 'source-over';
 
-    // Blobs autónomos — ciclo: crecer → aguantar → desvanecer
+    // Blobs autónomos con ciclo crecer → aguantar → desvanecer
     this.blobs = this.blobs.filter(b => {
       const elapsed = now - b.startTime;
       const total   = b.growDur + b.holdDur + b.fadeDur;
-      if (elapsed >= total) return false; // eliminar blob caducado
+      if (elapsed >= total) return false;
 
       let scale: number, alpha: number;
-
       if (elapsed < b.growDur) {
-        // Crecimiento con ease-out cúbico
         const t = elapsed / b.growDur;
-        scale = 1 - Math.pow(1 - t, 3);
-        alpha = scale;
+        scale   = 1 - Math.pow(1 - t, 3); // ease-out cúbico
+        alpha   = scale * 0.92;
       } else if (elapsed < b.growDur + b.holdDur) {
-        // Pleno — visible al máximo
         scale = 1;
-        alpha = 1;
+        alpha = 0.92;
       } else {
-        // Desvanecimiento ease-in cuadrático
         const t = (elapsed - b.growDur - b.holdDur) / b.fadeDur;
-        scale = 1;
-        alpha = 1 - t * t;
+        scale   = 1;
+        alpha   = (1 - t * t) * 0.92; // ease-in cuadrático
       }
 
       this.drawBlob(b, scale, alpha);
       return true;
     });
 
-    // Halo del ratón — solo visible mientras el cursor está dentro
+    // Halo suave del ratón (desaparece al salir)
     if (this.isMouseIn && !this.disableInteraction) {
       const g = ctx.createRadialGradient(
         this.mouseX, this.mouseY, 0,
         this.mouseX, this.mouseY, MOUSE_GLOW
       );
-      g.addColorStop(0,    'rgba(255,255,255,0.9)');
+      g.addColorStop(0,    'rgba(255,255,255,0.92)');
       g.addColorStop(0.4,  'rgba(255,255,255,0.6)');
-      g.addColorStop(0.75, 'rgba(255,255,255,0.15)');
+      g.addColorStop(0.78, 'rgba(255,255,255,0.15)');
       g.addColorStop(1,    'rgba(255,255,255,0)');
       ctx.fillStyle = g;
       ctx.beginPath();
@@ -243,12 +230,11 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
       ctx.fill();
     }
 
-    // ── Composite final ─────────────────────────────────────────────────────
-    // Recortar imagen 2 a la máscara (blobs + halo)
+    // Recortar imagen 2 a la máscara del frame
     ctx.globalCompositeOperation = 'source-in';
     this.drawImageCover(this.image2);
 
-    // Imagen 1 de fondo completa
+    // Imagen 1 de fondo
     ctx.globalCompositeOperation = 'destination-over';
     this.drawImageCover(this.image1);
 
