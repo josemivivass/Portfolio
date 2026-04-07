@@ -1,6 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID, HostListener } from '@angular/core';
-import { RouterOutlet, RouterModule } from '@angular/router';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { RouterOutlet, RouterModule, Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { filter, Subscription } from 'rxjs';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import { Hero3dComponent } from './components/hero3d/hero3d.component';
@@ -21,7 +22,7 @@ import { RevealComplexComponent } from './components/reveal-complex/reveal-compl
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   showPreloader: boolean = true;
   showIntro: boolean = true;
   
@@ -37,37 +38,101 @@ export class AppComponent implements OnInit {
   menuTranslateY: number = 0;
 
   private touchStartY = 0;
-  private isTransitioning: boolean = false; 
+  private isTransitioning: boolean = false;
+  private routerSub!: Subscription;
 
   constructor(
     private cdr: ChangeDetectorRef,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      if ('scrollRestoration' in history) {
-        history.scrollRestoration = 'manual';
-      }
-      window.scrollTo(0, 0);
+    if (!isPlatformBrowser(this.platformId)) return;
 
-      this.isHomeRoute = window.location.pathname === '/';
-      const token = localStorage.getItem('token');
-      this.isLoggedIn = !!token;
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
 
-      if (!this.isHomeRoute) {
-        this.showPreloader = false;
-        this.showIntro = false;
-        this.mainTranslateY = 0;
-      } else {
-        // La animación de cierre es 100% CSS (animation-delay: 2s en el overlay).
-        // Solo necesitamos limpiar el DOM una vez terminada la animación.
-        setTimeout(() => {
-          this.showPreloader = false;
-          this.cdr.detectChanges();
-        }, 3200);
+    const token = localStorage.getItem('token');
+    this.isLoggedIn = !!token;
+
+    // Inicializar según la ruta actual
+    this.applyRoute(window.location.pathname);
+
+    // Guardar estado antes de navegar a auth (para restaurarlo al volver)
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationStart)
+    ).subscribe((e: NavigationStart) => {
+      if ((e.url === '/login' || e.url === '/register') && this.isHomeRoute) {
+        sessionStorage.setItem('preAuthState', JSON.stringify({
+          showIntro: this.showIntro,
+          scrollY:   window.scrollY
+        }));
       }
+    });
+
+    // Actualizar isHomeRoute en cada navegación
+    this.routerSub = this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd)
+    ).subscribe((e: NavigationEnd) => {
+      this.applyRoute(e.urlAfterRedirects);
+      this.cdr.detectChanges();
+    });
+  }
+
+  private applyRoute(url: string): void {
+    this.isHomeRoute = url === '/' || url === '';
+
+    if (!this.isHomeRoute) {
+      this.showPreloader  = false;
+      this.showIntro      = false;
+      this.mainTranslateY = 0;
+      return;
     }
+
+    // ¿Volvemos tras un login/logout? → restaurar estado sin animaciones
+    const returnFlag = sessionStorage.getItem('authReturn');
+    if (returnFlag) {
+      sessionStorage.removeItem('authReturn');
+      this.showPreloader = false;
+
+      const savedStr = sessionStorage.getItem('preAuthState');
+      sessionStorage.removeItem('preAuthState');
+
+      if (savedStr) {
+        const saved: { showIntro: boolean; scrollY: number } = JSON.parse(savedStr);
+        if (!saved.showIntro) {
+          // Estaban viendo los proyectos → restaurar scroll
+          this.showIntro      = false;
+          this.mainTranslateY = 0;
+          setTimeout(() => {
+            window.scrollTo({ top: saved.scrollY, behavior: 'instant' });
+            ScrollTrigger.refresh();
+            this.cdr.detectChanges();
+          }, 60);
+        } else {
+          // Estaban en la intro → ir directamente a proyectos
+          this.showIntro      = false;
+          this.mainTranslateY = 0;
+        }
+      } else {
+        this.showIntro      = false;
+        this.mainTranslateY = 0;
+      }
+      return;
+    }
+
+    // Carga normal en home → lanzar preloader
+    if (this.showPreloader) {
+      setTimeout(() => {
+        this.showPreloader = false;
+        this.cdr.detectChanges();
+      }, 3200);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
   }
 
   @HostListener('window:scroll')
@@ -165,8 +230,13 @@ export class AppComponent implements OnInit {
 
   logout(): void {
     if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.setItem('authReturn', '1');
+      sessionStorage.setItem('preAuthState', JSON.stringify({
+        showIntro: this.showIntro,
+        scrollY:   window.scrollY
+      }));
       localStorage.removeItem('token');
-      this.isLoggedIn = false;
+      window.location.reload();
     }
   }
 }
