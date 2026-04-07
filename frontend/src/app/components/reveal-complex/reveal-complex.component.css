@@ -29,7 +29,7 @@
   object-fit: cover;
   display: block;
   z-index: 1;
-  cursor: crosshair;
+  cursor: none;
 }
 
 /* Header de la intro: Posicionamiento elegante sobre el canvas */

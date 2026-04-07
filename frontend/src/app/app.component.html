@@ -1,6 +1,5 @@
-<div *ngIf="isHomeRoute && showPreloader" 
-     class="preloader-overlay" 
-     [class.closing]="preloaderClosing">
+<div *ngIf="isHomeRoute && showPreloader"
+     class="preloader-overlay">
   <div class="spinner-circle"></div>
 </div>
 
@@ -28,14 +27,16 @@
      [class.is-intro-active]="showIntro"
      [style.transform]="showIntro ? 'translateY(' + mainTranslateY + 'vh)' : 'none'">
 
-  <nav class="side-menu left-menu" *ngIf="!showIntro || !isHomeRoute || showIntro">
+  <nav class="side-menu left-menu"
+       [style.transform]="isHomeRoute ? 'translateY(calc(-50% + ' + menuTranslateY + 'px))' : 'translateY(-50%)'">
     <span class="menu-label">PÁGINAS</span>
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">MI CURRÍCULUM</a>
     <a routerLink="/proyectos" routerLinkActive="active" class="nav-link">PROYECTOS</a>
     <a routerLink="/contacto" routerLinkActive="active" class="nav-link">CONTACTO</a>
   </nav>
 
-  <nav class="side-menu right-menu" *ngIf="!showIntro || !isHomeRoute || showIntro">
+  <nav class="side-menu right-menu"
+       [style.transform]="isHomeRoute ? 'translateY(calc(-50% + ' + menuTranslateY + 'px))' : 'translateY(-50%)'">
     <span class="menu-label">CUENTA</span>
     <ng-container *ngIf="isLoggedIn; else loggedOut">
       <span class="user-status">● CONECTADO</span>

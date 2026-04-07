@@ -1,6 +1,15 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, Inject, PLATFORM_ID, HostListener } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import * as THREE from 'three';
+
+const PARTICLE_COUNT    = 160;
+const CONNECTION_DIST   = 5.5;   // unidades Three.js
+const MOUSE_RADIUS      = 6;     // radio de influencia del ratón
+const MOUSE_STRENGTH    = 0.07;  // fuerza de repulsión
+const DAMPING           = 0.97;  // amortiguación
+const DRIFT             = 0.0003; // fuerza del movimiento autónomo sinusoidal
+const MAX_LINE_VERTICES = 8000;  // máximo de vértices de línea por frame
+const CAM_Z             = 30;    // distancia de la cámara
 
 @Component({
   selector: 'app-hero3d',
@@ -10,231 +19,228 @@ import * as THREE from 'three';
 })
 export class Hero3dComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas3d', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
-  
+
   private renderer!: THREE.WebGLRenderer;
   private scene!: THREE.Scene;
   private camera!: THREE.PerspectiveCamera;
-  
-  // Mallas
-  private cube!: THREE.Mesh;
-  private sphere!: THREE.Mesh;
-  
-  private animationId: number = 0;
+  private animationId = 0;
 
-  // Estado del DOM
-  private scrollY: number = 0;
-  private viewHeightPx: number = 1;
-  
-  // Ingeniería de movimiento
-  private readonly baseSpeed: number = 0.45; 
-  private cubeVelocityX: number = 0; 
-  private cubeVelocityY: number = 0; 
-  private sphereVelocityX: number = 0; 
-  private sphereVelocityY: number = 0; 
+  // Geometría de partículas (BufferGeometry compartido)
+  private particleGeo!: THREE.BufferGeometry;
+  private positions!: Float32Array;
+  private velocities: { vx: number; vy: number }[] = [];
 
-  // Geometría y límites
-  private visibleWidth: number = 0; 
-  private visibleHeight: number = 0; 
-  private worldTop: number = 0;
-  private worldBottom: number = 0;
-  private readonly cubeSize: number = 2.5;
-  private readonly sphereRadius: number = 1.5;
+  // Geometría de líneas
+  private lineGeo!: THREE.BufferGeometry;
+  private linePositions!: Float32Array;
+
+  // Ratón (normalizado −1..1, suavizado)
+  private mouseNX = 0;
+  private mouseNY = 0;
+  private targetNX = 0;
+  private targetNY = 0;
+
+  // Movimiento autónomo
+  private time = 0;
+  private phases: number[] = [];
+
+  // Bounds visibles en mundo 3D
+  private halfW = 0;
+  private halfH = 0;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   ngAfterViewInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.initThreeJs();
-      
-      // Intentos de recalcular límites cuando el DOM esté listo (debido a carga asíncrona de proyectos)
-      setTimeout(() => this.calculateWorldBoundaries(), 500);
-      setTimeout(() => this.calculateWorldBoundaries(), 2000); 
-      
-      this.animate();
-    }
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.init();
+    this.animate();
+    window.addEventListener('mousemove', this.onMouseMove);
+    window.addEventListener('resize',    this.onResize);
   }
 
   ngOnDestroy(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      cancelAnimationFrame(this.animationId);
-      if (this.renderer) {
-        this.renderer.dispose();
-      }
-    }
+    if (!isPlatformBrowser(this.platformId)) return;
+    cancelAnimationFrame(this.animationId);
+    window.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('resize',    this.onResize);
+    this.renderer?.dispose();
   }
 
-  @HostListener('window:scroll')
-  onScroll(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.scrollY = window.scrollY;
-    }
-  }
+  // ─── Handlers ──────────────────────────────────────────────────────────────
 
-  @HostListener('window:resize')
-  onResize(): void {
-    if (isPlatformBrowser(this.platformId) && this.camera && this.renderer) {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      
-      this.camera.aspect = width / height;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(width, height);
+  private onMouseMove = (e: MouseEvent): void => {
+    this.targetNX =  (e.clientX / window.innerWidth)  * 2 - 1;
+    this.targetNY = -(e.clientY / window.innerHeight) * 2 + 1;
+  };
 
-      this.calculateWorldBoundaries();
-    }
-  }
+  private onResize = (): void => {
+    if (!this.renderer || !this.camera) return;
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    this.camera.aspect = W / H;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(W, H);
+    this.calcBounds();
+  };
 
-  private calculateWorldBoundaries(): void {
-    this.viewHeightPx = window.innerHeight;
-    // Altura total del documento real
-    const docHeightPx = Math.max(document.documentElement.scrollHeight, this.viewHeightPx);
+  // ─── Inicialización ─────────────────────────────────────────────────────────
 
-    const distance = 15; // Z de la cámara
-    const vFOV = THREE.MathUtils.degToRad(this.camera.fov);
-    
-    // Altura/Ancho que ve la cámara a Z=0
-    this.visibleHeight = 2 * Math.tan(vFOV / 2) * distance;
-    this.visibleWidth = this.visibleHeight * this.camera.aspect;
-
-    // Proporción para mapear pixeles a unidades 3D
-    const ratio = docHeightPx / this.viewHeightPx;
-    const documentHeight3D = this.visibleHeight * ratio;
-
-    // Definir límites absolutos en el eje Y
-    this.worldTop = this.visibleHeight / 2; // Cero de la web mapeado arriba
-    this.worldBottom = this.worldTop - documentHeight3D; // Suelo absoluto mapeado abajo
-  }
-
-  private getRandomVelocity(startRight: boolean): { x: number, y: number } {
-    // Ángulo aleatorio entre 30 y 60 grados (π/6 a π/3 radianes)
-    const minAngle = Math.PI / 6;
-    const maxAngle = Math.PI / 3;
-    const angle = Math.random() * (maxAngle - minAngle) + minAngle;
-
-    let vx = this.baseSpeed * Math.cos(angle);
-    let vy = -Math.abs(this.baseSpeed * Math.sin(angle)); // Y negativo = hacia abajo inicialmente
-
-    if (startRight) {
-      vx = -Math.abs(vx); // Iniciar moviéndose hacia la izquierda
-    } else {
-      vx = Math.abs(vx); // Iniciar moviéndose hacia la derecha
-    }
-
-    return { x: vx, y: vy };
-  }
-
-  private initThreeJs(): void {
+  private init(): void {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
     const canvas = this.canvasRef.nativeElement;
-    const width = window.innerWidth;
-    const height = window.innerHeight;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color('#f4f7f6'); 
+    this.scene.background = new THREE.Color('#f4f7f6');
 
-    this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-    this.camera.position.set(0, 0, 15); 
-    this.camera.lookAt(0, 0, 0); 
+    this.camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 500);
+    this.camera.position.set(0, 0, CAM_Z);
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    this.renderer.setSize(width, height);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(W, H);
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    this.calculateWorldBoundaries();
-
-    // 1. Configurar el Cubo (Esquina Superior Izquierda)
-    const cubeGeo = new THREE.BoxGeometry(this.cubeSize, this.cubeSize, this.cubeSize);
-    const cubeMat = new THREE.MeshNormalMaterial({ wireframe: false });
-    this.cube = new THREE.Mesh(cubeGeo, cubeMat);
-    
-    const cubeInitialX = -(this.visibleWidth / 2) + (this.cubeSize / 2);
-    const cubeInitialY = this.worldTop - (this.cubeSize / 2);
-    this.cube.position.set(cubeInitialX, cubeInitialY, 0);
-
-    const cubeVel = this.getRandomVelocity(false); // Falso = Empieza en la izquierda
-    this.cubeVelocityX = cubeVel.x;
-    this.cubeVelocityY = cubeVel.y;
-    this.scene.add(this.cube);
-
-    // 2. Configurar la Esfera (Esquina Superior Derecha)
-    const sphereGeo = new THREE.SphereGeometry(this.sphereRadius, 32, 16);
-    // CAMBIO: wireframe puesto en false para que sea sólida
-    const sphereMat = new THREE.MeshNormalMaterial({ wireframe: false });
-    this.sphere = new THREE.Mesh(sphereGeo, sphereMat);
-    
-    const sphereInitialX = (this.visibleWidth / 2) - this.sphereRadius;
-    const sphereInitialY = this.worldTop - this.sphereRadius;
-    this.sphere.position.set(sphereInitialX, sphereInitialY, 0);
-
-    const sphereVel = this.getRandomVelocity(true); // Verdadero = Empieza en la derecha
-    this.sphereVelocityX = sphereVel.x;
-    this.sphereVelocityY = sphereVel.y;
-    this.scene.add(this.sphere);
+    this.calcBounds();
+    this.buildParticles();
+    this.buildLines();
   }
+
+  private calcBounds(): void {
+    const vFOV = THREE.MathUtils.degToRad(this.camera.fov);
+    const h    = 2 * Math.tan(vFOV / 2) * CAM_Z;
+    this.halfH = h / 2;
+    this.halfW = (h * this.camera.aspect) / 2;
+  }
+
+  private buildParticles(): void {
+    this.positions = new Float32Array(PARTICLE_COUNT * 3);
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      this.positions[i * 3]     = (Math.random() - 0.5) * this.halfW * 1.8;
+      this.positions[i * 3 + 1] = (Math.random() - 0.5) * this.halfH * 1.8;
+      this.positions[i * 3 + 2] = (Math.random() - 0.5) * 8;
+
+      const speed = 0.003 + Math.random() * 0.005;
+      const angle = Math.random() * Math.PI * 2;
+      this.velocities.push({ vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed });
+      this.phases.push(Math.random() * Math.PI * 2);
+    }
+
+    this.particleGeo = new THREE.BufferGeometry();
+    this.particleGeo.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
+
+    const mat = new THREE.PointsMaterial({
+      color:           new THREE.Color('#2c3e50'),
+      size:            0.28,
+      sizeAttenuation: true,
+      transparent:     true,
+      opacity:         0.85,
+    });
+
+    this.scene.add(new THREE.Points(this.particleGeo, mat));
+  }
+
+  private buildLines(): void {
+    this.linePositions = new Float32Array(MAX_LINE_VERTICES * 3);
+    this.lineGeo = new THREE.BufferGeometry();
+    this.lineGeo.setAttribute('position', new THREE.BufferAttribute(this.linePositions, 3));
+    this.lineGeo.setDrawRange(0, 0);
+
+    const mat = new THREE.LineBasicMaterial({
+      color:       new THREE.Color('#2c3e50'),
+      transparent: true,
+      opacity:     0.18,
+    });
+
+    this.scene.add(new THREE.LineSegments(this.lineGeo, mat));
+  }
+
+  // ─── Loop ───────────────────────────────────────────────────────────────────
 
   private animate = (): void => {
     this.animationId = requestAnimationFrame(this.animate);
 
-    if (this.cube && this.sphere) {
-      // Rotaciones estéticas
-      this.cube.rotation.x += 0.015;
-      this.cube.rotation.y += 0.015;
-      this.sphere.rotation.x += 0.01;
-      this.sphere.rotation.y += 0.01;
+    // Suavizar ratón
+    this.mouseNX += (this.targetNX - this.mouseNX) * 0.06;
+    this.mouseNY += (this.targetNY - this.mouseNY) * 0.06;
 
-      // Aplicar movimiento X/Y autónomo
-      this.cube.position.x += this.cubeVelocityX;
-      this.cube.position.y += this.cubeVelocityY;
-      this.sphere.position.x += this.sphereVelocityX;
-      this.sphere.position.y += this.sphereVelocityY;
+    // Posición del ratón en coordenadas de mundo (plano z=0)
+    const mwx = this.mouseNX * this.halfW;
+    const mwy = this.mouseNY * this.halfH;
 
-      // Límites físicos generales (Ancho de pantalla)
-      const worldRight = this.visibleWidth / 2;
-      const worldLeft = -this.visibleWidth / 2;
+    // Parallax suave de la cámara siguiendo el ratón
+    this.camera.position.x += (this.mouseNX * 1.8 - this.camera.position.x) * 0.025;
+    this.camera.position.y += (this.mouseNY * 0.9 - this.camera.position.y) * 0.025;
+    this.camera.lookAt(0, 0, 0);
 
-      // --- Rebote del Cubo ---
-      const cubeHalf = this.cubeSize / 2;
-      // Colisión Horizontal (Paredes)
-      if (this.cube.position.x >= worldRight - cubeHalf) {
-        this.cube.position.x = worldRight - cubeHalf;
-        this.cubeVelocityX *= -1; 
-      } else if (this.cube.position.x <= worldLeft + cubeHalf) {
-        this.cube.position.x = worldLeft + cubeHalf;
-        this.cubeVelocityX *= -1; 
+    // Avanzar tiempo para el drift autónomo
+    this.time += 0.0015;
+
+    // Actualizar partículas
+    const distSqThresh = CONNECTION_DIST * CONNECTION_DIST;
+    let lineVtx = 0;
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const xi  = i * 3;
+      let x     = this.positions[xi];
+      let y     = this.positions[xi + 1];
+      const z   = this.positions[xi + 2];
+      const vel = this.velocities[i];
+      const ph  = this.phases[i];
+
+      // Drift sinusoidal autónomo — cada partícula tiene su propia fase
+      vel.vx += Math.sin(this.time * 0.8 + ph)        * DRIFT;
+      vel.vy += Math.cos(this.time * 0.6 + ph * 1.61) * DRIFT;
+
+      // Fuerza del ratón (repulsión)
+      const dx   = x - mwx;
+      const dy   = y - mwy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < MOUSE_RADIUS && dist > 0.01) {
+        const force = (1 - dist / MOUSE_RADIUS) * MOUSE_STRENGTH;
+        vel.vx += (dx / dist) * force;
+        vel.vy += (dy / dist) * force;
       }
 
-      // Colisión Vertical (Techo/Suelo absoluto)
-      if (this.cube.position.y >= this.worldTop - cubeHalf) {
-        this.cube.position.y = this.worldTop - cubeHalf;
-        this.cubeVelocityY *= -1; 
-      } else if (this.cube.position.y <= this.worldBottom + cubeHalf) {
-        this.cube.position.y = this.worldBottom + cubeHalf;
-        this.cubeVelocityY *= -1; 
-      }
+      // Amortiguación + movimiento
+      vel.vx *= DAMPING;
+      vel.vy *= DAMPING;
+      x += vel.vx;
+      y += vel.vy;
 
-      // --- Rebote de la Esfera ---
-      const radius = this.sphereRadius;
-      // Colisión Horizontal (Paredes)
-      if (this.sphere.position.x >= worldRight - radius) {
-        this.sphere.position.x = worldRight - radius;
-        this.sphereVelocityX *= -1; 
-      } else if (this.sphere.position.x <= worldLeft + radius) {
-        this.sphere.position.x = worldLeft + radius;
-        this.sphereVelocityX *= -1; 
-      }
+      // Wrap — reaparecen por el lado opuesto
+      if (x >  this.halfW) x = -this.halfW;
+      if (x < -this.halfW) x =  this.halfW;
+      if (y >  this.halfH) y = -this.halfH;
+      if (y < -this.halfH) y =  this.halfH;
 
-      // Colisión Vertical (Techo/Suelo absoluto)
-      if (this.sphere.position.y >= this.worldTop - radius) {
-        this.sphere.position.y = this.worldTop - radius;
-        this.sphereVelocityY *= -1; 
-      } else if (this.sphere.position.y <= this.worldBottom + radius) {
-        this.sphere.position.y = this.worldBottom + radius;
-        this.sphereVelocityY *= -1; 
-      }
+      this.positions[xi]     = x;
+      this.positions[xi + 1] = y;
+      // z fijo por partícula (profundidad estática)
 
-      // La cámara persigue el scroll para explorar el mundo 3D completo
-      const scrollRatio = this.scrollY / this.viewHeightPx;
-      this.camera.position.y = -(scrollRatio * this.visibleHeight);
+      // Conexiones con partículas anteriores
+      for (let j = 0; j < i; j++) {
+        if (lineVtx >= MAX_LINE_VERTICES - 2) break;
+        const xj = j * 3;
+        const ddx = x - this.positions[xj];
+        const ddy = y - this.positions[xj + 1];
+        const ddz = z - this.positions[xj + 2];
+        if (ddx * ddx + ddy * ddy + ddz * ddz < distSqThresh) {
+          this.linePositions[lineVtx * 3]     = x;
+          this.linePositions[lineVtx * 3 + 1] = y;
+          this.linePositions[lineVtx * 3 + 2] = z;
+          lineVtx++;
+          this.linePositions[lineVtx * 3]     = this.positions[xj];
+          this.linePositions[lineVtx * 3 + 1] = this.positions[xj + 1];
+          this.linePositions[lineVtx * 3 + 2] = this.positions[xj + 2];
+          lineVtx++;
+        }
+      }
     }
+
+    this.particleGeo.attributes['position'].needsUpdate = true;
+    this.lineGeo.setDrawRange(0, lineVtx);
+    this.lineGeo.attributes['position'].needsUpdate = true;
 
     this.renderer.render(this.scene, this.camera);
   };

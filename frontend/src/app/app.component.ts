@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID, HostListener, NgZone } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Inject, PLATFORM_ID, HostListener } from '@angular/core';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -23,7 +23,6 @@ import { RevealComplexComponent } from './components/reveal-complex/reveal-compl
 })
 export class AppComponent implements OnInit {
   showPreloader: boolean = true;
-  preloaderClosing: boolean = false;
   showIntro: boolean = true;
   
   isLoggedIn: boolean = false;
@@ -35,14 +34,14 @@ export class AppComponent implements OnInit {
   mainTranslateY: number = 100;
   overlayOpacity: number = 0;
   disableReveal: boolean = false;
+  menuTranslateY: number = 0;
 
   private touchStartY = 0;
   private isTransitioning: boolean = false; 
 
   constructor(
     private cdr: ChangeDetectorRef,
-    @Inject(PLATFORM_ID) private platformId: Object,
-    private ngZone: NgZone
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
@@ -61,29 +60,31 @@ export class AppComponent implements OnInit {
         this.showIntro = false;
         this.mainTranslateY = 0;
       } else {
-        this.ngZone.runOutsideAngular(() => {
-          setTimeout(() => {
-            this.ngZone.run(() => {
-              this.preloaderClosing = true; 
-              this.cdr.detectChanges(); 
-              
-              setTimeout(() => {
-                this.showPreloader = false; 
-                this.cdr.detectChanges(); 
-              }, 800); 
-            });
-          }, 2000); 
-        });
+        // La animación de cierre es 100% CSS (animation-delay: 2s en el overlay).
+        // Solo necesitamos limpiar el DOM una vez terminada la animación.
+        setTimeout(() => {
+          this.showPreloader = false;
+          this.cdr.detectChanges();
+        }, 3200);
       }
     }
   }
 
   @HostListener('window:scroll')
   onScroll(): void {
-    if (!this.showIntro || !this.isHomeRoute || this.showPreloader || this.isTransitioning || !isPlatformBrowser(this.platformId)) return;
+    if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute || this.showPreloader) return;
 
     const scrollY = window.scrollY;
     const vh = window.innerHeight;
+
+    // Tras la transición: siempre actualizar el menú, sin bloquear con isTransitioning
+    if (!this.showIntro) {
+      this.menuTranslateY = -scrollY;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (this.isTransitioning) return;
 
     this.disableReveal = scrollY > 250;
 
@@ -91,33 +92,34 @@ export class AppComponent implements OnInit {
     const phase2 = Math.max(0, Math.min((scrollY - vh) / vh, 1));
 
     if (scrollY >= 2 * vh) {
-      this.isTransitioning = true; 
+      this.isTransitioning = true;
       this.showIntro = false;
       this.mainTranslateY = 0;
-      
-      this.cdr.detectChanges(); 
+      this.menuTranslateY = 0;
+
+      this.cdr.detectChanges();
       window.scrollTo(0, 0);
-      
+
       // Retraso controlado para permitir al navegador expandir el DOM
       setTimeout(() => {
         // Obliga a GSAP a escanear de nuevo toda la página
         ScrollTrigger.refresh();
-        window.dispatchEvent(new Event('resize')); 
-        
+        window.dispatchEvent(new Event('resize'));
+
         setTimeout(() => {
-          this.isTransitioning = false; 
+          this.isTransitioning = false;
         }, 600);
       }, 100);
-      
+
       return;
     }
 
     this.introScale = 1 - (0.55 * phase1);
-    this.overlayOpacity = Math.min(phase1 * 1.5, 1); 
-    
+    this.overlayOpacity = Math.min(phase1 * 1.5, 1);
+
     this.introTranslateY = -(phase2 * 100);
-    this.introOpacity = 1; 
-    
+    this.introOpacity = 1;
+
     this.mainTranslateY = 100 - (phase2 * 100);
   }
 
@@ -148,6 +150,7 @@ export class AppComponent implements OnInit {
   private returnToIntro(): void {
     if (this.isTransitioning || !isPlatformBrowser(this.platformId)) return;
     this.isTransitioning = true;
+    this.menuTranslateY = 0;
 
     this.showIntro = true;
     this.cdr.detectChanges();
