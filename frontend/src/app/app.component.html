@@ -6,15 +6,15 @@
   <app-hero3d></app-hero3d>
 </div>
 
-<div *ngIf="isHomeRoute && showIntro" 
-     class="intro-fullscreen-overlay" 
+<div *ngIf="isHomeRoute && showIntro"
+     class="intro-fullscreen-overlay"
      [style.transform]="'translateY(' + introTranslateY + 'vh)'"
      [style.opacity]="introOpacity">
-  
-  <div class="intro-scaling-box" 
+
+  <div class="intro-scaling-box"
        [style.transform]="'scale(' + introScale + ')'"
        [style.pointer-events]="disableReveal ? 'none' : 'auto'">
-    
+
     <div class="dark-tint" [style.opacity]="overlayOpacity"></div>
     <app-reveal-complex [disableInteraction]="disableReveal"></app-reveal-complex>
   </div>
@@ -22,7 +22,7 @@
 
 <div *ngIf="isHomeRoute && showIntro" class="scroll-forced-spacer"></div>
 
-<div class="main-app-container" 
+<div class="main-app-container"
      [class.is-intro-active]="showIntro"
      [style.transform]="showIntro ? 'translateY(' + mainTranslateY + 'vh)' : 'none'">
 
@@ -48,19 +48,7 @@
   </nav>
 
   <main class="main-content" [class.secondary-route]="!isHomeRoute">
-    <ng-container *ngIf="isHomeRoute">
-      
-      <section class="hero-container">
-        <div class="hero-content">
-          <h1>José Miguel V. S.</h1>
-          <p>Desarrollador Full Stack.</p>
-        </div>
-      </section>
-
-      <app-projects-gsap></app-projects-gsap>
-
-    </ng-container>
-
+    <app-home *ngIf="isHomeRoute"></app-home>
     <router-outlet *ngIf="!isHomeRoute"></router-outlet>
   </main>
 

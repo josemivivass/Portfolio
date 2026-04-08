@@ -1,51 +1,61 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, PLATFORM_ID, HostListener } from '@angular/core';
+import {
+  Component, OnInit, OnDestroy, ChangeDetectorRef,
+  Inject, PLATFORM_ID, HostListener, ViewChild
+} from '@angular/core';
 import { RouterOutlet, RouterModule, Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { filter, Subscription } from 'rxjs';
+import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import { Hero3dComponent } from './components/hero3d/hero3d.component';
-import { ProjectsGsapComponent } from './components/projects-gsap/projects-gsap.component';
+import { HomeComponent } from './components/home/home.component';
 import { RevealComplexComponent } from './components/reveal-complex/reveal-complex.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
-    RouterOutlet, 
-    RouterModule, 
+    RouterOutlet,
+    RouterModule,
     CommonModule,
     Hero3dComponent,
-    ProjectsGsapComponent,
+    HomeComponent,
     RevealComplexComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit, OnDestroy {
-  showPreloader: boolean = true;
-  showIntro: boolean = true;
-  
-  isLoggedIn: boolean = false;
-  isHomeRoute: boolean = true; 
+  @ViewChild(HomeComponent) homeComponent?: HomeComponent;
 
-  introScale: number = 1;
-  introTranslateY: number = 0;
-  introOpacity: number = 1;
-  mainTranslateY: number = 100;
-  overlayOpacity: number = 0;
-  disableReveal: boolean = false;
-  menuTranslateY: number = 0;
+  showPreloader = true;
+  showIntro = true;
+
+  isLoggedIn = false;
+  isHomeRoute = true;
+
+  introScale = 1;
+  introTranslateY = 0;
+  introOpacity = 1;
+  mainTranslateY = 100;
+  overlayOpacity = 0;
+  disableReveal = false;
+  menuTranslateY = 0;
 
   private touchStartY = 0;
-  private isTransitioning: boolean = false;
+  private isTransitioning = false;
   private routerSub!: Subscription;
 
   constructor(
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object,
     private router: Router
-  ) {}
+  ) {
+    if (isPlatformBrowser(this.platformId)) {
+      gsap.registerPlugin(ScrollTrigger);
+    }
+  }
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -56,10 +66,8 @@ export class AppComponent implements OnInit, OnDestroy {
     const token = localStorage.getItem('token');
     this.isLoggedIn = !!token;
 
-    // Inicializar según la ruta actual
     this.applyRoute(window.location.pathname);
 
-    // Guardar estado antes de navegar a auth (para restaurarlo al volver)
     this.router.events.pipe(
       filter(e => e instanceof NavigationStart)
     ).subscribe((e: NavigationStart) => {
@@ -71,7 +79,6 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Actualizar isHomeRoute en cada navegación
     this.routerSub = this.router.events.pipe(
       filter(e => e instanceof NavigationEnd)
     ).subscribe((e: NavigationEnd) => {
@@ -90,7 +97,6 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // ¿Volvemos tras un login/logout? → restaurar estado sin animaciones
     const returnFlag = sessionStorage.getItem('authReturn');
     if (returnFlag) {
       sessionStorage.removeItem('authReturn');
@@ -102,27 +108,33 @@ export class AppComponent implements OnInit, OnDestroy {
       if (savedStr) {
         const saved: { showIntro: boolean; scrollY: number } = JSON.parse(savedStr);
         if (!saved.showIntro) {
-          // Estaban viendo los proyectos → restaurar scroll
           this.showIntro      = false;
           this.mainTranslateY = 0;
           setTimeout(() => {
             window.scrollTo({ top: saved.scrollY, behavior: 'instant' });
             ScrollTrigger.refresh();
+            this.homeComponent?.initAnimations();
             this.cdr.detectChanges();
           }, 60);
         } else {
-          // Estaban en la intro → ir directamente a proyectos
           this.showIntro      = false;
           this.mainTranslateY = 0;
+          setTimeout(() => {
+            ScrollTrigger.refresh();
+            this.homeComponent?.initAnimations();
+          }, 100);
         }
       } else {
         this.showIntro      = false;
         this.mainTranslateY = 0;
+        setTimeout(() => {
+          ScrollTrigger.refresh();
+          this.homeComponent?.initAnimations();
+        }, 100);
       }
       return;
     }
 
-    // Carga normal en home → lanzar preloader
     if (this.showPreloader) {
       setTimeout(() => {
         this.showPreloader = false;
@@ -135,6 +147,8 @@ export class AppComponent implements OnInit, OnDestroy {
     this.routerSub?.unsubscribe();
   }
 
+  // ─── Scroll & touch handlers ───
+
   @HostListener('window:scroll')
   onScroll(): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute || this.showPreloader) return;
@@ -142,7 +156,6 @@ export class AppComponent implements OnInit, OnDestroy {
     const scrollY = window.scrollY;
     const vh = window.innerHeight;
 
-    // Tras la transición: siempre actualizar el menú, sin bloquear con isTransitioning
     if (!this.showIntro) {
       this.menuTranslateY = -scrollY;
       this.cdr.detectChanges();
@@ -165,27 +178,22 @@ export class AppComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
       window.scrollTo(0, 0);
 
-      // Retraso controlado para permitir al navegador expandir el DOM
       setTimeout(() => {
-        // Obliga a GSAP a escanear de nuevo toda la página
         ScrollTrigger.refresh();
         window.dispatchEvent(new Event('resize'));
+        this.homeComponent?.initAnimations();
 
-        setTimeout(() => {
-          this.isTransitioning = false;
-        }, 600);
+        setTimeout(() => { this.isTransitioning = false; }, 600);
       }, 100);
 
       return;
     }
 
-    this.introScale = 1 - (0.55 * phase1);
-    this.overlayOpacity = Math.min(phase1 * 1.5, 1);
-
+    this.introScale      = 1 - (0.55 * phase1);
+    this.overlayOpacity  = Math.min(phase1 * 1.5, 1);
     this.introTranslateY = -(phase2 * 100);
-    this.introOpacity = 1;
-
-    this.mainTranslateY = 100 - (phase2 * 100);
+    this.introOpacity    = 1;
+    this.mainTranslateY  = 100 - (phase2 * 100);
   }
 
   @HostListener('window:wheel', ['$event'])
@@ -206,7 +214,7 @@ export class AppComponent implements OnInit, OnDestroy {
   onTouchMove(event: TouchEvent): void {
     if (!this.showIntro && this.isHomeRoute && window.scrollY <= 0 && event.touches.length > 0 && !this.isTransitioning) {
       const touchEndY = event.touches[0].clientY;
-      if (touchEndY - this.touchStartY > 80) { 
+      if (touchEndY - this.touchStartY > 80) {
         this.returnToIntro();
       }
     }
@@ -217,15 +225,15 @@ export class AppComponent implements OnInit, OnDestroy {
     this.isTransitioning = true;
     this.menuTranslateY = 0;
 
+    this.homeComponent?.resetAnimations();
+
     this.showIntro = true;
     this.cdr.detectChanges();
 
     const vh = window.innerHeight;
     window.scrollTo(0, Math.floor(2 * vh) - 50);
 
-    setTimeout(() => {
-      this.isTransitioning = false;
-    }, 500);
+    setTimeout(() => { this.isTransitioning = false; }, 500);
   }
 
   logout(): void {
