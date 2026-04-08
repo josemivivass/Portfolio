@@ -231,9 +231,9 @@
         <div class="project-image" [ngStyle]="{'background-image': 'url(' + (project.image_url || 'https://placehold.co/800x600/EEE/31343C') + ')'}">
         </div>
         <div class="project-content">
-          <h3>{{ project.title }}</h3>
+          <h3>{{ i18n.lang === 'en' && project.title_en ? project.title_en : project.title }}</h3>
           <p class="date">{{ project.project_date | date:'longDate' }}</p>
-          <p class="description">{{ project.description }}</p>
+          <p class="description">{{ i18n.lang === 'en' && project.description_en ? project.description_en : project.description }}</p>
           <div class="tags">
             <span class="tag" *ngFor="let tag of project.tags.split(',')">{{ tag.trim() }}</span>
           </div>

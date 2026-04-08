@@ -44,9 +44,21 @@ export class AppComponent implements OnInit, OnDestroy {
   disableReveal = false;
   menuTranslateY = 0;
 
+  // ─── Fade de imágenes y firma ───
+  imageOpacity = 1;           // 1 = imágenes visibles, 0 = desvanecidas
+  firmaOpacity = 0;           // opacidad de la firma (0→1, sin fade-out)
+
   private touchStartY = 0;
   private isTransitioning = false;
   private routerSub!: Subscription;
+
+  // ─── Virtual smooth scroll system ───
+  private virtualScrollEnabled = false;
+  private targetScrollY = 0;
+  private currentScrollY = 0;
+  private scrollRafId: number | null = null;
+  private readonly SCROLL_LERP = 0.08;        // interpolation speed (higher = faster catch-up)
+  private readonly SCROLL_SNAP_THRESHOLD = 0.5; // px threshold to snap to target
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -59,8 +71,15 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  private wheelHandler = (e: WheelEvent) => this.onWheel(e);
+  private touchMoveHandler = (e: TouchEvent) => this.onTouchMove(e);
+
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+
+    // Register wheel & touchmove with { passive: false } so we can preventDefault during intro
+    window.addEventListener('wheel', this.wheelHandler, { passive: false });
+    window.addEventListener('touchmove', this.touchMoveHandler, { passive: false });
 
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
@@ -147,24 +166,50 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.routerSub?.unsubscribe();
+    this.stopVirtualScroll();
+    if (isPlatformBrowser(this.platformId)) {
+      window.removeEventListener('wheel', this.wheelHandler);
+      window.removeEventListener('touchmove', this.touchMoveHandler);
+    }
   }
 
-  // ─── Scroll & touch handlers ───
+  // ─── Virtual smooth scroll system ───
 
-  @HostListener('window:scroll')
-  onScroll(): void {
-    if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute || this.showPreloader) return;
+  private startVirtualScroll(): void {
+    if (this.virtualScrollEnabled) return;
+    this.virtualScrollEnabled = true;
+    this.currentScrollY = window.scrollY;
+    this.targetScrollY = this.currentScrollY;
+    this.tickVirtualScroll();
+  }
 
-    const scrollY = window.scrollY;
-    const vh = window.innerHeight;
+  private stopVirtualScroll(): void {
+    this.virtualScrollEnabled = false;
+    if (this.scrollRafId !== null) {
+      cancelAnimationFrame(this.scrollRafId);
+      this.scrollRafId = null;
+    }
+  }
 
-    if (!this.showIntro) {
-      this.menuTranslateY = -scrollY;
-      this.cdr.detectChanges();
-      return;
+  private tickVirtualScroll(): void {
+    if (!this.virtualScrollEnabled) return;
+
+    const diff = this.targetScrollY - this.currentScrollY;
+
+    if (Math.abs(diff) > this.SCROLL_SNAP_THRESHOLD) {
+      this.currentScrollY += diff * this.SCROLL_LERP;
+    } else {
+      this.currentScrollY = this.targetScrollY;
     }
 
-    if (this.isTransitioning) return;
+    window.scrollTo(0, this.currentScrollY);
+    this.applyIntroScroll(this.currentScrollY);
+
+    this.scrollRafId = requestAnimationFrame(() => this.tickVirtualScroll());
+  }
+
+  private applyIntroScroll(scrollY: number): void {
+    const vh = window.innerHeight;
 
     this.disableReveal = scrollY > 250;
 
@@ -172,6 +217,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const phase2 = Math.max(0, Math.min((scrollY - vh) / vh, 1));
 
     if (scrollY >= 2 * vh) {
+      this.stopVirtualScroll();
       this.isTransitioning = true;
       this.showIntro = false;
       this.mainTranslateY = 0;
@@ -196,12 +242,58 @@ export class AppComponent implements OnInit, OnDestroy {
     this.introTranslateY = -(phase2 * 100);
     this.introOpacity    = 1;
     this.mainTranslateY  = 100 - (phase2 * 100);
+
+    // ── Fade de imágenes: empiezan a desvanecerse al 15%, desaparecidas al 75% ──
+    const imgFadeStart = 0.15, imgFadeEnd = 0.75;
+    this.imageOpacity = phase1 <= imgFadeStart ? 1
+      : phase1 >= imgFadeEnd ? 0
+      : 1 - (phase1 - imgFadeStart) / (imgFadeEnd - imgFadeStart);
+
+    // ── Firma: aparece gradualmente del 10% al 70% del scroll, se queda a 1 ──
+    this.firmaOpacity = Math.max(0, Math.min(1, (phase1 - 0.10) / 0.60));
+
+    this.cdr.detectChanges();
   }
 
-  @HostListener('window:wheel', ['$event'])
+  // ─── Scroll & touch handlers ───
+
+  @HostListener('window:scroll')
+  onScroll(): void {
+    if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute || this.showPreloader) return;
+
+    const scrollY = window.scrollY;
+
+    // When intro is NOT active, handle menu parallax normally
+    if (!this.showIntro) {
+      this.menuTranslateY = -scrollY;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // During intro, the virtual scroll system handles everything via applyIntroScroll
+    // so we do NOT process raw scroll events here
+  }
+
   onWheel(event: WheelEvent): void {
-    if (!this.showIntro && this.isHomeRoute && window.scrollY <= 0 && event.deltaY < -40 && !this.isTransitioning) {
+    if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute || this.showPreloader) return;
+
+    // Return-to-intro: when main content is active and user scrolls up at top
+    if (!this.showIntro && window.scrollY <= 0 && event.deltaY < -40 && !this.isTransitioning) {
       this.returnToIntro();
+      return;
+    }
+
+    // During intro: intercept wheel and feed virtual scroll
+    if (this.showIntro && !this.isTransitioning) {
+      event.preventDefault();
+
+      if (!this.virtualScrollEnabled) {
+        this.startVirtualScroll();
+      }
+
+      const vh = window.innerHeight;
+      const maxScroll = 2 * vh + 10; // slightly past trigger point
+      this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + event.deltaY, maxScroll));
     }
   }
 
@@ -212,13 +304,33 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('window:touchmove', ['$event'])
   onTouchMove(event: TouchEvent): void {
-    if (!this.showIntro && this.isHomeRoute && window.scrollY <= 0 && event.touches.length > 0 && !this.isTransitioning) {
+    if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
+
+    // Return-to-intro via swipe down
+    if (!this.showIntro && window.scrollY <= 0 && event.touches.length > 0 && !this.isTransitioning) {
       const touchEndY = event.touches[0].clientY;
       if (touchEndY - this.touchStartY > 80) {
         this.returnToIntro();
+        return;
       }
+    }
+
+    // During intro: intercept touch and feed virtual scroll
+    if (this.showIntro && !this.isTransitioning && event.touches.length > 0) {
+      event.preventDefault();
+
+      const touchCurrentY = event.touches[0].clientY;
+      const delta = this.touchStartY - touchCurrentY; // positive = scroll down
+      this.touchStartY = touchCurrentY;
+
+      if (!this.virtualScrollEnabled) {
+        this.startVirtualScroll();
+      }
+
+      const vh = window.innerHeight;
+      const maxScroll = 2 * vh + 10;
+      this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + delta * 2, maxScroll));
     }
   }
 
@@ -233,9 +345,18 @@ export class AppComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
 
     const vh = window.innerHeight;
-    window.scrollTo(0, Math.floor(2 * vh) - 50);
+    const startPos = Math.floor(2 * vh) - 50;
+    window.scrollTo(0, startPos);
 
-    setTimeout(() => { this.isTransitioning = false; }, 500);
+    // Initialize virtual scroll at the return position so it can animate back smoothly
+    this.currentScrollY = startPos;
+    this.targetScrollY = startPos;
+    this.applyIntroScroll(startPos);
+
+    setTimeout(() => {
+      this.isTransitioning = false;
+      this.startVirtualScroll();
+    }, 500);
   }
 
   logout(): void {

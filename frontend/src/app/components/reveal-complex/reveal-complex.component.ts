@@ -5,28 +5,51 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 
+interface TrailPoint {
+  cx: number;
+  cy: number;
+  time: number;
+}
+
 interface Blob {
   cx: number;
   cy: number;
+  vx: number;              // velocidad horizontal (px/s)
+  vy: number;              // velocidad vertical (px/s)
   baseR: number;
-  radii: number[];   // radio por cada vértice angular — define la forma irregular
+  radii: number[];         // radio por cada vértice angular — forma irregular
   startTime: number;
   growDur: number;
   holdDur: number;
   fadeDur: number;
+  hasTrail: boolean;       // si deja rastro
+  trail: TrailPoint[];     // historial de posiciones
+  lastTrailTime: number;
+  phaseOffset: number;     // offset para movimiento sinusoidal único
 }
 
-const BLOB_INT_MIN  = 650;
-const BLOB_INT_MAX  = 1500;
-const BLOB_GROW_MIN = 400;
-const BLOB_GROW_MAX = 800;
-const BLOB_HOLD_MIN = 500;
-const BLOB_HOLD_MAX = 1600;
-const BLOB_FADE_MIN = 500;
-const BLOB_FADE_MAX = 1000;
-const BLOB_R_MIN    = 60;
-const BLOB_R_MAX    = 150;
-const MOUSE_GLOW    = 155;
+// ─── Constantes de timing y tamaño ───
+const BLOB_INT_MIN   = 800;    // intervalo mínimo entre spawns (ms)
+const BLOB_INT_MAX   = 2000;
+const BLOB_GROW_MIN  = 600;
+const BLOB_GROW_MAX  = 1200;
+const BLOB_HOLD_MIN  = 4000;   // duración larga para apreciar el movimiento
+const BLOB_HOLD_MAX  = 8000;
+const BLOB_FADE_MIN  = 1500;
+const BLOB_FADE_MAX  = 3000;
+const BLOB_R_MIN     = 50;
+const BLOB_R_MAX     = 140;
+const MOUSE_GLOW     = 155;
+
+// ─── Constantes de movimiento ───
+const SPEED_MIN      = 15;     // px/s mínimo
+const SPEED_MAX      = 55;     // px/s máximo
+const DRIFT_AMP      = 0.5;    // amplitud de drift sinusoidal adicional
+
+// ─── Constantes de rastro ───
+const TRAIL_INTERVAL = 150;    // ms entre capturas de posición
+const TRAIL_MAX_AGE  = 1800;   // ms que dura un punto de rastro
+const TRAIL_CHANCE   = 0.30;   // 30% de blobs tendrán rastro
 
 @Component({
   selector: 'app-reveal-complex',
@@ -38,6 +61,7 @@ const MOUSE_GLOW    = 155;
 export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   @ViewChild('trailCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
   @Input() disableInteraction = false;
+  @Input() imageOpacity = 1;       // 1 = imágenes visibles, 0 = desvanecidas
 
   private ctx!: CanvasRenderingContext2D;
   private animationId = 0;
@@ -50,6 +74,7 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   private mouseX = 0;
   private mouseY = 0;
   private isMouseIn = false;
+  private lastFrameTime = 0;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -107,32 +132,43 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   private makeBlob(cx: number, cy: number): Blob {
     const baseR  = BLOB_R_MIN + Math.random() * (BLOB_R_MAX - BLOB_R_MIN);
     const N      = 7 + Math.floor(Math.random() * 5); // 7–11 vértices
-    // Cada radio varía entre 40% y 130% del radio base → formas muy irregulares
     const radii  = Array.from({ length: N }, () => baseR * (0.4 + Math.random() * 0.9));
+
+    // Dirección y velocidad aleatorias
+    const angle = Math.random() * Math.PI * 2;
+    const speed = SPEED_MIN + Math.random() * (SPEED_MAX - SPEED_MIN);
+
     return {
-      cx, cy, baseR, radii,
+      cx, cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      baseR, radii,
       startTime: performance.now(),
       growDur: BLOB_GROW_MIN + Math.random() * (BLOB_GROW_MAX - BLOB_GROW_MIN),
       holdDur: BLOB_HOLD_MIN + Math.random() * (BLOB_HOLD_MAX - BLOB_HOLD_MIN),
       fadeDur: BLOB_FADE_MIN + Math.random() * (BLOB_FADE_MAX - BLOB_FADE_MIN),
+      hasTrail: Math.random() < TRAIL_CHANCE,
+      trail: [],
+      lastTrailTime: 0,
+      phaseOffset: Math.random() * Math.PI * 2,
     };
   }
 
-  // ─── Dibujar blob irregular con blur ────────────────────────────────────────
-  //
-  // Construye un path de bezier cuadráticas a través de N vértices a radios
-  // distintos. El relleno blanco + blur del canvas crea bordes suaves orgánicos.
+  // ─── Dibujar blob en posición arbitraria ────────────────────────────────────
 
-  private drawBlob(blob: Blob, scale: number, alpha: number): void {
-    const ctx  = this.ctx;
-    const N    = blob.radii.length;
-    const blur = Math.max(blob.baseR * 0.22 * scale, 6);
+  private drawBlobAt(
+    radii: number[], cx: number, cy: number,
+    scale: number, alpha: number, baseR: number
+  ): void {
+    const ctx = this.ctx;
+    const N   = radii.length;
+    const blur = Math.max(baseR * 0.22 * scale, 6);
 
-    const pts = blob.radii.map((r, i) => {
-      const angle = (i / N) * Math.PI * 2;
+    const pts = radii.map((r, i) => {
+      const a = (i / N) * Math.PI * 2;
       return {
-        x: blob.cx + Math.cos(angle) * r * scale,
-        y: blob.cy + Math.sin(angle) * r * scale,
+        x: cx + Math.cos(a) * r * scale,
+        y: cy + Math.sin(a) * r * scale,
       };
     });
 
@@ -142,7 +178,6 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
     ctx.filter                   = `blur(${blur.toFixed(1)}px)`;
     ctx.fillStyle                = 'white';
 
-    // Path suave: quadraticCurveTo hacia el punto medio entre vértices consecutivos
     ctx.beginPath();
     ctx.moveTo(
       (pts[N - 1].x + pts[0].x) / 2,
@@ -171,37 +206,51 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
     this.ctx.drawImage(img, x, y, rW, rH);
   }
 
-  // ─── Loop ───────────────────────────────────────────────────────────────────
+  // ─── Loop principal ─────────────────────────────────────────────────────────
 
   private animate = (): void => {
     this.animationId = requestAnimationFrame(this.animate);
     if (!this.isLoaded) return;
 
     const now    = performance.now();
+    const dt     = this.lastFrameTime ? (now - this.lastFrameTime) / 1000 : 0.016;
+    this.lastFrameTime = now;
+
     const canvas = this.canvasRef.nativeElement;
     const ctx    = this.ctx;
     const W = canvas.width, H = canvas.height;
 
-    // Spawn blob autónomo
+    // ── Spawn blob autónomo ──
     if (now >= this.nextBlobAt) {
       this.blobs.push(this.makeBlob(Math.random() * W, Math.random() * H));
       this.nextBlobAt = now + BLOB_INT_MIN + Math.random() * (BLOB_INT_MAX - BLOB_INT_MIN);
     }
 
-    // Construir máscara: blobs + halo del ratón
+    // ── Construir máscara ──
     ctx.clearRect(0, 0, W, H);
     ctx.globalCompositeOperation = 'source-over';
 
-    // Blobs autónomos con ciclo crecer → aguantar → desvanecer
     this.blobs = this.blobs.filter(b => {
       const elapsed = now - b.startTime;
       const total   = b.growDur + b.holdDur + b.fadeDur;
       if (elapsed >= total) return false;
 
+      // ── Movimiento: velocidad lineal + drift sinusoidal ──
+      b.cx += b.vx * dt + Math.sin(now * 0.001 + b.phaseOffset) * DRIFT_AMP;
+      b.cy += b.vy * dt + Math.cos(now * 0.0008 + b.phaseOffset * 1.5) * DRIFT_AMP;
+
+      // Wrap en los bordes con margen
+      const pad = b.baseR * 1.5;
+      if (b.cx < -pad) b.cx = W + pad;
+      if (b.cx > W + pad) b.cx = -pad;
+      if (b.cy < -pad) b.cy = H + pad;
+      if (b.cy > H + pad) b.cy = -pad;
+
+      // ── Escala y alfa según fase de vida ──
       let scale: number, alpha: number;
       if (elapsed < b.growDur) {
         const t = elapsed / b.growDur;
-        scale   = 1 - Math.pow(1 - t, 3); // ease-out cúbico
+        scale   = 1 - Math.pow(1 - t, 3);  // ease-out cúbico
         alpha   = scale * 0.92;
       } else if (elapsed < b.growDur + b.holdDur) {
         scale = 1;
@@ -209,14 +258,36 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
       } else {
         const t = (elapsed - b.growDur - b.holdDur) / b.fadeDur;
         scale   = 1;
-        alpha   = (1 - t * t) * 0.92; // ease-in cuadrático
+        alpha   = (1 - t * t) * 0.92;       // ease-in cuadrático
       }
 
-      this.drawBlob(b, scale, alpha);
+      // ── Rastro irregular (solo algunos blobs) ──
+      if (b.hasTrail) {
+        // Capturar posición periódicamente
+        if (now - b.lastTrailTime > TRAIL_INTERVAL) {
+          b.trail.push({ cx: b.cx, cy: b.cy, time: now });
+          b.lastTrailTime = now;
+        }
+        // Eliminar puntos viejos
+        b.trail = b.trail.filter(tp => now - tp.time < TRAIL_MAX_AGE);
+
+        // Dibujar fantasmas del rastro (antes que el blob principal)
+        for (const tp of b.trail) {
+          const age        = (now - tp.time) / TRAIL_MAX_AGE;
+          const trailAlpha = alpha * (1 - age) * 0.35;
+          const trailScale = scale * (1 - age * 0.4);
+          if (trailAlpha > 0.01) {
+            this.drawBlobAt(b.radii, tp.cx, tp.cy, trailScale, trailAlpha, b.baseR);
+          }
+        }
+      }
+
+      // ── Blob principal ──
+      this.drawBlobAt(b.radii, b.cx, b.cy, scale, alpha, b.baseR);
       return true;
     });
 
-    // Halo suave del ratón (desaparece al salir)
+    // ── Halo suave del ratón ──
     if (this.isMouseIn && !this.disableInteraction) {
       const g = ctx.createRadialGradient(
         this.mouseX, this.mouseY, 0,
@@ -232,14 +303,18 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
       ctx.fill();
     }
 
-    // Recortar imagen 2 a la máscara del frame
+    // ── Recortar imagen 2 a la máscara (con opacity del scroll) ──
     ctx.globalCompositeOperation = 'source-in';
+    ctx.globalAlpha = this.imageOpacity;
     this.drawImageCover(this.image2);
 
-    // Imagen 1 de fondo
+    // ── Imagen 1 de fondo (con opacity del scroll) ──
     ctx.globalCompositeOperation = 'destination-over';
+    ctx.globalAlpha = this.imageOpacity;
     this.drawImageCover(this.image1);
 
+    // ── Reset estado ──
+    ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = 'source-over';
   };
 }

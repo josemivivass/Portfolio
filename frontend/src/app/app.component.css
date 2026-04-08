@@ -114,10 +114,20 @@
   transform-origin: center center;
   will-change: transform;
   border-radius: 20px;
-  overflow: hidden;
+  overflow: visible;                        /* permite que la firma sobresalga */
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-  pointer-events: auto; 
-  background-color: #f4f7f6; 
+  pointer-events: auto;
+  background-color: transparent;
+}
+
+/* Wrapper que recorta el canvas y el tinte con border-radius */
+.intro-content-clip {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background-color: #f4f7f6;
 }
 
 .dark-tint {
@@ -126,9 +136,31 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #2d3436; 
+  background-color: #cce5ff;               /* azul claro — versión suave de #007bff */
   z-index: 10;
   pointer-events: none;
+}
+
+/* ─── Firma SVG ─── */
+.firma-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: calc(50% + 30px);                  /* desplazada 30px a la derecha */
+  transform: translateX(-50%) translateY(60%);  /* 60% sobresale por abajo */
+  z-index: 15;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.firma-svg {
+  width: 80vw;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+@media (max-width: 768px) {
+  .firma-wrapper { left: calc(50% + 15px); }
 }
 
 .scroll-forced-spacer {
