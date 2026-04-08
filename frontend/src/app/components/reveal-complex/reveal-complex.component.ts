@@ -3,6 +3,7 @@ import {
   HostListener, Inject, PLATFORM_ID, ChangeDetectorRef, Input
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { TranslationService } from '../../services/translation.service';
 
 interface Blob {
   cx: number;
@@ -52,7 +53,8 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public i18n: TranslationService
   ) {}
 
   ngAfterViewInit(): void {

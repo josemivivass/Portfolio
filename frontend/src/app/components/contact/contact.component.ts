@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ContactService } from '../../services/contact.service';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-contact',
@@ -17,7 +18,8 @@ export class ContactComponent {
 
   constructor(
     private fb: FormBuilder,
-    private contactService: ContactService
+    private contactService: ContactService,
+    public i18n: TranslationService
   ) {
     this.contactForm = this.fb.group({
       name: ['', Validators.required],
@@ -30,13 +32,13 @@ export class ContactComponent {
     if (this.contactForm.valid) {
       this.contactService.sendMessage(this.contactForm.value).subscribe({
         next: () => {
-          this.successMessage = 'Mensaje enviado correctamente. Me pondré en contacto contigo pronto.';
+          this.successMessage = this.i18n.t('contact.success');
           this.errorMessage = '';
           this.contactForm.reset();
         },
         error: (err) => {
           console.error(err);
-          this.errorMessage = 'Hubo un error al enviar el mensaje. Inténtalo de nuevo más tarde.';
+          this.errorMessage = this.i18n.t('contact.error');
           this.successMessage = '';
         }
       });

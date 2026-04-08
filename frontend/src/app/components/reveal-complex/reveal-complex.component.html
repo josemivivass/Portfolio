@@ -3,12 +3,12 @@
 
   <div class="intro-loader-container" *ngIf="!isLoaded">
     <div class="loader"></div>
-    <p>Cargando experiencia...</p>
+    <p>{{ i18n.t('reveal.loading') }}</p>
   </div>
 
   <header class="intro-header">
-    <h1>Desarrollador Web · IA &amp; Big Data</h1>
+    <h1>{{ i18n.t('reveal.title') }}</h1>
     <div class="line"></div>
-    <p>Desliza el cursor para revelar mi mundo.</p>
+    <p>{{ i18n.t('reveal.hint') }}</p>
   </header>
 </div>

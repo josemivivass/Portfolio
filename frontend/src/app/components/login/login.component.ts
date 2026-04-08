@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +24,8 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    public i18n: TranslationService
   ) {
     this.loginForm = this.fb.group({
       email:    ['', [Validators.required, Validators.email]],
@@ -60,7 +62,7 @@ export class LoginComponent {
       next: () => { sessionStorage.setItem('authReturn', '1'); window.location.href = '/'; },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = 'Credenciales incorrectas o error de servidor.';
+        this.errorMessage = this.i18n.t('login.error');
         console.error(err);
       }
     });

@@ -11,6 +11,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Hero3dComponent } from './components/hero3d/hero3d.component';
 import { HomeComponent } from './components/home/home.component';
 import { RevealComplexComponent } from './components/reveal-complex/reveal-complex.component';
+import { TranslationService } from './services/translation.service';
 
 @Component({
   selector: 'app-root',
@@ -50,7 +51,8 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private router: Router
+    private router: Router,
+    public i18n: TranslationService
   ) {
     if (isPlatformBrowser(this.platformId)) {
       gsap.registerPlugin(ScrollTrigger);

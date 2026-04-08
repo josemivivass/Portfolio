@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-register',
@@ -24,7 +25,8 @@ export class RegisterComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    public i18n: TranslationService
   ) {
     this.registerForm = this.fb.group({
       email:           ['', [Validators.required, Validators.email]],
@@ -70,7 +72,7 @@ export class RegisterComponent {
       next: () => this.router.navigate(['/login']),
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = 'Error en el registro. El email podría estar en uso.';
+        this.errorMessage = this.i18n.t('register.error');
         console.error(err);
       }
     });

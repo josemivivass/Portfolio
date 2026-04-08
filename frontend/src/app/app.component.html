@@ -28,23 +28,26 @@
 
   <nav class="side-menu left-menu"
        [style.transform]="isHomeRoute ? 'translateY(calc(-50% + ' + menuTranslateY + 'px))' : 'translateY(-50%)'">
-    <span class="menu-label">PÁGINAS</span>
-    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">MI CURRÍCULUM</a>
-    <a routerLink="/proyectos" routerLinkActive="active" class="nav-link">PROYECTOS</a>
-    <a routerLink="/contacto" routerLinkActive="active" class="nav-link">CONTACTO</a>
+    <span class="menu-label">{{ i18n.t('nav.pages') }}</span>
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">{{ i18n.t('nav.cv') }}</a>
+    <a routerLink="/proyectos" routerLinkActive="active" class="nav-link">{{ i18n.t('nav.projects') }}</a>
+    <a routerLink="/contacto" routerLinkActive="active" class="nav-link">{{ i18n.t('nav.contact') }}</a>
   </nav>
 
   <nav class="side-menu right-menu"
        [style.transform]="isHomeRoute ? 'translateY(calc(-50% + ' + menuTranslateY + 'px))' : 'translateY(-50%)'">
-    <span class="menu-label">CUENTA</span>
+    <span class="menu-label">{{ i18n.t('nav.account') }}</span>
     <ng-container *ngIf="isLoggedIn; else loggedOut">
-      <span class="user-status">● CONECTADO</span>
-      <button class="nav-link btn-logout" (click)="logout()">CERRAR SESIÓN</button>
+      <span class="user-status">{{ i18n.t('nav.connected') }}</span>
+      <button class="nav-link btn-logout" (click)="logout()">{{ i18n.t('nav.logout') }}</button>
     </ng-container>
     <ng-template #loggedOut>
-      <a routerLink="/login" class="nav-link">INICIAR SESIÓN</a>
-      <a routerLink="/register" class="nav-link highlight">REGISTRARSE</a>
+      <a routerLink="/login" class="nav-link">{{ i18n.t('nav.login') }}</a>
+      <a routerLink="/register" class="nav-link highlight">{{ i18n.t('nav.register') }}</a>
     </ng-template>
+    <button class="lang-toggle" (click)="i18n.toggle()" [attr.aria-label]="'Switch to ' + i18n.t('nav.lang')">
+      {{ i18n.t('nav.lang') }}
+    </button>
   </nav>
 
   <main class="main-content" [class.secondary-route]="!isHomeRoute">

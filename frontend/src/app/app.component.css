@@ -228,6 +228,27 @@
   margin-bottom: 2px;
 }
 
+.lang-toggle {
+  margin-top: 12px;
+  padding: 4px 12px;
+  border: 2px solid #2c3e50;
+  border-radius: 6px;
+  background: transparent;
+  color: #2c3e50;
+  font-size: 0.72rem;
+  font-weight: 900;
+  font-family: 'Arial Black', 'Inter', sans-serif;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lang-toggle:hover {
+  background: #007bff;
+  border-color: #007bff;
+  color: #fff;
+}
+
 .main-content {
   padding: 0;
   width: 100%;
