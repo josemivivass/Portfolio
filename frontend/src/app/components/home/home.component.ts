@@ -1,6 +1,6 @@
 import {
   Component, OnInit, OnDestroy, Inject, PLATFORM_ID,
-  ChangeDetectorRef, ElementRef, ViewChildren, QueryList
+  ChangeDetectorRef, ElementRef, ViewChildren, ViewChild, QueryList
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { gsap } from 'gsap';
@@ -16,12 +16,15 @@ import { TranslationService } from '../../services/translation.service';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  // --- ViewChildren para animaciones GSAP ---
+  // --- ViewChildren / ViewChild para animaciones GSAP ---
   @ViewChildren('cvSection')  cvSections!:  QueryList<ElementRef>;
-  @ViewChildren('timelineEl') timelineEls!: QueryList<ElementRef>;
   @ViewChildren('eduEl')      eduEls!:      QueryList<ElementRef>;
   @ViewChildren('skillEl')    skillEls!:    QueryList<ElementRef>;
   @ViewChildren('projectCard') projectCards!: QueryList<ElementRef>;
+
+  // Scroll horizontal — Experiencia
+  @ViewChild('expSection') expSection!: ElementRef;
+  @ViewChild('expTrack')   expTrack!:   ElementRef;
 
   // --- Datos de proyectos ---
   projects: any[] = [];
@@ -88,14 +91,37 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Timeline items — slide-in from left, escalonado
-    this.timelineEls.forEach((item, i) => {
-      gsap.from(item.nativeElement, {
-        opacity: 0, x: -60,
-        duration: 0.7, delay: i * 0.1, ease: 'power2.out',
-        scrollTrigger: { trigger: item.nativeElement, start: 'top 88%', toggleActions: 'play none none reverse' }
+    // Scroll horizontal — Sección experiencia
+    if (window.innerWidth > 850 && this.expSection && this.expTrack) {
+      const section = this.expSection.nativeElement;
+      const track   = this.expTrack.nativeElement;
+
+      // Escapa del padding del .main-content (250px/lado) antes de que GSAP
+      // registre el estado inicial. getBoundingClientRect da la posición real.
+      const applyFullBleed = () => {
+        const rect = section.getBoundingClientRect();
+        section.style.marginLeft = rect.left > 0 ? `-${rect.left}px` : '0px';
+        section.style.width = '100vw';
+      };
+
+      // Aplicar ANTES de crear el ScrollTrigger para que GSAP capture el ancho correcto
+      applyFullBleed();
+
+      gsap.to(track, {
+        x: () => -(track.scrollWidth - window.innerWidth),
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top top',
+          end: () => `+=${track.scrollWidth - window.innerWidth}`,
+          scrub: 1,
+          pin: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onRefresh: applyFullBleed,
+        }
       });
-    });
+    }
 
     // Education cards — scale-up con bounce
     this.eduEls.forEach((card, i) => {
@@ -132,9 +158,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   /** Resetea animaciones para que puedan reproducirse de nuevo (al volver a la intro). */
   resetAnimations(): void {
     ScrollTrigger.getAll().forEach(t => t.kill());
-    gsap.set('.section-header-cv, .about-card, .timeline-item, .edu-card, .skill-category, .project-card-horizontal', {
+    gsap.set('.section-header-cv, .about-card, .edu-card, .skill-category, .project-card-horizontal', {
       clearProps: 'all'
     });
+    if (this.expTrack) {
+      gsap.set(this.expTrack.nativeElement, { x: 0 });
+    }
+    if (this.expSection) {
+      this.expSection.nativeElement.style.marginLeft = '';
+      this.expSection.nativeElement.style.width = '';
+    }
     this.animationsInitialized = false;
   }
 }

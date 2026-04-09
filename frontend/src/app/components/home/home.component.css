@@ -187,96 +187,8 @@
 }
 
 /* ═══════════════════════════════════════════════════════
-   EXPERIENCIA
+   TAGS (compartido — edu + exp)
    ═══════════════════════════════════════════════════════ */
-.experience-section {
-  padding: 60px 20px;
-}
-
-.timeline {
-  position: relative;
-  padding-left: 30px;
-}
-
-.timeline::before {
-  content: '';
-  position: absolute;
-  left: 7px;
-  top: 8px;
-  bottom: 8px;
-  width: 2px;
-  background: #e0e4e8;
-}
-
-.timeline-item {
-  position: relative;
-  padding-bottom: 36px;
-}
-
-.timeline-item:last-child {
-  padding-bottom: 0;
-}
-
-.timeline-dot {
-  position: absolute;
-  left: -26px;
-  top: 6px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #fff;
-  border: 3px solid #007bff;
-  z-index: 1;
-}
-
-.timeline-item:first-child .timeline-dot {
-  background: #007bff;
-}
-
-.timeline-content {
-  background: #fff;
-  border-radius: 10px;
-  padding: 24px 28px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f0f2f4;
-}
-
-.timeline-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.timeline-header-row h3 {
-  font-size: 1.15rem;
-  color: #2c3e50;
-  margin: 0;
-}
-
-.timeline-date {
-  font-size: 0.82rem;
-  color: #007bff;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.timeline-company {
-  font-size: 0.9rem;
-  color: #7f8c8d;
-  margin-bottom: 10px;
-  font-weight: 500;
-}
-
-.timeline-desc {
-  font-size: 0.95rem;
-  color: #555;
-  line-height: 1.6;
-  margin-bottom: 14px;
-}
-
 .timeline-tags {
   display: flex;
   flex-wrap: wrap;
@@ -290,6 +202,370 @@
   border-radius: 15px;
   font-size: 0.78rem;
   font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════
+   EXPERIENCIA — SCROLL HORIZONTAL
+   Mismo fondo que la página para integración total
+   ═══════════════════════════════════════════════════════ */
+
+/*
+ * Full-bleed trick: la sección escapa del padding-left/right del .main-content
+ * (250px en desktop, 150px en tablet, 20px en móvil) y ocupa 100vw exactos.
+ * calc(-1 * ((100vw - 100%) / 2)) se adapta automáticamente a todos los breakpoints.
+ */
+.exp-scroll-section {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(-1 * ((100vw - 100%) / 2));
+  overflow: hidden;
+  background: #f4f7f6;
+}
+
+.exp-track-wrapper {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  background: #f4f7f6;
+}
+
+/* El carril horizontal — se desplaza con GSAP
+   Tiene dot-grid de fondo para que el fondo "se mueva" con el scroll */
+.exp-horizontal-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  height: 100%;
+  gap: 56px;
+  padding: 70px 160px 70px 80px;
+  will-change: transform;
+  position: relative;
+  /* Dot grid: al moverse el track, el patrón se desplaza — fondo vivo */
+  background-image: radial-gradient(circle, rgba(0, 123, 255, 0.065) 1.5px, transparent 1.5px);
+  background-size: 44px 44px;
+}
+
+/* ── Blobs decorativos de fondo (dentro del track → se mueven con él) ── */
+.exp-bg-blob {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(90px);
+}
+.exp-bg-blob--1 {
+  width: 600px; height: 600px;
+  background: rgba(0, 123, 255, 0.07);
+  top: -120px; left: 500px;
+}
+.exp-bg-blob--2 {
+  width: 500px; height: 500px;
+  background: rgba(46, 204, 113, 0.07);
+  bottom: -120px; left: 1500px;
+}
+.exp-bg-blob--3 {
+  width: 700px; height: 700px;
+  background: rgba(243, 156, 18, 0.05);
+  top: -200px; left: 2600px;
+}
+
+/* Todo el contenido del track por encima de los blobs */
+.exp-title-panel,
+.exp-divider,
+.exp-year-marker,
+.exp-card,
+.exp-deco-block,
+.exp-end-panel {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Panel título — idéntico al resto de secciones CV ── */
+.exp-title-panel {
+  flex-shrink: 0;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: center;
+  padding-right: 20px;
+}
+
+/* Reutiliza estilos de section-header-cv — misma tipografía */
+.exp-title-panel .section-header-cv {
+  margin-bottom: 24px;
+}
+
+.exp-scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #007bff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.75;
+  animation: hint-slide 2.2s ease-in-out infinite;
+}
+
+@keyframes hint-slide {
+  0%, 100% { transform: translateX(0);   opacity: 0.65; }
+  50%       { transform: translateX(10px); opacity: 1;   }
+}
+
+/* ── Separador vertical / línea de tiempo horizontal ── */
+.exp-divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 55%;
+  background: linear-gradient(to bottom, transparent, #dce1e5 30%, #dce1e5 70%, transparent);
+  align-self: center;
+}
+
+/* ── Marcadores de año ── */
+.exp-year-marker {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  align-self: center;
+}
+
+.exp-year-num {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #007bff;
+  letter-spacing: 1.2px;
+  background: #e8f0fe;
+  padding: 5px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.exp-year-bar {
+  width: 2px;
+  height: 60px;
+  background: linear-gradient(to bottom, #007bff55, transparent);
+}
+
+/* ── Tarjetas ── */
+.exp-card {
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+  border: 1px solid #f0f2f4;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.exp-card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.11);
+  transform: translateY(-3px);
+}
+
+/* Tamaños — pequeño, medio, grande */
+.exp-card--sm { width: 270px;  min-height: 290px; }
+.exp-card--md { width: 330px;  min-height: 340px; }
+.exp-card--lg { width: 450px;  min-height: 400px; }
+
+/* Posiciones verticales dentro del carril */
+.exp-pos--high { align-self: flex-start; margin-top: 40px;  }
+.exp-pos--mid  { align-self: center;                         }
+.exp-pos--low  { align-self: flex-end;   margin-bottom: 40px; }
+
+/* Tarjeta actual resaltada sutilmente */
+.exp-card--current {
+  border-color: rgba(46, 204, 113, 0.3);
+  box-shadow: 0 4px 20px rgba(46, 204, 113, 0.08);
+}
+
+/* Barra de acento superior */
+.exp-bar { height: 4px; width: 100%; }
+.exp-bar--blue  { background: linear-gradient(90deg, #007bff, #4da3ff); }
+.exp-bar--green { background: linear-gradient(90deg, #2ecc71, #55e898); }
+.exp-bar--warm  { background: linear-gradient(90deg, #f39c12, #f7c059); }
+
+/* Cuerpo */
+.exp-card-body { padding: 22px 26px 26px; }
+
+.exp-date {
+  font-size: 0.73rem;
+  color: #007bff;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.exp-card-body h3 {
+  font-size: 1.08rem;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.exp-company {
+  font-size: 0.82rem;
+  color: #7f8c8d;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.exp-desc {
+  font-size: 0.86rem;
+  color: #555;
+  line-height: 1.65;
+  margin-bottom: 14px;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.exp-card--lg .exp-desc { -webkit-line-clamp: 5; }
+
+/* Emoji decorativo */
+.exp-card-emoji {
+  position: absolute;
+  bottom: 14px;
+  right: 16px;
+  font-size: 2.2rem;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* Badge (Prácticas / Actual) */
+.exp-intern-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 0.67rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: #e8f0fe;
+  color: #007bff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.exp-badge--current {
+  background: rgba(46, 204, 113, 0.13);
+  color: #27ae60;
+}
+
+/* ── Bloques decorativos ── */
+.exp-deco-block {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  align-self: center;
+}
+
+.exp-deco-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #7f8c8d;
+  white-space: nowrap;
+}
+
+.exp-deco-promo { color: #2ecc71; }
+
+.exp-deco-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #7f8c8d;
+  text-align: center;
+}
+
+.exp-deco-promo .exp-deco-label { color: #27ae60; }
+
+/* Snippet de código */
+.exp-deco-code { gap: 18px; }
+
+.exp-code-block {
+  display: flex;
+  flex-direction: column;
+  background: #1e2030;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.76rem;
+  line-height: 1.9;
+  color: #cdd6f4;
+  width: 172px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+.exp-code-block .kw  { color: #cba6f7; }
+.exp-code-block .str { color: #a6e3a1; }
+
+.exp-year-pill-mini {
+  background: #007bff;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 5px 20px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+}
+
+/* ── Panel final ── */
+.exp-end-panel {
+  flex-shrink: 0;
+  width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  gap: 14px;
+  color: #7f8c8d;
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.exp-end-orbit {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+
+.exp-end-ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #007bff;
+  opacity: 0.3;
+  animation: ring-pulse 2.5s ease-in-out infinite;
+}
+
+.exp-end-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #007bff;
+}
+
+@keyframes ring-pulse {
+  0%, 100% { transform: scale(1);     opacity: 0.3;  }
+  50%       { transform: scale(1.2);  opacity: 0.55; }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -553,9 +829,35 @@
   .hero-location { font-size: 0.78rem; flex-wrap: wrap; justify-content: center; text-align: center; }
   .edu-grid { grid-template-columns: 1fr; }
   .skills-grid { grid-template-columns: 1fr; }
-  .timeline-header-row { flex-direction: column; }
   .about-languages { flex-direction: column; gap: 12px; }
   .project-card-horizontal,
   .project-card-horizontal:nth-child(even) { flex-direction: column; }
   .project-image { min-height: 200px; }
+
+  /* Experiencia: fallback vertical en móvil — reset del full-bleed */
+  .exp-scroll-section   { width: 100%; margin-left: 0; overflow: visible; background: #f4f7f6; }
+  .exp-track-wrapper    { height: auto; overflow: visible; display: block; background: #f4f7f6; }
+  .exp-horizontal-track {
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+    padding: 40px 20px;
+    gap: 24px;
+    transform: none !important;
+  }
+  .exp-card--sm,
+  .exp-card--md,
+  .exp-card--lg {
+    width: 100%;
+    min-height: unset;
+    align-self: stretch !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .exp-title-panel     { width: 100%; padding-right: 0; }
+  .exp-divider         { display: none; }
+  .exp-year-bar        { display: none; }
+  .exp-deco-block      { flex-direction: row; justify-content: flex-start; }
+  .exp-end-panel       { width: 100%; align-items: flex-start; text-align: left; }
+  .exp-scroll-hint     { display: none; }
 }
