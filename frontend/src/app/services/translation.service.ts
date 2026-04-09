@@ -113,11 +113,6 @@ const ES: Record<string, string> = {
   // --- Footer ---
   'footer.role': 'Desarrollador Web · IA & Big Data',
 
-  // --- Reveal ---
-  'reveal.title': 'Desarrollador Web · IA & Big Data',
-  'reveal.loading': 'Cargando experiencia...',
-  'reveal.hint': 'Desliza el cursor para revelar mi mundo.',
-
   // --- Contact ---
   'contact.title': 'Contacto',
   'contact.subtitle': '¿Tienes un proyecto en mente? Hablemos.',
@@ -249,11 +244,6 @@ const EN: Record<string, string> = {
 
   // --- Footer ---
   'footer.role': 'Web Developer · AI & Big Data',
-
-  // --- Reveal ---
-  'reveal.title': 'Web Developer · AI & Big Data',
-  'reveal.loading': 'Loading experience...',
-  'reveal.hint': 'Move the cursor to reveal my world.',
 
   // --- Contact ---
   'contact.title': 'Contact',

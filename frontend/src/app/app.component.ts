@@ -45,8 +45,13 @@ export class AppComponent implements OnInit, OnDestroy {
   menuTranslateY = 0;
 
   // ─── Fade de imágenes y firma ───
-  imageOpacity = 1;           // 1 = imágenes visibles, 0 = desvanecidas
-  firmaOpacity = 0;           // opacidad de la firma (0→1, sin fade-out)
+  imageOpacity   = 1;    // mantenido por compatibilidad con RevealComplexComponent
+  firmaOpacity   = 0;    // opacidad de la firma (0→1, sincronizada con scroll)
+  firmaClipRight = 100;  // clip-path inset desde la derecha (100=oculta, 0=revelada)
+  hoverIntensity = 1;    // intensidad del efecto hover (1=pleno, 0=ninguno al mínimo)
+
+  // Contador de ticks de scroll: la firma solo aparece pasados 6 ticks (~100ms)
+  private firmaScrollTicks = 0;
 
   private touchStartY = 0;
   private isTransitioning = false;
@@ -243,14 +248,25 @@ export class AppComponent implements OnInit, OnDestroy {
     this.introOpacity    = 1;
     this.mainTranslateY  = 100 - (phase2 * 100);
 
-    // ── Fade de imágenes: empiezan a desvanecerse al 15%, desaparecidas al 75% ──
-    const imgFadeStart = 0.15, imgFadeEnd = 0.75;
-    this.imageOpacity = phase1 <= imgFadeStart ? 1
-      : phase1 >= imgFadeEnd ? 0
-      : 1 - (phase1 - imgFadeStart) / (imgFadeEnd - imgFadeStart);
+    // ── Hover: se atenúa linealmente con el scroll (pleno al inicio, cero al mínimo) ──
+    // phase1 va de 0 (sin scroll) a 1 (intro en escala mínima)
+    this.hoverIntensity = Math.max(0, 1 - phase1);
 
-    // ── Firma: aparece gradualmente del 10% al 70% del scroll, se queda a 1 ──
-    this.firmaOpacity = Math.max(0, Math.min(1, (phase1 - 0.10) / 0.60));
+    // ── Firma: espera 6 ticks de scroll (~100ms) antes de aparecer ──
+    if (scrollY > 0) {
+      this.firmaScrollTicks = Math.min(this.firmaScrollTicks + 1, 100);
+    } else {
+      this.firmaScrollTicks = 0;
+    }
+
+    // La animación de trazo se sincroniza con el progreso de scroll
+    // Rango: phase1 de 0.10 a 0.70 (60% del recorrido total)
+    const firmaPhase = this.firmaScrollTicks >= 6
+      ? Math.max(0, Math.min(1, (phase1 - 0.10) / 0.60))
+      : 0;
+
+    this.firmaOpacity   = firmaPhase;
+    this.firmaClipRight = (1 - firmaPhase) * 100;
 
     this.cdr.detectChanges();
   }
@@ -337,7 +353,8 @@ export class AppComponent implements OnInit, OnDestroy {
   private returnToIntro(): void {
     if (this.isTransitioning || !isPlatformBrowser(this.platformId)) return;
     this.isTransitioning = true;
-    this.menuTranslateY = 0;
+    this.menuTranslateY  = 0;
+    this.firmaScrollTicks = 0; // resetear contador para la próxima visita
 
     this.homeComponent?.resetAnimations();
 

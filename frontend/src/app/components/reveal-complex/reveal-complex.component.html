@@ -1,14 +1,23 @@
-<div class="intro-main-fixed-container">
-  <canvas #trailCanvas class="reveal-complex-canvas"></canvas>
+<div class="reveal-container">
 
-  <div class="intro-loader-container" *ngIf="!isLoaded">
-    <div class="loader"></div>
-    <p>{{ i18n.t('reveal.loading') }}</p>
+  <!-- Capa 1: textura ambient — caracteres muy tenues, siempre visibles -->
+  <div class="letters-ambient" #ambientEl></div>
+
+  <!-- Capa 2: caracteres brillantes revelados por la máscara radial del cursor -->
+  <div class="letters-hover" #hoverEl></div>
+
+  <!-- Vignette: oscurece bordes para profundidad -->
+  <div class="vignette"></div>
+
+  <div class="intro-center">
+    <h1 class="intro-title">José Miguel Vivas Sánchez</h1>
+
+    <div class="scroll-arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 5v14M5 13l7 7 7-7" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
   </div>
 
-  <header class="intro-header">
-    <h1>{{ i18n.t('reveal.title') }}</h1>
-    <div class="line"></div>
-    <p>{{ i18n.t('reveal.hint') }}</p>
-  </header>
 </div>

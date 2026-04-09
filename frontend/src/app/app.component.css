@@ -145,7 +145,7 @@
 .firma-wrapper {
   position: absolute;
   bottom: 0;
-  left: calc(50% + 30px);                  /* desplazada 30px a la derecha */
+  left: calc(50% + 30px + 10vw);           /* desplazada 30px + 10vw a la derecha */
   transform: translateX(-50%) translateY(60%);  /* 60% sobresale por abajo */
   z-index: 15;
   pointer-events: none;
@@ -157,10 +157,11 @@
   height: auto;
   display: block;
   overflow: visible;
+  /* clip-path se controla desde TypeScript sincronizado con el scroll */
 }
 
 @media (max-width: 768px) {
-  .firma-wrapper { left: calc(50% + 15px); }
+  .firma-wrapper { left: calc(50% + 15px + 10vw); }
 }
 
 .scroll-forced-spacer {
