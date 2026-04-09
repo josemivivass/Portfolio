@@ -206,20 +206,14 @@
 
 /* ═══════════════════════════════════════════════════════
    EXPERIENCIA — SCROLL HORIZONTAL
-   Mismo fondo que la página para integración total
+   Fondo transparente → canvas Three.js visible detrás.
+   El full-bleed (100vw desde x=0) lo gestiona JS con
+   applyFullBleed() en initAnimations().
    ═══════════════════════════════════════════════════════ */
-
-/*
- * Full-bleed trick: la sección escapa del padding-left/right del .main-content
- * (250px en desktop, 150px en tablet, 20px en móvil) y ocupa 100vw exactos.
- * calc(-1 * ((100vw - 100%) / 2)) se adapta automáticamente a todos los breakpoints.
- */
 .exp-scroll-section {
   position: relative;
-  width: 100vw;
-  margin-left: calc(-1 * ((100vw - 100%) / 2));
   overflow: hidden;
-  background: #f4f7f6;
+  background: transparent;
 }
 
 .exp-track-wrapper {
@@ -228,11 +222,10 @@
   overflow: hidden;
   display: flex;
   align-items: stretch;
-  background: #f4f7f6;
+  background: transparent;
 }
 
-/* El carril horizontal — se desplaza con GSAP
-   Tiene dot-grid de fondo para que el fondo "se mueva" con el scroll */
+/* Carril horizontal — sin fondo propio para no tapar el canvas */
 .exp-horizontal-track {
   display: flex;
   flex-direction: row;
@@ -243,47 +236,10 @@
   padding: 70px 160px 70px 80px;
   will-change: transform;
   position: relative;
-  /* Dot grid: al moverse el track, el patrón se desplaza — fondo vivo */
-  background-image: radial-gradient(circle, rgba(0, 123, 255, 0.065) 1.5px, transparent 1.5px);
-  background-size: 44px 44px;
+  background: transparent;
 }
 
-/* ── Blobs decorativos de fondo (dentro del track → se mueven con él) ── */
-.exp-bg-blob {
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: 50%;
-  filter: blur(90px);
-}
-.exp-bg-blob--1 {
-  width: 600px; height: 600px;
-  background: rgba(0, 123, 255, 0.07);
-  top: -120px; left: 500px;
-}
-.exp-bg-blob--2 {
-  width: 500px; height: 500px;
-  background: rgba(46, 204, 113, 0.07);
-  bottom: -120px; left: 1500px;
-}
-.exp-bg-blob--3 {
-  width: 700px; height: 700px;
-  background: rgba(243, 156, 18, 0.05);
-  top: -200px; left: 2600px;
-}
-
-/* Todo el contenido del track por encima de los blobs */
-.exp-title-panel,
-.exp-divider,
-.exp-year-marker,
-.exp-card,
-.exp-deco-block,
-.exp-end-panel {
-  position: relative;
-  z-index: 1;
-}
-
-/* ── Panel título — idéntico al resto de secciones CV ── */
+/* ── Panel título — frosted glass para legibilidad sobre Three.js ── */
 .exp-title-panel {
   flex-shrink: 0;
   width: 320px;
@@ -291,7 +247,11 @@
   flex-direction: column;
   justify-content: center;
   align-self: center;
-  padding-right: 20px;
+  background: rgba(244, 247, 246, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 32px;
 }
 
 /* Reutiliza estilos de section-header-cv — misma tipografía */
