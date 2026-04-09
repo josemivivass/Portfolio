@@ -5,7 +5,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 
-const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*_+-=[]{}|;:,.?';
+const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 const CHAR_W = 6.6;
 const CHAR_H = 16.5;
@@ -18,8 +18,10 @@ const CHAR_H = 16.5;
   styleUrls: ['./reveal-complex.component.css']
 })
 export class RevealComplexComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('ambientEl', { static: true }) private ambientEl!: ElementRef<HTMLDivElement>;
-  @ViewChild('hoverEl',   { static: true }) private hoverEl!:   ElementRef<HTMLDivElement>;
+  @ViewChild('staticWrapperEl', { static: true }) private staticWrapperEl!: ElementRef<HTMLDivElement>;
+  @ViewChild('ambientEl',       { static: true }) private ambientEl!:       ElementRef<HTMLDivElement>;
+  @ViewChild('centerGlowEl',    { static: true }) private centerGlowEl!:    ElementRef<HTMLDivElement>;
+  @ViewChild('hoverEl',         { static: true }) private hoverEl!:         ElementRef<HTMLDivElement>;
 
   @Input() imageOpacity = 1;
   @Input() hoverIntensity = 1;
@@ -66,9 +68,9 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   @HostListener('window:mouseleave')
   onMouseLeave(): void {
     this.hoverEl.nativeElement.style.opacity = '0';
-    // Mueve el "agujero" fuera de la pantalla para que las letras estáticas sean 100% visibles al quitar el ratón
-    this.ambientEl.nativeElement.style.setProperty('--x', '-9999px');
-    this.ambientEl.nativeElement.style.setProperty('--y', '-9999px');
+    // Mueve el "agujero" invertido fuera de la pantalla
+    this.staticWrapperEl.nativeElement.style.setProperty('--x', '-9999px');
+    this.staticWrapperEl.nativeElement.style.setProperty('--y', '-9999px');
   }
 
   private updateHover(timestamp: number): void {
@@ -76,12 +78,12 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
 
     const intensity = Math.max(0, Math.min(1, this.hoverIntensity));
     const hoverDiv   = this.hoverEl.nativeElement;
-    const ambientDiv = this.ambientEl.nativeElement;
+    const staticWrap = this.staticWrapperEl.nativeElement;
 
     if (intensity <= 0) {
       hoverDiv.style.opacity = '0';
-      ambientDiv.style.setProperty('--x', '-9999px');
-      ambientDiv.style.setProperty('--y', '-9999px');
+      staticWrap.style.setProperty('--x', '-9999px');
+      staticWrap.style.setProperty('--y', '-9999px');
       return;
     }
 
@@ -93,13 +95,14 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
     const localX = (this.pendingX - rect.left) * scaleX;
     const localY = (this.pendingY - rect.top)  * scaleY;
 
-    // Actualiza coordenadas en ambas capas
+    // Actualiza coordenadas del brillo dinámico
     hoverDiv.style.setProperty('--x', `${localX}px`);
     hoverDiv.style.setProperty('--y', `${localY}px`);
     hoverDiv.style.opacity = `${intensity}`;
 
-    ambientDiv.style.setProperty('--x', `${localX}px`);
-    ambientDiv.style.setProperty('--y', `${localY}px`);
+    // Sincroniza el "agujero" en el contenedor de las capas estáticas
+    staticWrap.style.setProperty('--x', `${localX}px`);
+    staticWrap.style.setProperty('--y', `${localY}px`);
 
     if (timestamp - this.lastTextUpdate > 80) {
       hoverDiv.textContent = this.randomStr(this.screenCharCount || 16000);
@@ -113,8 +116,11 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
     this.screenCharCount = cols * rows;
 
     this.ambientStr = this.randomStr(this.screenCharCount * 2);
-    this.ambientEl.nativeElement.textContent = this.ambientStr;
-    this.hoverEl.nativeElement.textContent = this.ambientStr;
+    
+    // TODAS las capas reciben exactamente la misma cadena inicial para garantizar alineación
+    this.ambientEl.nativeElement.textContent    = this.ambientStr;
+    this.centerGlowEl.nativeElement.textContent = this.ambientStr;
+    this.hoverEl.nativeElement.textContent      = this.ambientStr;
   }
 
   private randomStr(n: number): string {

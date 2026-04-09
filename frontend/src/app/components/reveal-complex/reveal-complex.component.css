@@ -12,10 +12,12 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   CAPA 1: TEXTURA AMBIENT (ESTÁTICA Y TENUE CON MÁSCARA INVERTIDA)
+   BASE COMPARTIDA — capas de letras
    ══════════════════════════════════════════════════════════════════════════ */
 
-.letters-ambient {
+.letters-ambient,
+.letters-center-glow,
+.letters-hover {
   position: absolute;
   inset: 0;
   font-size: 0.72rem;
@@ -28,13 +30,14 @@
   pointer-events: none;
   -webkit-font-smoothing: antialiased;
   user-select: none;
+}
 
-  opacity: 1 !important;
-  display: block;
-  color: rgba(130, 185, 255, 0.35);
+/* ── Envoltorio de capas estáticas ── */
+
+.static-layers {
+  position: absolute;
+  inset: 0;
   z-index: 1;
-
-  /* Máscara invertida: transparente en el centro del cursor, negro (visible) fuera */
   --x: -9999px;
   --y: -9999px;
   -webkit-mask-image: radial-gradient(
@@ -53,41 +56,38 @@
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   VIGNETTE — oscurece los bordes para dar profundidad
-   ══════════════════════════════════════════════════════════════════════════ */
+/* ── Capa 1: textura ambient ───────────────────────── */
 
-.vignette {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+.letters-ambient {
+  opacity: 1 !important;
+  color: rgba(130, 185, 255, 0.35);
+  z-index: 1;
+}
+
+/* ── Capa 2: textura central brillante ───────── */
+
+.letters-center-glow {
+  color: rgba(190, 220, 255, 0.95);
   z-index: 2;
-  background: radial-gradient(
-    ellipse at center,
-    transparent           30%,
-    rgba(2, 8, 16, 0.50)  72%,
-    rgba(2, 8, 16, 0.82)  100%
+  -webkit-mask-image: radial-gradient(
+    ellipse 45vw 25vh at 50% 50%,
+    black 0%,
+    rgba(0, 0, 0, 0.8) 30%,
+    rgba(0, 0, 0, 0.2) 70%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 45vw 25vh at 50% 50%,
+    black 0%,
+    rgba(0, 0, 0, 0.8) 30%,
+    rgba(0, 0, 0, 0.2) 70%,
+    transparent 100%
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   CAPA 2: CARACTERES BRILLANTES (HOVER DINÁMICO)
-   ══════════════════════════════════════════════════════════════════════════ */
+/* ── Capa 3: caracteres dinámicos ──────────────────── */
 
 .letters-hover {
-  position: absolute;
-  inset: 0;
-  font-size: 0.72rem;
-  font-family: 'Courier New', 'Lucida Console', monospace;
-  font-weight: 500;
-  line-height: 1.55;
-  letter-spacing: 0.04em;
-  word-break: break-all;
-  overflow: hidden;
-  pointer-events: none;
-  -webkit-font-smoothing: antialiased;
-  user-select: none;
-
   --x: -9999px;
   --y: -9999px;
   color: rgba(190, 220, 255, 0.95);
@@ -112,7 +112,24 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   CONTENEDOR CENTRADO — nombre + flecha
+   VIGNETTE
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(
+    ellipse at center,
+    transparent           30%,
+    rgba(2, 8, 16, 0.50)  72%,
+    rgba(2, 8, 16, 0.82)  100%
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CONTENEDOR CENTRADO — nombre
    ══════════════════════════════════════════════════════════════════════════ */
 
 .intro-center {
@@ -124,14 +141,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
   pointer-events: none;
   user-select: none;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   TÍTULO — texto flotante sin caja
-   ══════════════════════════════════════════════════════════════════════════ */
+.title-wrapper {
+  position: relative;
+}
 
 .intro-title {
   font-size: 3.6rem;
@@ -142,6 +158,7 @@
   white-space: nowrap;
   letter-spacing: -1px;
   font-family: 'Arial Black', 'Inter', sans-serif;
+  position: relative;
   text-shadow:
     0 0 60px rgba(56, 130, 246, 0.7),
     0 0 20px rgba(56, 130, 246, 0.4),
@@ -151,6 +168,10 @@
 /* ── Flecha animada de scroll ────────────────────────────────────────────── */
 
 .scroll-arrow {
+  position: absolute;
+  bottom: 40px; /* Distancia fija desde el borde inferior */
+  left: 50%;
+  z-index: 10;
   display: flex;
   justify-content: center;
   color: rgba(160, 200, 255, 0.7);
@@ -158,13 +179,13 @@
 }
 
 .scroll-arrow svg {
-  width: 28px;
-  height: 28px;
+  width: 40px; /* Aumentado de 28px a 40px */
+  height: 40px;
 }
 
 @keyframes arrow-bounce {
-  0%, 100% { transform: translateY(0);    opacity: 0.7; }
-  50%       { transform: translateY(8px); opacity: 1;   }
+  0%, 100% { transform: translateX(-50%) translateY(0);    opacity: 0.7; }
+  50%       { transform: translateX(-50%) translateY(10px); opacity: 1;   } /* Mantiene el centro en X */
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -176,6 +197,7 @@
 }
 
 @media (max-width: 768px) {
-  .intro-title      { font-size: 2.6rem; }
+  .intro-title   { font-size: 2.6rem; }
   .letters-hover { display: none; }
+  .scroll-arrow  { bottom: 25px; } /* Ajuste proporcional para móviles */
 }
