@@ -64,12 +64,19 @@
 
 .name-letters {
   display: flex;
+  flex-direction: row;
   flex-wrap: nowrap;
   align-items: baseline;
   justify-content: center;
   white-space: nowrap;
   pointer-events: auto;
   cursor: pointer;
+}
+
+.name-line {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
 }
 
 .char-space {
@@ -146,5 +153,17 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
+  .name-letters {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15em;
+  }
+
+  .name-sep { display: none; }
+
+  .char-spacer,
+  .frag-clip,
+  .char-space { font-size: clamp(2rem, 9vw, 3.2rem); }
+
   .scroll-arrow { bottom: 25px; }
 }

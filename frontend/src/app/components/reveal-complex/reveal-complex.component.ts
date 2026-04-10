@@ -25,7 +25,8 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   @Input() imageOpacity  = 1;
   @Input() hoverIntensity = 1;
 
-  readonly nameChars = 'José Miguel Vivas Sánchez'.split('');
+  readonly nameLine1 = 'José Miguel'.split('');
+  readonly nameLine2 = 'Vivas Sánchez'.split('');
 
   // X diagonal split: 4 triangles, apex pushed 8% past center on each side
   // so adjacent edges overlap ~6px along the full diagonal → no visible seam
