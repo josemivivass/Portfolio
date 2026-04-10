@@ -147,22 +147,62 @@
 
 .title-wrapper {
   position: relative;
+  pointer-events: none;
 }
 
-.intro-title {
-  font-size: 3.6rem;
-  font-weight: 900;
-  color: #ffffff;
-  margin: 0;
-  text-align: center;
+.name-letters {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  justify-content: center;
   white-space: nowrap;
-  letter-spacing: -1px;
-  font-family: 'Arial Black', 'Inter', sans-serif;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.char-space {
+  display: inline-block;
+  width: 0.35em;
+  font-size: clamp(1.8rem, 5vw, 4.4rem);
+  font-family: 'Anton', sans-serif;
+}
+
+.char-wrapper {
   position: relative;
+  display: inline-block;
+}
+
+/* invisible spacer — establishes the cell size for the fragments */
+.char-spacer {
+  display: block;
+  font-size: clamp(1.8rem, 5vw, 4.4rem);
+  font-weight: 400;
+  font-family: 'Anton', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  visibility: hidden;
+  white-space: pre;
+}
+
+/* triangular fragment — absolutely covers the spacer cell */
+.char-frag {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.8rem, 5vw, 4.4rem);
+  font-weight: 400;
+  font-family: 'Anton', sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffffff;
+  white-space: pre;
+  will-change: transform, opacity;
   text-shadow:
-    0 0 60px rgba(56, 130, 246, 0.7),
-    0 0 20px rgba(56, 130, 246, 0.4),
-    0 4px 24px rgba(0, 0, 0, 1);
+    0 0 50px rgba(56, 130, 246, 0.75),
+    0 0 18px rgba(56, 130, 246, 0.45),
+    0 3px 20px rgba(0, 0, 0, 1);
 }
 
 /* ── Flecha animada de scroll ────────────────────────────────────────────── */
@@ -192,12 +232,7 @@
    RESPONSIVE
    ══════════════════════════════════════════════════════════════════════════ */
 
-@media (max-width: 1100px) {
-  .intro-title { font-size: 3.5rem; }
-}
-
 @media (max-width: 768px) {
-  .intro-title   { font-size: 2.6rem; }
   .letters-hover { display: none; }
-  .scroll-arrow  { bottom: 25px; } /* Ajuste proporcional para móviles */
+  .scroll-arrow  { bottom: 25px; }
 }

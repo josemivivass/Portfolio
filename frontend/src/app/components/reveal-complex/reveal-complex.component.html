@@ -11,7 +11,20 @@
 
   <div class="intro-center">
     <div class="title-wrapper">
-      <h1 class="intro-title">José Miguel Vivas Sánchez</h1>
+      <div class="name-letters" #nameLetters>
+        @for (char of nameChars; track $index) {
+          @if (char === ' ') {
+            <span class="char-space">&nbsp;</span>
+          } @else {
+            <span class="char-wrapper">
+              <span class="char-spacer" aria-hidden="true">{{ char }}</span>
+              @for (clip of fragClips; track $index) {
+                <span class="char-frag" [style.clipPath]="clip">{{ char }}</span>
+              }
+            </span>
+          }
+        }
+      </div>
     </div>
   </div>
 

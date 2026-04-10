@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
+import { gsap } from 'gsap';
 
 const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -22,10 +23,22 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   @ViewChild('ambientEl',       { static: true }) private ambientEl!:       ElementRef<HTMLDivElement>;
   @ViewChild('centerGlowEl',    { static: true }) private centerGlowEl!:    ElementRef<HTMLDivElement>;
   @ViewChild('hoverEl',         { static: true }) private hoverEl!:         ElementRef<HTMLDivElement>;
+  @ViewChild('nameLetters',     { static: true }) private nameLetters!:     ElementRef<HTMLDivElement>;
 
   @Input() imageOpacity = 1;
   @Input() hoverIntensity = 1;
 
+  readonly nameChars = 'José Miguel Vivas Sánchez'.split('');
+
+  // 4 triangles with apex slightly past center so they overlap and leave no visible seam
+  readonly fragClips = [
+    'polygon(-2% -2%, 102% -2%, 50% 56%)',    // top    — apex pushed below center
+    'polygon(102% -2%, 102% 102%, 44% 50%)',   // right  — apex pushed left of center
+    'polygon(102% 102%, -2% 102%, 50% 44%)',   // bottom — apex pushed above center
+    'polygon(-2% 102%, -2% -2%, 56% 50%)',     // left   — apex pushed right of center
+  ];
+
+  private nameTl: gsap.core.Timeline | null = null;
   private rafId: number | null = null;
   private pendingX = 0;
   private pendingY = 0;
@@ -40,14 +53,54 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    
+
     setTimeout(() => {
       this.fillAmbient();
+      this.initNameAnimation();
     }, 0);
   }
 
   ngOnDestroy(): void {
     if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+    this.nameTl?.kill();
+  }
+
+  private initNameAnimation(): void {
+    const container = this.nameLetters.nativeElement;
+    const frags = Array.from(container.querySelectorAll<HTMLSpanElement>('.char-frag'));
+
+    // Scatter each fragment to an independent random position
+    frags.forEach(el => {
+      gsap.set(el, {
+        x:               this.getRandom(-700, 700),
+        y:               this.getRandom(-450, 450),
+        rotation:        this.getRandom(-720, 720),
+        scale:           0,
+        opacity:         0,
+        transformOrigin: '50% 50%'
+      });
+    });
+
+    this.nameTl = gsap.timeline({ repeat: -1, repeatDelay: 1.8, yoyo: true });
+
+    this.nameTl.to(frags, {
+      x:        0,
+      y:        0,
+      opacity:  1,
+      scale:    1,
+      rotation: 0,
+      ease:     'power4.inOut',
+      duration: 1.2,
+      stagger:  0.018
+    });
+
+    // Hover: slow motion on enter, normal on leave
+    container.addEventListener('mouseenter', () => this.nameTl?.timeScale(0.15));
+    container.addEventListener('mouseleave', () => this.nameTl?.timeScale(1));
+  }
+
+  private getRandom(min: number, max: number): number {
+    return Math.random() * (max - min) + min;
   }
 
   @HostListener('window:resize')
