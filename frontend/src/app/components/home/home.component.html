@@ -62,7 +62,7 @@
       <div class="exp-bg-blob exp-bg-blob--2"></div>
       <div class="exp-bg-blob exp-bg-blob--3"></div>
 
-      <!-- ── PANEL TÍTULO — mismo estilo que resto de secciones ── -->
+      <!-- ── PANEL TÍTULO ── -->
       <div class="exp-title-panel">
         <header class="section-header-cv">
           <h2>{{ i18n.t('exp.title') }}</h2>
@@ -72,136 +72,46 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
           </svg>
-          <span>Desliza</span>
+          <span>{{ i18n.t('exp.scroll_hint') }}</span>
         </div>
       </div>
 
-      <!-- ── Divisor vertical ────────────────── -->
+      <!-- ── Divisor vertical ── -->
       <div class="exp-divider"></div>
 
-      <!-- ── AÑO 2022 ────────────────────────── -->
-      <div class="exp-year-marker">
-        <span class="exp-year-num">2022</span>
-        <div class="exp-year-bar"></div>
-      </div>
+      <!-- ── Cards dinámicas desde la base de datos ── -->
+      <ng-container *ngFor="let exp of experiences; let i = index">
 
-      <!-- ── CARD 1: Camp Counselor (más antigua) ── -->
-      <div class="exp-card exp-card--sm exp-pos--low" #expCard>
-        <div class="exp-bar exp-bar--warm"></div>
-        <div class="exp-card-body">
-          <p class="exp-date">Jun – Ago 2022</p>
-          <h3>{{ i18n.t('exp.4.role') }}</h3>
-          <p class="exp-company">Camp Hilltop · Hancock, Nueva York</p>
-          <p class="exp-desc">{{ i18n.t('exp.4.desc') }}</p>
-          <div class="timeline-tags">
-            <span class="t-tag">Soft Skills</span>
-            <span class="t-tag">English (ESL)</span>
+        <!-- Marcador de año cuando cambia respecto a la entrada anterior -->
+        <div class="exp-year-marker" *ngIf="showYearMarker(i)">
+          <span class="exp-year-num">{{ getYear(exp) }}</span>
+          <div class="exp-year-bar"></div>
+        </div>
+
+        <div [class]="getCardClasses(exp, i)">
+          <div [class]="getBarClass(exp)"></div>
+          <div class="exp-card-body">
+            <p class="exp-date">{{ getDateRange(exp) }}</p>
+            <h3>{{ i18n.lang === 'en' && exp.title_en ? exp.title_en : exp.title }}</h3>
+            <p class="exp-company">{{ getCompanyDisplay(exp) }}</p>
+            <p class="exp-desc">{{ i18n.lang === 'en' && exp.description_en ? exp.description_en : exp.description }}</p>
+            <div class="timeline-tags" *ngIf="exp.tags">
+              <span class="t-tag" *ngFor="let tag of exp.tags.split(',')">{{ tag.trim() }}</span>
+            </div>
           </div>
+          <span class="exp-intern-badge exp-badge--current" *ngIf="!exp.end_date">{{ i18n.t('exp.badge.current') }}</span>
+          <span class="exp-intern-badge" *ngIf="exp.end_date && isInternship(exp)">{{ i18n.t('exp.badge.internship') }}</span>
         </div>
-        <div class="exp-card-emoji">🏕️</div>
-      </div>
 
-      <!-- ── DECO: Localización USA ─────────── -->
-      <div class="exp-deco-block">
-        <div class="exp-deco-location">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#007bff" stroke-width="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-            <circle cx="12" cy="10" r="3"/>
-          </svg>
-          <span>Nueva York, EE.UU.</span>
-        </div>
-        <svg width="60" height="8" viewBox="0 0 60 4" fill="none">
-          <line x1="0" y1="2" x2="60" y2="2" stroke="#dce1e5" stroke-width="2" stroke-dasharray="5 4"/>
-        </svg>
-      </div>
+      </ng-container>
 
-      <!-- ── AÑO 2024 ────────────────────────── -->
-      <div class="exp-year-marker">
-        <span class="exp-year-num">2024</span>
-        <div class="exp-year-bar"></div>
-      </div>
-
-      <!-- ── CARD 2: QA Engineering — Prácticas ── -->
-      <div class="exp-card exp-card--md exp-pos--high" #expCard>
-        <div class="exp-bar exp-bar--blue"></div>
-        <div class="exp-card-body">
-          <p class="exp-date">Mar – Jun 2024</p>
-          <h3>{{ i18n.t('exp.3.role') }}</h3>
-          <p class="exp-company">{{ i18n.t('exp.3.company') }}</p>
-          <p class="exp-desc">{{ i18n.t('exp.3.desc') }}</p>
-          <div class="timeline-tags">
-            <span class="t-tag">LoadRunner</span>
-            <span class="t-tag">JMeter</span>
-            <span class="t-tag">InfluxDB</span>
-            <span class="t-tag">Postman</span>
-          </div>
-        </div>
-        <span class="exp-intern-badge">Prácticas</span>
-      </div>
-
-      <!-- ── DECO: Contratación / ascenso ─────── -->
-      <div class="exp-deco-block exp-deco-promo">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2ecc71" stroke-width="2.5">
-          <polyline points="18 15 12 9 6 15"/>
-        </svg>
-        <span class="exp-deco-label">Contratación</span>
-      </div>
-
-      <!-- ── CARD 3: QA Engineering — Full-time (grande) ── -->
-      <div class="exp-card exp-card--lg exp-pos--mid" #expCard>
-        <div class="exp-bar exp-bar--blue"></div>
-        <div class="exp-card-body">
-          <p class="exp-date">Jul 2024 – Jul 2025</p>
-          <h3>{{ i18n.t('exp.2.role') }}</h3>
-          <p class="exp-company">{{ i18n.t('exp.2.company') }}</p>
-          <p class="exp-desc">{{ i18n.t('exp.2.desc') }}</p>
-          <div class="timeline-tags">
-            <span class="t-tag">SQL</span>
-            <span class="t-tag">REST APIs</span>
-            <span class="t-tag">SoapUI</span>
-            <span class="t-tag">Postman</span>
-            <span class="t-tag">ALM</span>
-            <span class="t-tag">Grafana</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── DECO: Snippet de código + año 2026 ── -->
-      <div class="exp-deco-block exp-deco-code">
-        <div class="exp-code-block">
-          <span><span class="kw">const</span> stack = [</span>
-          <span>&nbsp;&nbsp;<span class="str">'Python'</span>,</span>
-          <span>&nbsp;&nbsp;<span class="str">'React'</span>,</span>
-          <span>&nbsp;&nbsp;<span class="str">'Node.js'</span></span>
-          <span>];</span>
-        </div>
-        <div class="exp-year-pill-mini">2026</div>
-      </div>
-
-      <!-- ── CARD 4: Full Stack Developer (más reciente) ── -->
-      <div class="exp-card exp-card--md exp-pos--low exp-card--current" #expCard>
-        <div class="exp-bar exp-bar--green"></div>
-        <div class="exp-card-body">
-          <p class="exp-date">Mar 2026 – Actualidad</p>
-          <h3>{{ i18n.t('exp.1.role') }}</h3>
-          <p class="exp-company">{{ i18n.t('exp.1.company') }}</p>
-          <p class="exp-desc">{{ i18n.t('exp.1.desc') }}</p>
-          <div class="timeline-tags">
-            <span class="t-tag">Python</span>
-            <span class="t-tag">Node.js</span>
-            <span class="t-tag">React.js</span>
-          </div>
-        </div>
-        <span class="exp-intern-badge exp-badge--current">Actual</span>
-      </div>
-
-      <!-- ── PANEL FINAL ───────────────────────── -->
+      <!-- ── PANEL FINAL ── -->
       <div class="exp-end-panel">
         <div class="exp-end-orbit">
           <div class="exp-end-ring"></div>
           <div class="exp-end-dot"></div>
         </div>
-        <p>En crecimiento continuo</p>
+        <p>{{ i18n.t('exp.growing') }}</p>
       </div>
 
     </div>

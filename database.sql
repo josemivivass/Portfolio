@@ -66,6 +66,8 @@ CREATE TABLE experience (
     description TEXT,
     description_en TEXT,
     location VARCHAR(150),
+    location_en VARCHAR(150),
+    tags VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -83,12 +85,12 @@ INSERT INTO projects (title, title_en, description, description_en, project_date
 ('Dashboard Analítica', 'Analytics Dashboard', 'Panel interactivo', 'Interactive dashboard', '2025-11-10', 'https://github.com/usuario/dashboard', 'https://demo.com', 'https://placehold.co/800x600/EEE/31343C', 'React', TRUE);
 
 INSERT INTO experience 
-(start_date, end_date, title, title_en, company, contract_type, contract_type_en, description, description_en, location) 
+(start_date, end_date, title, title_en, company, contract_type, contract_type_en, description, description_en, location, location_en, tags) 
 VALUES
-('2026-03-01', NULL, 'Desarrollador Full Stack', 'Full Stack Developer', 'Fundación COMPUTAEX', 'Contrato de prácticas', 'Internship', 'Actualización y modernización de una aplicación web full-stack. Desarrollo y mantenimiento del backend utilizando Python. Actualización y desarrollo de la interfaz del frontend utilizando React (en entorno Node.js).', 'Updating and modernizing a full-stack web application. Development and maintenance of the backend using Python. Updating and development of the frontend interface using React (in a Node.js environment).', 'Cáceres, Extremadura, España'),
+('2026-03-01', NULL, 'Desarrollador Full Stack', 'Full Stack Developer', 'Fundación COMPUTAEX', 'Prácticas', 'Internship', 'Actualización y modernización de una aplicación web full-stack. Desarrollo y mantenimiento del backend utilizando Python. Actualización y desarrollo de la interfaz del frontend utilizando React (en entorno Node.js).', 'Updating and modernizing a full-stack web application. Development and maintenance of the backend using Python. Updating and development of the frontend interface using React (in a Node.js environment).', 'Cáceres, Extremadura, España', 'Cáceres, Extremadura, Spain', 'Python, Node.js, React'),
 
-('2024-07-01', '2025-07-01', 'Quality Engineering', 'Quality Engineering', 'VIEWNEXT', 'Jornada completa', 'Full-time', 'Realización de pruebas para la app y API de bancos en el proyecto RSI.', 'Testing for the banking app and API in the RSI project.', 'Cáceres, Extremadura, España'),
+('2024-07-01', '2025-07-01', 'Quality Engineering', 'Quality Engineering', 'VIEWNEXT', 'Jornada completa', 'Full-time', 'Realización de pruebas para la app y API de bancos en el proyecto RSI.', 'Testing for the banking app and API in the RSI project.', 'Cáceres, Extremadura, España', 'Cáceres, Extremadura, Spain', 'SQL, REST APIs'),
 
-('2024-03-01', '2024-06-01', 'Quality Engineering', 'Quality Engineering', 'VIEWNEXT', 'Contrato de prácticas', 'Internship', 'Realización de pruebas de rendimiento para webs.', 'Performance testing for websites.', 'Cáceres, Extremadura, España'),
+('2024-03-01', '2024-06-01', 'Quality Engineering', 'Quality Engineering', 'VIEWNEXT', 'Prácticas', 'Internship', 'Realización de pruebas de rendimiento para webs.', 'Performance testing for websites.', 'Cáceres, Extremadura, España', 'Cáceres, Extremadura, Spain', 'LoadRunner, JMeter'),
 
-('2022-06-01', '2022-08-01', 'Camp Counselor', 'Camp Counselor', 'Camp Hilltop', 'Jornada completa', 'Full-time', 'Organización y supervisión de actividades para niños de 6 a 16 años, como equitación, senderismo y dinámicas grupales.', 'Organization and supervision of activities for children aged 6 to 16, such as horseback riding, hiking, and group dynamics.', 'Hancock, Nueva York, Estados Unidos');
+('2022-06-01', '2022-08-01', 'Camp Counselor', 'Camp Counselor', 'Camp Hilltop', 'Jornada completa', 'Full-time', 'Organización y supervisión de actividades para niños de 6 a 16 años, como equitación, senderismo y dinámicas grupales.', 'Organization and supervision of activities for children aged 6 to 16, such as horseback riding, hiking, and group dynamics.', 'Hancock, Nueva York, Estados Unidos', 'Hancock, New York, United States', 'Soft Skills, ESL');

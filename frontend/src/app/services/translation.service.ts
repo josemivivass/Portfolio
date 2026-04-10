@@ -70,6 +70,10 @@ const ES: Record<string, string> = {
 
   // --- Experience ---
   'exp.title': 'Experiencia',
+  'exp.scroll_hint': 'Desliza',
+  'exp.badge.current': 'Actual',
+  'exp.badge.internship': 'Prácticas',
+  'exp.growing': 'En crecimiento continuo',
   'exp.1.role': 'Desarrollador Full Stack',
   'exp.1.date': 'Mar 2026 - Actualidad',
   'exp.1.company': 'Fundación COMPUTAEX · Contrato de prácticas · Cáceres',
@@ -202,6 +206,10 @@ const EN: Record<string, string> = {
 
   // --- Experience ---
   'exp.title': 'Experience',
+  'exp.scroll_hint': 'Scroll',
+  'exp.badge.current': 'Current',
+  'exp.badge.internship': 'Internship',
+  'exp.growing': 'Continuously growing',
   'exp.1.role': 'Full Stack Developer',
   'exp.1.date': 'Mar 2026 - Present',
   'exp.1.company': 'Fundación COMPUTAEX · Internship · Cáceres',
