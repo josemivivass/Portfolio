@@ -6,10 +6,10 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TranslationService } from '../../services/translation.service';
 import { gsap } from 'gsap';
 
-const CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-const CHAR_W = 6.6;
-const CHAR_H = 16.5;
+const MATRIX_CHARS =
+  'アァイィウヴエエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const FONT_SIZE    = 14;
+const MOUSE_RADIUS = 150;
 
 @Component({
   selector: 'app-reveal-complex',
@@ -19,32 +19,38 @@ const CHAR_H = 16.5;
   styleUrls: ['./reveal-complex.component.css']
 })
 export class RevealComplexComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('staticWrapperEl', { static: true }) private staticWrapperEl!: ElementRef<HTMLDivElement>;
-  @ViewChild('ambientEl',       { static: true }) private ambientEl!:       ElementRef<HTMLDivElement>;
-  @ViewChild('centerGlowEl',    { static: true }) private centerGlowEl!:    ElementRef<HTMLDivElement>;
-  @ViewChild('hoverEl',         { static: true }) private hoverEl!:         ElementRef<HTMLDivElement>;
-  @ViewChild('nameLetters',     { static: true }) private nameLetters!:     ElementRef<HTMLDivElement>;
+  @ViewChild('matrixCanvas', { static: true }) private matrixCanvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('nameLetters',  { static: true }) private nameLetters!:     ElementRef<HTMLDivElement>;
 
-  @Input() imageOpacity = 1;
+  @Input() imageOpacity  = 1;
   @Input() hoverIntensity = 1;
 
   readonly nameChars = 'José Miguel Vivas Sánchez'.split('');
 
-  // 4 triangles with apex slightly past center so they overlap and leave no visible seam
+  // X diagonal split: 4 triangles, apex pushed 8% past center on each side
+  // so adjacent edges overlap ~6px along the full diagonal → no visible seam
   readonly fragClips = [
-    'polygon(-2% -2%, 102% -2%, 50% 56%)',    // top    — apex pushed below center
-    'polygon(102% -2%, 102% 102%, 44% 50%)',   // right  — apex pushed left of center
-    'polygon(102% 102%, -2% 102%, 50% 44%)',   // bottom — apex pushed above center
-    'polygon(-2% 102%, -2% -2%, 56% 50%)',     // left   — apex pushed right of center
+    'polygon(-2% -2%, 102% -2%, 58% 58%)',   // top    (apex pushed down-right)
+    'polygon(102% -2%, 102% 102%, 42% 58%)',  // right  (apex pushed down-left)
+    'polygon(102% 102%, -2% 102%, 42% 42%)',  // bottom (apex pushed up-left)
+    'polygon(-2% 102%, -2% -2%, 58% 42%)',    // left   (apex pushed up-right)
   ];
 
   private nameTl: gsap.core.Timeline | null = null;
-  private rafId: number | null = null;
-  private pendingX = 0;
-  private pendingY = 0;
-  private ambientStr = '';
-  private screenCharCount = 0;
-  private lastTextUpdate = 0;
+  private matrixRafId: number | null = null;
+
+  // Matrix state
+  private ctx!: CanvasRenderingContext2D;
+  private drops:      number[] = [];
+  private offsets:    number[] = []; // horizontal offset only for the head character
+  private offsetVels: number[] = [];
+  // Mouse state
+  private mouseX: number | null = null;
+  private mouseY: number | null = null;
+  private mouseVelX = 0;
+  private mouseVelY = 0;
+  private prevMouseX = 0;
+  private prevMouseY = 0;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -53,23 +59,120 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-
     setTimeout(() => {
-      this.fillAmbient();
+      this.initMatrix();
       this.initNameAnimation();
     }, 0);
   }
 
   ngOnDestroy(): void {
-    if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+    if (this.matrixRafId !== null) clearInterval(-this.matrixRafId);
     this.nameTl?.kill();
   }
 
+  @HostListener('window:resize')
+  onResize(): void {
+    if (isPlatformBrowser(this.platformId)) this.resizeMatrix();
+  }
+
+  @HostListener('window:mousemove', ['$event'])
+  onMouseMove(e: MouseEvent): void {
+    this.mouseVelX = e.clientX - this.prevMouseX;
+    this.mouseVelY = e.clientY - this.prevMouseY;
+    this.prevMouseX = e.clientX;
+    this.prevMouseY = e.clientY;
+    this.mouseX = e.clientX;
+    this.mouseY = e.clientY;
+  }
+
+  @HostListener('window:mouseleave')
+  onMouseLeave(): void {
+    this.mouseX = null;
+    this.mouseY = null;
+    this.mouseVelX = 0;
+    this.mouseVelY = 0;
+    // Snap all columns back immediately — no lingering displacement
+    this.offsets.fill(0);
+    this.offsetVels.fill(0);
+  }
+
+  // ── Matrix ────────────────────────────────────────────────────────────────
+
+  private initMatrix(): void {
+    const canvas = this.matrixCanvasRef.nativeElement;
+    this.ctx = canvas.getContext('2d')!;
+    this.resizeMatrix();
+    // Match original: setInterval at 33 ms
+    const id = window.setInterval(() => this.drawMatrix(), 33);
+    // Store as negative so ngOnDestroy can clear it via cancelAnimationFrame guard
+    this.matrixRafId = -id;
+  }
+
+  private resizeMatrix(): void {
+    const canvas = this.matrixCanvasRef.nativeElement;
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const cols = Math.floor(canvas.width / FONT_SIZE);
+    // Exact first animation: all drops start at 1
+    this.drops      = Array(cols).fill(1);
+    this.offsets    = Array(cols).fill(0);
+    this.offsetVels = Array(cols).fill(0);
+  }
+
+  private drawMatrix(): void {
+    const canvas = this.matrixCanvasRef.nativeElement;
+    const ctx    = this.ctx;
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = `${FONT_SIZE}px monospace`;
+
+    for (let i = 0; i < this.drops.length; i++) {
+      const colX = i * FONT_SIZE;   // natural column position (never changes)
+      const y    = this.drops[i] * FONT_SIZE;
+
+      // Repel only the head character — check distance from head to mouse
+      if (this.mouseX !== null && this.mouseY !== null) {
+        const headX = colX + this.offsets[i];
+        const dx    = headX - this.mouseX;
+        const dy    = y     - this.mouseY;
+        const dist  = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < MOUSE_RADIUS) {
+          const angle = Math.atan2(dy, dx);
+          const force = Math.pow((MOUSE_RADIUS - dist) / MOUSE_RADIUS, 2) * 2;
+          this.offsetVels[i] += Math.cos(angle) * force * 25 + this.mouseVelX * force * 0.2;
+          this.offsetVels[i] += (Math.random() - 0.5) * force * 10;
+        }
+      }
+
+      // Apply offset velocity + friction + spring back to column
+      this.offsets[i]    += this.offsetVels[i];
+      this.offsetVels[i] *= 0.95;
+      this.offsets[i]    += (0 - this.offsets[i]) * 0.05;
+
+      // Draw head at offset position — trail pixels stay in canvas (original behavior)
+      ctx.fillStyle = '#0f0';
+      const text = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+      ctx.fillText(text, colX + this.offsets[i], y);
+
+      // Reset — exactly as first animation
+      if (y > canvas.height && Math.random() > 0.975) {
+        this.drops[i]      = 0;
+        this.offsets[i]    = 0;
+        this.offsetVels[i] = 0;
+      }
+      this.drops[i] += 1;
+    }
+  }
+
+  // ── Name animation ────────────────────────────────────────────────────────
+
   private initNameAnimation(): void {
     const container = this.nameLetters.nativeElement;
-    const frags = Array.from(container.querySelectorAll<HTMLSpanElement>('.char-frag'));
+    const frags = Array.from(container.querySelectorAll<HTMLSpanElement>('.frag-mover'));
 
-    // Scatter each fragment to an independent random position
     frags.forEach(el => {
       gsap.set(el, {
         x:               this.getRandom(-700, 700),
@@ -94,93 +197,11 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
       stagger:  0.018
     });
 
-    // Hover: slow motion on enter, normal on leave
     container.addEventListener('mouseenter', () => this.nameTl?.timeScale(0.15));
     container.addEventListener('mouseleave', () => this.nameTl?.timeScale(1));
   }
 
   private getRandom(min: number, max: number): number {
     return Math.random() * (max - min) + min;
-  }
-
-  @HostListener('window:resize')
-  onResize(): void {
-    if (isPlatformBrowser(this.platformId)) this.fillAmbient();
-  }
-
-  @HostListener('window:mousemove', ['$event'])
-  onMouseMove(e: MouseEvent): void {
-    this.pendingX = e.clientX;
-    this.pendingY = e.clientY;
-
-    if (this.rafId === null) {
-      this.rafId = requestAnimationFrame((timestamp) => this.updateHover(timestamp));
-    }
-  }
-
-  @HostListener('window:mouseleave')
-  onMouseLeave(): void {
-    this.hoverEl.nativeElement.style.opacity = '0';
-    // Mueve el "agujero" invertido fuera de la pantalla
-    this.staticWrapperEl.nativeElement.style.setProperty('--x', '-9999px');
-    this.staticWrapperEl.nativeElement.style.setProperty('--y', '-9999px');
-  }
-
-  private updateHover(timestamp: number): void {
-    this.rafId = null;
-
-    const intensity = Math.max(0, Math.min(1, this.hoverIntensity));
-    const hoverDiv   = this.hoverEl.nativeElement;
-    const staticWrap = this.staticWrapperEl.nativeElement;
-
-    if (intensity <= 0) {
-      hoverDiv.style.opacity = '0';
-      staticWrap.style.setProperty('--x', '-9999px');
-      staticWrap.style.setProperty('--y', '-9999px');
-      return;
-    }
-
-    const rect = hoverDiv.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return;
-
-    const scaleX = window.innerWidth  / rect.width;
-    const scaleY = window.innerHeight / rect.height;
-    const localX = (this.pendingX - rect.left) * scaleX;
-    const localY = (this.pendingY - rect.top)  * scaleY;
-
-    // Actualiza coordenadas del brillo dinámico
-    hoverDiv.style.setProperty('--x', `${localX}px`);
-    hoverDiv.style.setProperty('--y', `${localY}px`);
-    hoverDiv.style.opacity = `${intensity}`;
-
-    // Sincroniza el "agujero" en el contenedor de las capas estáticas
-    staticWrap.style.setProperty('--x', `${localX}px`);
-    staticWrap.style.setProperty('--y', `${localY}px`);
-
-    if (timestamp - this.lastTextUpdate > 80) {
-      hoverDiv.textContent = this.randomStr(this.screenCharCount || 16000);
-      this.lastTextUpdate = timestamp;
-    }
-  }
-
-  private fillAmbient(): void {
-    const cols = Math.ceil(window.innerWidth  / CHAR_W);
-    const rows = Math.ceil(window.innerHeight / CHAR_H) + 3;
-    this.screenCharCount = cols * rows;
-
-    this.ambientStr = this.randomStr(this.screenCharCount * 2);
-    
-    // TODAS las capas reciben exactamente la misma cadena inicial para garantizar alineación
-    this.ambientEl.nativeElement.textContent    = this.ambientStr;
-    this.centerGlowEl.nativeElement.textContent = this.ambientStr;
-    this.hoverEl.nativeElement.textContent      = this.ambientStr;
-  }
-
-  private randomStr(n: number): string {
-    const src = CHARS;
-    const len = src.length;
-    let s = '';
-    for (let i = 0; i < n; i++) s += src[Math.floor(Math.random() * len)];
-    return s;
   }
 }

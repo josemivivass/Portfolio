@@ -43,6 +43,7 @@ export class AppComponent implements OnInit, OnDestroy {
   overlayOpacity = 0;
   disableReveal = false;
   menuTranslateY = 0;
+  introBorderRadius = 0;
 
   // ─── Fade de imágenes y firma ───
   imageOpacity   = 1;    // mantenido por compatibilidad con RevealComplexComponent
@@ -242,7 +243,8 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.introScale      = 1 - (0.55 * phase1);
+    this.introScale        = 1 - (0.55 * phase1);
+    this.introBorderRadius = Math.min(phase1 * 2.5, 1) * 20; // 0px → 20px, reaches max at 40% scroll
     this.overlayOpacity  = Math.min(phase1 * 1.5, 1);
     this.introTranslateY = -(phase2 * 100);
     this.introOpacity    = 1;

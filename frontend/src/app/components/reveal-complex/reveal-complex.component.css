@@ -6,109 +6,21 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  cursor: none;
-  background: radial-gradient(ellipse at 50% 38%, #0c1a36 0%, #060d20 55%, #020810 100%);
+  cursor: default;
+  background: black;
   z-index: 0;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   BASE COMPARTIDA — capas de letras
+   CANVAS MATRIX
    ══════════════════════════════════════════════════════════════════════════ */
 
-.letters-ambient,
-.letters-center-glow,
-.letters-hover {
+.matrix-canvas {
   position: absolute;
   inset: 0;
-  font-size: 0.72rem;
-  font-family: 'Courier New', 'Lucida Console', monospace;
-  font-weight: 500;
-  line-height: 1.55;
-  letter-spacing: 0.04em;
-  word-break: break-all;
-  overflow: hidden;
+  display: block;
+  z-index: 1;
   pointer-events: none;
-  -webkit-font-smoothing: antialiased;
-  user-select: none;
-}
-
-/* ── Envoltorio de capas estáticas ── */
-
-.static-layers {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  --x: -9999px;
-  --y: -9999px;
-  -webkit-mask-image: radial-gradient(
-    20vw circle at var(--x) var(--y),
-    transparent               55%,
-    rgba(0, 0, 0, 0.50)       78%,
-    rgba(0, 0, 0, 0.96)       97%,
-    black                     100%
-  );
-  mask-image: radial-gradient(
-    20vw circle at var(--x) var(--y),
-    transparent               55%,
-    rgba(0, 0, 0, 0.50)       78%,
-    rgba(0, 0, 0, 0.96)       97%,
-    black                     100%
-  );
-}
-
-/* ── Capa 1: textura ambient ───────────────────────── */
-
-.letters-ambient {
-  opacity: 1 !important;
-  color: rgba(130, 185, 255, 0.35);
-  z-index: 1;
-}
-
-/* ── Capa 2: textura central brillante ───────── */
-
-.letters-center-glow {
-  color: rgba(190, 220, 255, 0.95);
-  z-index: 2;
-  -webkit-mask-image: radial-gradient(
-    ellipse 45vw 25vh at 50% 50%,
-    black 0%,
-    rgba(0, 0, 0, 0.8) 30%,
-    rgba(0, 0, 0, 0.2) 70%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    ellipse 45vw 25vh at 50% 50%,
-    black 0%,
-    rgba(0, 0, 0, 0.8) 30%,
-    rgba(0, 0, 0, 0.2) 70%,
-    transparent 100%
-  );
-}
-
-/* ── Capa 3: caracteres dinámicos ──────────────────── */
-
-.letters-hover {
-  --x: -9999px;
-  --y: -9999px;
-  color: rgba(190, 220, 255, 0.95);
-  z-index: 3;
-  opacity: 0;
-  transition: opacity 280ms ease;
-
-  -webkit-mask-image: radial-gradient(
-    20vw circle at var(--x) var(--y),
-    white                     55%,
-    rgba(255, 255, 255, 0.50) 78%,
-    rgba(255, 255, 255, 0.04) 97%,
-    transparent
-  );
-  mask-image: radial-gradient(
-    20vw circle at var(--x) var(--y),
-    white                     55%,
-    rgba(255, 255, 255, 0.50) 78%,
-    rgba(255, 255, 255, 0.04) 97%,
-    transparent
-  );
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -122,9 +34,9 @@
   z-index: 2;
   background: radial-gradient(
     ellipse at center,
-    transparent           30%,
-    rgba(2, 8, 16, 0.50)  72%,
-    rgba(2, 8, 16, 0.82)  100%
+    transparent           25%,
+    rgba(0, 0, 0, 0.55)   70%,
+    rgba(0, 0, 0, 0.88)   100%
   );
 }
 
@@ -162,70 +74,71 @@
 
 .char-space {
   display: inline-block;
-  width: 0.35em;
+  width: 0.3em;
   font-size: clamp(1.8rem, 5vw, 4.4rem);
-  font-family: 'Anton', sans-serif;
+  font-family: 'Playfair Display', serif;
 }
 
 .char-wrapper {
   position: relative;
   display: inline-block;
+  /* glow on wrapper = applied to the composite of both fragments → no seam line */
+  filter: drop-shadow(0 0 14px rgba(56, 246, 100, 0.9));
 }
 
 /* invisible spacer — establishes the cell size for the fragments */
 .char-spacer {
   display: block;
   font-size: clamp(1.8rem, 5vw, 4.4rem);
-  font-weight: 400;
-  font-family: 'Anton', sans-serif;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
   text-transform: uppercase;
   visibility: hidden;
   white-space: pre;
 }
 
-/* triangular fragment — absolutely covers the spacer cell */
-.char-frag {
+/* GSAP target — no filter here, glow comes from .char-wrapper */
+.frag-mover {
+  position: absolute;
+  inset: 0;
+}
+
+/* clipped letter — white text, no extra shadow needed */
+.frag-clip {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: clamp(1.8rem, 5vw, 4.4rem);
-  font-weight: 400;
-  font-family: 'Anton', sans-serif;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
   text-transform: uppercase;
   color: #ffffff;
   white-space: pre;
-  will-change: transform, opacity;
-  text-shadow:
-    0 0 50px rgba(56, 130, 246, 0.75),
-    0 0 18px rgba(56, 130, 246, 0.45),
-    0 3px 20px rgba(0, 0, 0, 1);
 }
 
 /* ── Flecha animada de scroll ────────────────────────────────────────────── */
 
 .scroll-arrow {
   position: absolute;
-  bottom: 40px; /* Distancia fija desde el borde inferior */
+  bottom: 40px;
   left: 50%;
   z-index: 10;
   display: flex;
   justify-content: center;
-  color: rgba(160, 200, 255, 0.7);
+  color: rgba(0, 255, 70, 0.7);
   animation: arrow-bounce 1.8s ease-in-out infinite;
 }
 
 .scroll-arrow svg {
-  width: 40px; /* Aumentado de 28px a 40px */
+  width: 40px;
   height: 40px;
 }
 
 @keyframes arrow-bounce {
   0%, 100% { transform: translateX(-50%) translateY(0);    opacity: 0.7; }
-  50%       { transform: translateX(-50%) translateY(10px); opacity: 1;   } /* Mantiene el centro en X */
+  50%       { transform: translateX(-50%) translateY(10px); opacity: 1;   }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -233,6 +146,5 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
-  .letters-hover { display: none; }
-  .scroll-arrow  { bottom: 25px; }
+  .scroll-arrow { bottom: 25px; }
 }

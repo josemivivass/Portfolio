@@ -13,9 +13,11 @@
 
   <div class="intro-scaling-box"
        [style.transform]="'scale(' + introScale + ')'"
+       [style.borderRadius]="introBorderRadius + 'px'"
        [style.pointer-events]="disableReveal ? 'none' : 'auto'">
 
-    <div class="intro-content-clip">
+    <div class="intro-content-clip"
+         [style.borderRadius]="introBorderRadius + 'px'">
       <div class="dark-tint" [style.opacity]="overlayOpacity"></div>
       <app-reveal-complex
         [imageOpacity]="imageOpacity"

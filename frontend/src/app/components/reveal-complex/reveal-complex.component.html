@@ -1,11 +1,6 @@
 <div class="reveal-container">
 
-  <div class="static-layers" #staticWrapperEl>
-    <div class="letters-ambient" #ambientEl></div>
-    <div class="letters-center-glow" #centerGlowEl></div>
-  </div>
-
-  <div class="letters-hover" #hoverEl></div>
+  <canvas #matrixCanvas class="matrix-canvas"></canvas>
 
   <div class="vignette"></div>
 
@@ -19,7 +14,9 @@
             <span class="char-wrapper">
               <span class="char-spacer" aria-hidden="true">{{ char }}</span>
               @for (clip of fragClips; track $index) {
-                <span class="char-frag" [style.clipPath]="clip">{{ char }}</span>
+                <span class="frag-mover" aria-hidden="true">
+                  <span class="frag-clip" [style.clipPath]="clip">{{ char }}</span>
+                </span>
               }
             </span>
           }
