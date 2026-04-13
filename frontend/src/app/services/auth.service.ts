@@ -4,31 +4,64 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 
+export type UserRole = 'admin' | 'editor' | 'user' | null;
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private apiUrl = 'http://localhost:3000/api';
   private loggedIn = new BehaviorSubject<boolean>(false);
+  private role = new BehaviorSubject<UserRole>(null);
 
   constructor(
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    // Inicializamos el valor revisando el token de forma segura
     this.loggedIn.next(this.hasToken());
+    this.role.next(this.readRoleFromToken());
   }
 
   private hasToken(): boolean {
-    // Comprobamos si estamos en el navegador antes de usar localStorage
     if (isPlatformBrowser(this.platformId)) {
       return !!localStorage.getItem('token');
     }
     return false;
   }
 
+  private readRoleFromToken(): UserRole {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return (payload?.role as UserRole) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   isLoggedIn(): Observable<boolean> {
     return this.loggedIn.asObservable();
+  }
+
+  role$(): Observable<UserRole> {
+    return this.role.asObservable();
+  }
+
+  getRole(): UserRole {
+    return this.role.value;
+  }
+
+  getToken(): string | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    return localStorage.getItem('token');
+  }
+
+  isAdmin(): boolean { return this.role.value === 'admin'; }
+  isEditor(): boolean { return this.role.value === 'editor'; }
+  canAccessAdminPanel(): boolean {
+    return this.role.value === 'admin' || this.role.value === 'editor';
   }
 
   login(credentials: any): Observable<any> {
@@ -41,6 +74,7 @@ export class AuthService {
         if (res && res.token && isPlatformBrowser(this.platformId)) {
           localStorage.setItem('token', res.token);
           this.loggedIn.next(true);
+          this.role.next(this.readRoleFromToken());
         }
       })
     );
@@ -55,6 +89,7 @@ export class AuthService {
       localStorage.removeItem('token');
     }
     this.loggedIn.next(false);
+    this.role.next(null);
   }
 
   private getDeviceInfo() {

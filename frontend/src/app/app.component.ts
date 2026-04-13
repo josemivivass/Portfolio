@@ -12,6 +12,7 @@ import { Hero3dComponent } from './components/hero3d/hero3d.component';
 import { HomeComponent } from './components/home/home.component';
 import { RevealComplexComponent } from './components/reveal-complex/reveal-complex.component';
 import { TranslationService } from './services/translation.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -34,7 +35,9 @@ export class AppComponent implements OnInit, OnDestroy {
   showIntro = true;
 
   isLoggedIn = false;
+  canAccessAdmin = false;
   isHomeRoute = true;
+  isAdminRoute = false;
 
   introScale = 1;
   introTranslateY = 0;
@@ -70,7 +73,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object,
     private router: Router,
-    public i18n: TranslationService
+    public i18n: TranslationService,
+    private auth: AuthService
   ) {
     if (isPlatformBrowser(this.platformId)) {
       gsap.registerPlugin(ScrollTrigger);
@@ -92,6 +96,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const token = localStorage.getItem('token');
     this.isLoggedIn = !!token;
+    this.canAccessAdmin = this.auth.canAccessAdminPanel();
+    this.auth.role$().subscribe(() => {
+      this.canAccessAdmin = this.auth.canAccessAdminPanel();
+      this.cdr.detectChanges();
+    });
 
     this.applyRoute(window.location.pathname);
 
@@ -116,11 +125,15 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private applyRoute(url: string): void {
     this.isHomeRoute = url === '/' || url === '';
+    this.isAdminRoute = url.startsWith('/admin');
 
     if (!this.isHomeRoute) {
       this.showPreloader  = false;
       this.showIntro      = false;
       this.mainTranslateY = 0;
+      if (isPlatformBrowser(this.platformId)) {
+        window.scrollTo(0, 0);
+      }
       return;
     }
 
@@ -376,6 +389,26 @@ export class AppComponent implements OnInit, OnDestroy {
       this.isTransitioning = false;
       this.startVirtualScroll();
     }, 500);
+  }
+
+  enterAdmin(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    sessionStorage.setItem('preAdminState', JSON.stringify({
+      showIntro: this.showIntro,
+      scrollY: window.scrollY
+    }));
+    this.router.navigateByUrl('/admin');
+  }
+
+  exitAdmin(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const saved = sessionStorage.getItem('preAdminState');
+    sessionStorage.removeItem('preAdminState');
+    sessionStorage.setItem('authReturn', '1');
+    if (saved) {
+      sessionStorage.setItem('preAuthState', saved);
+    }
+    window.location.href = '/';
   }
 
   logout(): void {

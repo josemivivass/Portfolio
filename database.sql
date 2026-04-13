@@ -6,6 +6,7 @@ CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'editor', 'user') NOT NULL DEFAULT 'user',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -71,13 +72,20 @@ CREATE TABLE experience (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO users (email, password_hash) VALUES
-('test@portfolio.com', '$2b$10$EjemploHashContrasenaBcrypt123456789012345678901234567');
+INSERT INTO users (email, password_hash, role) VALUES
+('admin@gmail.com', '$2b$10$bNvQXLVcPn/hTOheh1tchOH75oy5w4dzvgJ/lMh2HiysZhBg4cUke', 'admin'),
+('pepepe@gmail.com', '$2b$10$ZBPkPqBb6rSIyGyoOmbcDOVls2o9VtWZlm4i8oGbBfpZZGXk99kQm', 'editor'),
+('popopo@gmail.com', '$2b$10$a/LGkc845utqQOrHq5kV4O.NYFx/RBEnBteVAJ1cYPIwn1/SnqtG2', 'user');
 
 INSERT INTO login_logs (user_id, ip_address, user_agent, language, screen_resolution, time_zone) VALUES
 (1, '192.168.1.34', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 'es-ES', '1920x1080', 'Europe/Madrid'),
 (1, '85.45.22.110', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_3)', 'es-ES', '390x844', 'Europe/Madrid'),
 (1, '192.168.1.34', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 'en-US', '1920x1080', 'Europe/Madrid');
+
+INSERT INTO visitor_logs (visitor_uuid, ip_address, user_agent, is_logged_in) VALUES
+('550e8400-e29b-41d4-a716-446655440000', '192.168.1.50', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36', FALSE),
+('123e4567-e89b-12d3-a456-426614174000', '203.0.113.45', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15', TRUE),
+('987fcdeb-51a2-43d7-9012-345678901234', '2001:0db8:85a3:0000:0000:8a2e:0370:7334', 'Mozilla/5.0 (Linux; Android 13; SM-S918B)', FALSE);
 
 INSERT INTO projects (title, title_en, description, description_en, project_date, repo_url, live_url, image_url, tags, is_featured) VALUES
 ('E-commerce Web', 'E-commerce Web', 'Tienda online', 'Online store', '2025-05-15', 'https://github.com/usuario/ecommerce', 'http://josemivivass.atwebpages.com/login.html', 'https://placehold.co/800x600/EEE/31343C', 'Angular, Node.js', TRUE),
@@ -94,3 +102,8 @@ VALUES
 ('2024-03-01', '2024-06-01', 'Quality Engineering', 'Quality Engineering', 'VIEWNEXT', 'Prácticas', 'Internship', 'Realización de pruebas de rendimiento para webs.', 'Performance testing for websites.', 'Cáceres, Extremadura, España', 'Cáceres, Extremadura, Spain', 'LoadRunner, JMeter'),
 
 ('2022-06-01', '2022-08-01', 'Camp Counselor', 'Camp Counselor', 'Camp Hilltop', 'Jornada completa', 'Full-time', 'Organización y supervisión de actividades para niños de 6 a 16 años, como equitación, senderismo y dinámicas grupales.', 'Organization and supervision of activities for children aged 6 to 16, such as horseback riding, hiking, and group dynamics.', 'Hancock, Nueva York, Estados Unidos', 'Hancock, New York, United States', 'Soft Skills, ESL');
+
+INSERT INTO contact_messages (name, email, message) VALUES
+('Laura Gómez', 'laura.gomez@techrecruiters.es', 'Hola, me ha gustado mucho tu portfolio. ¿Estás abierto a nuevas oportunidades laborales en remoto?'),
+('Carlos Ruiz', 'cruiz90@gmail.com', 'Buenas, necesito un presupuesto para desarrollar un dashboard analítico similar al que tienes en tus proyectos.'),
+('Elena Torres', 'elena.dev@outlook.com', '¡Hola! He visto tu Gestor Kanban y me gustaría saber si el repositorio acepta contribuciones. Saludos.');

@@ -1,0 +1,391 @@
+<div class="admin-shell">
+
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">JM</div>
+      <div class="brand-text">
+        <span class="brand-title">Admin</span>
+        <span class="brand-sub">Portfolio JMVS</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button [class.active]="activeTab === 'dashboard'" (click)="setTab('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Dashboard
+      </button>
+
+      <span class="sidebar-section">Contenido</span>
+      <button [class.active]="activeTab === 'projects'" (click)="setTab('projects')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Proyectos
+      </button>
+      <button [class.active]="activeTab === 'experience'" (click)="setTab('experience')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        Experiencia
+      </button>
+
+      <span class="sidebar-section">Datos</span>
+      <button [class.active]="activeTab === 'visitors'" (click)="setTab('visitors')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Visitas
+      </button>
+      <button [class.active]="activeTab === 'logins'" (click)="setTab('logins')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Inicios sesión
+      </button>
+      <button [class.active]="activeTab === 'messages'" (click)="setTab('messages')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Mensajes
+      </button>
+
+      <ng-container *ngIf="isAdmin">
+        <span class="sidebar-section">Sistema</span>
+        <button [class.active]="activeTab === 'users'" (click)="setTab('users')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Usuarios
+        </button>
+      </ng-container>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">{{ (currentUserEmail || '?').charAt(0).toUpperCase() }}</div>
+      <div class="user-info">
+        <span class="user-email">{{ currentUserEmail || '—' }}</span>
+        <span class="user-role" [class.admin]="isAdmin" [class.editor]="!isAdmin && isEditor">
+          {{ isAdmin ? 'Administrador' : 'Editor' }}
+        </span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ─── -->
+  <main class="admin-main">
+
+    <div *ngIf="initialLoading" class="loading-overlay">
+      <div class="spinner"></div>
+      <p>Cargando panel…</p>
+    </div>
+
+    <div *ngIf="errorMessage && !initialLoading" class="admin-error">{{ errorMessage }}</div>
+
+    <ng-container *ngIf="!initialLoading">
+
+      <!-- ─── DASHBOARD ─── -->
+      <section *ngIf="activeTab === 'dashboard'" class="page">
+        <header class="page-head">
+          <h1>Dashboard</h1>
+          <p class="page-sub">Resumen general de la actividad del portfolio.</p>
+        </header>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-label">Visitas totales</span>
+            <span class="stat-value">{{ totalVisits }}</span>
+            <span class="stat-foot">{{ uniqueVisitors }} únicos</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Inicios de sesión</span>
+            <span class="stat-value">{{ totalLogins }}</span>
+            <span class="stat-foot">acumulado</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Mensajes</span>
+            <span class="stat-value">{{ totalMessages }}</span>
+            <span class="stat-foot">en buzón</span>
+          </div>
+          <div class="stat-card" *ngIf="isAdmin">
+            <span class="stat-label">Usuarios</span>
+            <span class="stat-value">{{ totalUsers }}</span>
+            <span class="stat-foot">registrados</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Proyectos</span>
+            <span class="stat-value">{{ totalProjects }}</span>
+            <span class="stat-foot">publicados</span>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="chart-card">
+            <div class="chart-head">
+              <h3>Visitas — últimos 14 días</h3>
+              <span class="chart-pill">{{ totalVisits }} totales</span>
+            </div>
+            <div class="bar-chart">
+              <div *ngFor="let bar of visitorChart" class="bar-col" [title]="bar.date + ' · ' + bar.value + ' visitas'">
+                <div class="bar bar-blue" [style.height.%]="bar.height"></div>
+                <span class="bar-label">{{ bar.label }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-head">
+              <h3>Inicios de sesión — últimos 14 días</h3>
+              <span class="chart-pill">{{ totalLogins }} totales</span>
+            </div>
+            <div class="bar-chart">
+              <div *ngFor="let bar of loginChart" class="bar-col" [title]="bar.date + ' · ' + bar.value + ' logins'">
+                <div class="bar bar-amber" [style.height.%]="bar.height"></div>
+                <span class="bar-label">{{ bar.label }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── USERS ─── -->
+      <section *ngIf="activeTab === 'users' && isAdmin" class="page">
+        <header class="page-head">
+          <h1>Usuarios</h1>
+          <p class="page-sub">Gestiona los roles de los usuarios registrados.</p>
+        </header>
+        <div class="card">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Email</th><th>Rol</th><th>Creado</th><th>Cambiar rol</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of users">
+                <td>{{ u.id }}</td>
+                <td>{{ u.email }}</td>
+                <td><span class="pill" [class.pill-dark]="u.role==='admin'" [class.pill-amber]="u.role==='editor'">{{ u.role }}</span></td>
+                <td>{{ u.created_at | date:'short' }}</td>
+                <td>
+                  <select [value]="u.role" (change)="changeRole(u, $any($event.target).value)">
+                    <option value="user">user</option>
+                    <option value="editor">editor</option>
+                    <option value="admin">admin</option>
+                  </select>
+                </td>
+              </tr>
+              <tr *ngIf="users.length === 0"><td colspan="5" class="empty">No hay usuarios.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ─── PROJECTS ─── -->
+      <section *ngIf="activeTab === 'projects'" class="page">
+        <header class="page-head">
+          <div>
+            <h1>Proyectos</h1>
+            <p class="page-sub">Crea, edita {{ isAdmin ? 'y elimina' : '' }} los proyectos del portfolio.</p>
+          </div>
+          <button class="btn-primary" (click)="newProject()" *ngIf="!editingProject">+ Nuevo proyecto</button>
+        </header>
+
+        <form *ngIf="editingProject" class="card form-card" (ngSubmit)="saveProject()">
+          <h3>{{ editingProject.id ? 'Editar' : 'Crear' }} proyecto</h3>
+          <div class="grid-2">
+            <label>Título (ES)<input [(ngModel)]="editingProject.title" name="title" required></label>
+            <label>Título (EN)<input [(ngModel)]="editingProject.title_en" name="title_en"></label>
+            <label class="full">Descripción (ES)<textarea [(ngModel)]="editingProject.description" name="description"></textarea></label>
+            <label class="full">Descripción (EN)<textarea [(ngModel)]="editingProject.description_en" name="description_en"></textarea></label>
+            <label>Fecha<input type="date" [(ngModel)]="editingProject.project_date" name="project_date"></label>
+            <label>Tags<input [(ngModel)]="editingProject.tags" name="tags"></label>
+            <label>Repositorio<input [(ngModel)]="editingProject.repo_url" name="repo_url"></label>
+            <label>Demo<input [(ngModel)]="editingProject.live_url" name="live_url"></label>
+            <label class="full">Imagen URL<input [(ngModel)]="editingProject.image_url" name="image_url"></label>
+            <label class="checkbox"><input type="checkbox" [(ngModel)]="editingProject.is_featured" name="is_featured"> Destacado</label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Guardar</button>
+            <button type="button" class="btn-secondary" (click)="cancelProjectEdit()">Cancelar</button>
+          </div>
+        </form>
+
+        <div class="card" *ngIf="!editingProject">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Título</th><th>Fecha</th><th>Tags</th><th>Destacado</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of projects">
+                <td>{{ p.id }}</td>
+                <td>{{ p.title }}</td>
+                <td>{{ p.project_date | date:'mediumDate' }}</td>
+                <td>{{ p.tags }}</td>
+                <td>{{ p.is_featured ? 'Sí' : 'No' }}</td>
+                <td class="actions">
+                  <button class="btn-edit" (click)="editProject(p)">Editar</button>
+                  <button class="btn-delete" *ngIf="isAdmin" (click)="deleteProject(p)">Eliminar</button>
+                </td>
+              </tr>
+              <tr *ngIf="projects.length === 0"><td colspan="6" class="empty">No hay proyectos.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ─── EXPERIENCE ─── -->
+      <section *ngIf="activeTab === 'experience'" class="page">
+        <header class="page-head">
+          <div>
+            <h1>Experiencia</h1>
+            <p class="page-sub">Trayectoria profesional mostrada en el CV.</p>
+          </div>
+          <button class="btn-primary" (click)="newExperience()" *ngIf="!editingExperience">+ Nueva experiencia</button>
+        </header>
+
+        <form *ngIf="editingExperience" class="card form-card" (ngSubmit)="saveExperience()">
+          <h3>{{ editingExperience.id ? 'Editar' : 'Crear' }} experiencia</h3>
+          <div class="grid-2">
+            <label>Inicio<input type="date" [(ngModel)]="editingExperience.start_date" name="start_date" required></label>
+            <label>Fin (vacío = actualidad)<input type="date" [(ngModel)]="editingExperience.end_date" name="end_date"></label>
+            <label>Cargo (ES)<input [(ngModel)]="editingExperience.title" name="title" required></label>
+            <label>Cargo (EN)<input [(ngModel)]="editingExperience.title_en" name="title_en"></label>
+            <label>Empresa<input [(ngModel)]="editingExperience.company" name="company" required></label>
+            <label>Tipo contrato (ES)<input [(ngModel)]="editingExperience.contract_type" name="contract_type"></label>
+            <label>Tipo contrato (EN)<input [(ngModel)]="editingExperience.contract_type_en" name="contract_type_en"></label>
+            <label>Ubicación (ES)<input [(ngModel)]="editingExperience.location" name="location"></label>
+            <label>Ubicación (EN)<input [(ngModel)]="editingExperience.location_en" name="location_en"></label>
+            <label>Tags<input [(ngModel)]="editingExperience.tags" name="tags"></label>
+            <label class="full">Descripción (ES)<textarea [(ngModel)]="editingExperience.description" name="description"></textarea></label>
+            <label class="full">Descripción (EN)<textarea [(ngModel)]="editingExperience.description_en" name="description_en"></textarea></label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Guardar</button>
+            <button type="button" class="btn-secondary" (click)="cancelExperienceEdit()">Cancelar</button>
+          </div>
+        </form>
+
+        <div class="card" *ngIf="!editingExperience">
+          <table class="data-table">
+            <thead>
+              <tr><th>ID</th><th>Cargo</th><th>Empresa</th><th>Inicio</th><th>Fin</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let e of experiences">
+                <td>{{ e.id }}</td>
+                <td>{{ e.title }}</td>
+                <td>{{ e.company }}</td>
+                <td>{{ e.start_date | date:'mediumDate' }}</td>
+                <td>{{ e.end_date ? (e.end_date | date:'mediumDate') : 'Actualidad' }}</td>
+                <td class="actions">
+                  <button class="btn-edit" (click)="editExperience(e)">Editar</button>
+                  <button class="btn-delete" *ngIf="isAdmin" (click)="deleteExperience(e)">Eliminar</button>
+                </td>
+              </tr>
+              <tr *ngIf="experiences.length === 0"><td colspan="6" class="empty">No hay experiencias.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ─── VISITORS ─── -->
+      <section *ngIf="activeTab === 'visitors'" class="page">
+        <header class="page-head">
+          <div>
+            <h1>Visitas</h1>
+            <p class="page-sub">{{ totalVisits }} visitas registradas — {{ uniqueVisitors }} únicas.</p>
+          </div>
+        </header>
+
+        <div class="card chart-card">
+          <div class="chart-head">
+            <h3>Actividad — últimos 14 días</h3>
+          </div>
+          <div class="bar-chart">
+            <div *ngFor="let bar of visitorChart" class="bar-col" [title]="bar.date + ' · ' + bar.value + ' visitas'">
+              <div class="bar bar-blue" [style.height.%]="bar.height"></div>
+              <span class="bar-label">{{ bar.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <table class="data-table">
+            <thead>
+              <tr><th>Fecha</th><th>UUID</th><th>IP</th><th>Navegador</th><th>Logueado</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let v of visitorLogs">
+                <td>{{ v.entry_time | date:'short' }}</td>
+                <td class="mono">{{ v.visitor_uuid?.substring(0, 8) }}…</td>
+                <td>{{ v.ip_address || '—' }}</td>
+                <td>{{ shortUA(v.user_agent) }}</td>
+                <td>{{ v.is_logged_in ? 'Sí' : 'No' }}</td>
+              </tr>
+              <tr *ngIf="visitorLogs.length === 0"><td colspan="5" class="empty">No hay visitas registradas.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ─── LOGINS ─── -->
+      <section *ngIf="activeTab === 'logins'" class="page">
+        <header class="page-head">
+          <div>
+            <h1>Inicios de sesión</h1>
+            <p class="page-sub">{{ totalLogins }} sesiones iniciadas.</p>
+          </div>
+        </header>
+
+        <div class="card chart-card">
+          <div class="chart-head">
+            <h3>Logins — últimos 14 días</h3>
+          </div>
+          <div class="bar-chart">
+            <div *ngFor="let bar of loginChart" class="bar-col" [title]="bar.date + ' · ' + bar.value + ' logins'">
+              <div class="bar bar-amber" [style.height.%]="bar.height"></div>
+              <span class="bar-label">{{ bar.label }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <table class="data-table">
+            <thead>
+              <tr><th>Fecha</th><th>Email</th><th>IP</th><th>Navegador</th><th>Idioma</th><th>Resolución</th><th>Zona</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let l of loginLogs">
+                <td>{{ l.login_time | date:'short' }}</td>
+                <td>{{ l.email || '—' }}</td>
+                <td>{{ l.ip_address || '—' }}</td>
+                <td>{{ shortUA(l.user_agent) }}</td>
+                <td>{{ l.language || '—' }}</td>
+                <td>{{ l.screen_resolution || '—' }}</td>
+                <td>{{ l.time_zone || '—' }}</td>
+              </tr>
+              <tr *ngIf="loginLogs.length === 0"><td colspan="7" class="empty">No hay logins registrados.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ─── MESSAGES ─── -->
+      <section *ngIf="activeTab === 'messages'" class="page">
+        <header class="page-head">
+          <div>
+            <h1>Buzón de mensajes</h1>
+            <p class="page-sub">{{ totalMessages }} mensajes recibidos a través del formulario de contacto.</p>
+          </div>
+        </header>
+
+        <div class="messages-list">
+          <article class="message-card" *ngFor="let m of messages">
+            <header class="message-head">
+              <div>
+                <strong>{{ m.name }}</strong>
+                <a [href]="'mailto:' + m.email">{{ m.email }}</a>
+              </div>
+              <div class="message-meta">
+                <time>{{ m.created_at | date:'medium' }}</time>
+                <button *ngIf="isAdmin" class="btn-delete" (click)="deleteMessage(m)">Eliminar</button>
+              </div>
+            </header>
+            <p class="message-body">{{ m.message }}</p>
+          </article>
+          <div class="empty-state" *ngIf="messages.length === 0">
+            <p>El buzón está vacío.</p>
+          </div>
+        </div>
+      </section>
+
+    </ng-container>
+  </main>
+</div>

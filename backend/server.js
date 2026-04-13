@@ -7,6 +7,7 @@ const trackingRoutes = require('./src/routes/tracking.routes');
 const projectRoutes = require('./src/routes/project.routes');
 const contactRoutes = require('./src/routes/contact.routes');
 const experienceRoutes = require('./src/routes/experience.routes');
+const adminRoutes = require('./src/routes/admin.routes');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use('/api/tracking', trackingRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/experience', experienceRoutes);
+app.use('/api/admin', adminRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

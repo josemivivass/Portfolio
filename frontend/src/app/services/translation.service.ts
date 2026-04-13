@@ -48,6 +48,7 @@ const ES: Record<string, string> = {
   'nav.logout': 'CERRAR SESIÓN',
   'nav.login': 'INICIAR SESIÓN',
   'nav.register': 'REGISTRARSE',
+  'nav.admin': 'PANEL ADMIN',
   'nav.lang': 'EN',
 
   // --- Hero ---
@@ -184,6 +185,7 @@ const EN: Record<string, string> = {
   'nav.logout': 'LOG OUT',
   'nav.login': 'LOG IN',
   'nav.register': 'SIGN UP',
+  'nav.admin': 'ADMIN PANEL',
   'nav.lang': 'ES',
 
   // --- Hero ---

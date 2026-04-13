@@ -303,3 +303,39 @@
   .side-menu { display: none; }
   .main-content { padding-left: 20px; padding-right: 20px; }
 }
+
+/* ─── Admin route: back arrow + full-width content ─── */
+.admin-back-arrow {
+  position: fixed;
+  top: 28px;
+  left: 32px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-radius: 50%;
+  color: #1a1a1a;
+  text-decoration: none;
+  z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.admin-back-arrow svg {
+  width: 22px;
+  height: 22px;
+}
+.admin-back-arrow:hover {
+  transform: translateX(-3px);
+  background: #1a1a1a;
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+}
+
+.main-app-container.is-admin-route .main-content {
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
