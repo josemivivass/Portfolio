@@ -13,6 +13,7 @@ import { HomeComponent } from './components/home/home.component';
 import { RevealComplexComponent } from './components/reveal-complex/reveal-complex.component';
 import { TranslationService } from './services/translation.service';
 import { AuthService } from './services/auth.service';
+import { TrackingService } from './services/tracking.service';
 
 @Component({
   selector: 'app-root',
@@ -74,7 +75,8 @@ export class AppComponent implements OnInit, OnDestroy {
     @Inject(PLATFORM_ID) private platformId: Object,
     private router: Router,
     public i18n: TranslationService,
-    private auth: AuthService
+    private auth: AuthService,
+    private tracking: TrackingService
   ) {
     if (isPlatformBrowser(this.platformId)) {
       gsap.registerPlugin(ScrollTrigger);
@@ -97,6 +99,8 @@ export class AppComponent implements OnInit, OnDestroy {
     const token = localStorage.getItem('token');
     this.isLoggedIn = !!token;
     this.canAccessAdmin = this.auth.canAccessAdminPanel();
+
+    this.tracking.logEntry();
     this.auth.role$().subscribe(() => {
       this.canAccessAdmin = this.auth.canAccessAdminPanel();
       this.cdr.detectChanges();

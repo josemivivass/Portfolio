@@ -27,9 +27,15 @@ export class TranslationService {
     }
   }
 
-  t(key: string): string {
+  t(key: string, params?: Record<string, string | number>): string {
     const dict = this.lang === 'es' ? ES : EN;
-    return (dict as any)[key] ?? key;
+    let value = (dict as any)[key] ?? key;
+    if (params) {
+      for (const k of Object.keys(params)) {
+        value = value.replace(new RegExp(`\\{${k}\\}`, 'g'), String(params[k]));
+      }
+    }
+    return value;
   }
 }
 
@@ -172,6 +178,171 @@ const ES: Record<string, string> = {
   'register.login': 'Iniciar sesión',
   'register.password.placeholder': 'Min. 6 caracteres',
   'register.error': 'Error en el registro. El email podria estar en uso.',
+
+  // --- Admin ---
+  'admin.brand.title': 'Admin',
+  'admin.brand.sub': 'Portfolio JMVS',
+  'admin.role.administrator': 'Administrador',
+  'admin.role.editor': 'Editor',
+  'admin.loading': 'Cargando datos…',
+
+  // Sidebar sections
+  'admin.section.content': 'Contenido',
+  'admin.section.data': 'Datos',
+  'admin.section.system': 'Sistema',
+
+  // Tabs
+  'admin.tab.dashboard': 'Dashboard',
+  'admin.tab.projects': 'Proyectos',
+  'admin.tab.experience': 'Experiencia',
+  'admin.tab.visitors': 'Visitas',
+  'admin.tab.logins': 'Inicios de sesión',
+  'admin.tab.messages': 'Mensajes',
+  'admin.tab.users': 'Usuarios',
+
+  // Dashboard
+  'admin.dashboard.title': 'Dashboard',
+  'admin.dashboard.sub': 'Resumen general de la actividad del portfolio.',
+  'admin.stat.visits': 'Visitas totales',
+  'admin.stat.visits.foot': '{n} únicos',
+  'admin.stat.logins': 'Inicios de sesión',
+  'admin.stat.logins.foot': 'acumulado',
+  'admin.stat.messages': 'Mensajes',
+  'admin.stat.messages.foot': 'en buzón',
+  'admin.stat.users': 'Usuarios',
+  'admin.stat.users.foot': 'registrados',
+  'admin.stat.projects': 'Proyectos',
+  'admin.stat.projects.foot': 'publicados',
+  'admin.chart.visits.title': 'Visitas — últimos 14 días',
+  'admin.chart.visits.pill': '{n} totales',
+  'admin.chart.logins.title': 'Inicios de sesión — últimos 14 días',
+  'admin.chart.logins.pill': '{n} totales',
+  'admin.chart.activity.title': 'Actividad — últimos 14 días',
+  'admin.chart.logins14.title': 'Logins — últimos 14 días',
+
+  // Users
+  'admin.users.title': 'Usuarios',
+  'admin.users.sub': 'Gestiona los usuarios registrados.',
+  'admin.users.col.id': 'ID',
+  'admin.users.col.email': 'Email',
+  'admin.users.col.role': 'Rol',
+  'admin.users.col.created': 'Creado',
+  'admin.users.col.actions': 'Acciones',
+  'admin.users.empty': 'No hay usuarios.',
+  'admin.users.edit.title': 'Editar usuario',
+  'admin.users.field.email': 'Email',
+  'admin.users.field.role': 'Rol',
+
+  // Projects
+  'admin.projects.title': 'Proyectos',
+  'admin.projects.sub.full': 'Crea, edita y elimina los proyectos del portfolio.',
+  'admin.projects.sub.editor': 'Crea, edita los proyectos del portfolio.',
+  'admin.projects.new': '+ Nuevo proyecto',
+  'admin.projects.col.id': 'ID',
+  'admin.projects.col.title': 'Título',
+  'admin.projects.col.date': 'Fecha',
+  'admin.projects.col.tags': 'Tags',
+  'admin.projects.col.featured': 'Destacado',
+  'admin.projects.col.actions': 'Acciones',
+  'admin.projects.empty': 'No hay proyectos.',
+  'admin.projects.yes': 'Sí',
+  'admin.projects.no': 'No',
+  'admin.projects.edit.title': 'Editar proyecto',
+  'admin.projects.create.title': 'Crear proyecto',
+  'admin.projects.field.title.es': 'Título (ES)',
+  'admin.projects.field.title.en': 'Título (EN)',
+  'admin.projects.field.desc.es': 'Descripción (ES)',
+  'admin.projects.field.desc.en': 'Descripción (EN)',
+  'admin.projects.field.date': 'Fecha',
+  'admin.projects.field.tags': 'Tags',
+  'admin.projects.field.repo': 'Repositorio',
+  'admin.projects.field.demo': 'Demo',
+  'admin.projects.field.image': 'Imagen URL',
+  'admin.projects.field.featured': 'Destacado',
+
+  // Experience
+  'admin.experience.title': 'Experiencia',
+  'admin.experience.sub': 'Trayectoria profesional mostrada en el CV.',
+  'admin.experience.new': '+ Nueva experiencia',
+  'admin.experience.col.id': 'ID',
+  'admin.experience.col.role': 'Cargo',
+  'admin.experience.col.company': 'Empresa',
+  'admin.experience.col.start': 'Inicio',
+  'admin.experience.col.end': 'Fin',
+  'admin.experience.col.actions': 'Acciones',
+  'admin.experience.empty': 'No hay experiencias.',
+  'admin.experience.current': 'Actualidad',
+  'admin.experience.edit.title': 'Editar experiencia',
+  'admin.experience.create.title': 'Crear experiencia',
+  'admin.experience.field.start': 'Inicio',
+  'admin.experience.field.end': 'Fin (vacío = actualidad)',
+  'admin.experience.field.company': 'Empresa',
+  'admin.experience.field.role.es': 'Cargo (ES)',
+  'admin.experience.field.role.en': 'Cargo (EN)',
+  'admin.experience.field.contract.es': 'Tipo contrato (ES)',
+  'admin.experience.field.contract.en': 'Tipo contrato (EN)',
+  'admin.experience.field.location.es': 'Ubicación (ES)',
+  'admin.experience.field.location.en': 'Ubicación (EN)',
+  'admin.experience.field.desc.es': 'Descripción (ES)',
+  'admin.experience.field.desc.en': 'Descripción (EN)',
+  'admin.experience.field.tags': 'Tags',
+
+  // Visitors
+  'admin.visitors.title': 'Visitas',
+  'admin.visitors.sub': '{total} visitas registradas — {unique} únicas.',
+  'admin.visitors.col.date': 'Fecha',
+  'admin.visitors.col.uuid': 'UUID',
+  'admin.visitors.col.ip': 'IP',
+  'admin.visitors.col.browser': 'Navegador',
+  'admin.visitors.col.logged': 'Logueado',
+  'admin.visitors.empty': 'No hay visitas registradas.',
+
+  // Logins
+  'admin.logins.title': 'Inicios de sesión',
+  'admin.logins.sub': '{n} sesiones iniciadas.',
+  'admin.logins.col.date': 'Fecha',
+  'admin.logins.col.email': 'Email',
+  'admin.logins.col.ip': 'IP',
+  'admin.logins.col.browser': 'Navegador',
+  'admin.logins.col.lang': 'Idioma',
+  'admin.logins.col.resolution': 'Resolución',
+  'admin.logins.col.zone': 'Zona',
+  'admin.logins.empty': 'No hay logins registrados.',
+
+  // Messages
+  'admin.messages.title': 'Buzón de mensajes',
+  'admin.messages.sub': '{n} mensajes recibidos a través del formulario de contacto.',
+  'admin.messages.empty': 'El buzón está vacío.',
+
+  // Modal actions
+  'admin.action.save': 'Guardar',
+  'admin.action.cancel': 'Cancelar',
+  'admin.action.edit': 'Editar',
+  'admin.action.delete': 'Eliminar',
+  'admin.action.close': 'Cerrar',
+
+  // Confirmations
+  'admin.confirm.user.title': 'Eliminar usuario',
+  'admin.confirm.user.msg': '¿Seguro que quieres eliminar al usuario "{name}"? Esta acción no se puede deshacer.',
+  'admin.confirm.project.title': 'Eliminar proyecto',
+  'admin.confirm.project.msg': '¿Seguro que quieres eliminar el proyecto "{name}"? Esta acción no se puede deshacer.',
+  'admin.confirm.experience.title': 'Eliminar experiencia',
+  'admin.confirm.experience.msg': '¿Seguro que quieres eliminar la experiencia "{name}"? Esta acción no se puede deshacer.',
+  'admin.confirm.message.title': 'Eliminar mensaje',
+  'admin.confirm.message.msg': '¿Seguro que quieres eliminar el mensaje de "{name}"? Esta acción no se puede deshacer.',
+
+  // Errors / alerts
+  'admin.error.role': 'No se pudo actualizar el rol',
+  'admin.error.self.delete': 'No puedes eliminar tu propia cuenta',
+  'admin.error.user.update': 'No se pudo actualizar el usuario',
+  'admin.error.user.delete': 'No se pudo eliminar el usuario',
+  'admin.error.project.save': 'Error al guardar proyecto',
+  'admin.error.project.create': 'Error al crear proyecto',
+  'admin.error.project.delete': 'Error al eliminar proyecto',
+  'admin.error.experience.save': 'Error al guardar experiencia',
+  'admin.error.experience.create': 'Error al crear experiencia',
+  'admin.error.experience.delete': 'Error al eliminar experiencia',
+  'admin.error.message.delete': 'Error al eliminar mensaje',
 };
 
 const EN: Record<string, string> = {
@@ -309,4 +480,169 @@ const EN: Record<string, string> = {
   'register.login': 'Log in',
   'register.password.placeholder': 'Min. 6 characters',
   'register.error': 'Registration error. The email might already be in use.',
+
+  // --- Admin ---
+  'admin.brand.title': 'Admin',
+  'admin.brand.sub': 'Portfolio JMVS',
+  'admin.role.administrator': 'Administrator',
+  'admin.role.editor': 'Editor',
+  'admin.loading': 'Loading data…',
+
+  // Sidebar sections
+  'admin.section.content': 'Content',
+  'admin.section.data': 'Data',
+  'admin.section.system': 'System',
+
+  // Tabs
+  'admin.tab.dashboard': 'Dashboard',
+  'admin.tab.projects': 'Projects',
+  'admin.tab.experience': 'Experience',
+  'admin.tab.visitors': 'Visits',
+  'admin.tab.logins': 'Logins',
+  'admin.tab.messages': 'Messages',
+  'admin.tab.users': 'Users',
+
+  // Dashboard
+  'admin.dashboard.title': 'Dashboard',
+  'admin.dashboard.sub': 'General overview of portfolio activity.',
+  'admin.stat.visits': 'Total visits',
+  'admin.stat.visits.foot': '{n} unique',
+  'admin.stat.logins': 'Logins',
+  'admin.stat.logins.foot': 'accumulated',
+  'admin.stat.messages': 'Messages',
+  'admin.stat.messages.foot': 'in inbox',
+  'admin.stat.users': 'Users',
+  'admin.stat.users.foot': 'registered',
+  'admin.stat.projects': 'Projects',
+  'admin.stat.projects.foot': 'published',
+  'admin.chart.visits.title': 'Visits — last 14 days',
+  'admin.chart.visits.pill': '{n} total',
+  'admin.chart.logins.title': 'Logins — last 14 days',
+  'admin.chart.logins.pill': '{n} total',
+  'admin.chart.activity.title': 'Activity — last 14 days',
+  'admin.chart.logins14.title': 'Logins — last 14 days',
+
+  // Users
+  'admin.users.title': 'Users',
+  'admin.users.sub': 'Manage registered users.',
+  'admin.users.col.id': 'ID',
+  'admin.users.col.email': 'Email',
+  'admin.users.col.role': 'Role',
+  'admin.users.col.created': 'Created',
+  'admin.users.col.actions': 'Actions',
+  'admin.users.empty': 'No users.',
+  'admin.users.edit.title': 'Edit user',
+  'admin.users.field.email': 'Email',
+  'admin.users.field.role': 'Role',
+
+  // Projects
+  'admin.projects.title': 'Projects',
+  'admin.projects.sub.full': 'Create, edit and delete portfolio projects.',
+  'admin.projects.sub.editor': 'Create and edit portfolio projects.',
+  'admin.projects.new': '+ New project',
+  'admin.projects.col.id': 'ID',
+  'admin.projects.col.title': 'Title',
+  'admin.projects.col.date': 'Date',
+  'admin.projects.col.tags': 'Tags',
+  'admin.projects.col.featured': 'Featured',
+  'admin.projects.col.actions': 'Actions',
+  'admin.projects.empty': 'No projects.',
+  'admin.projects.yes': 'Yes',
+  'admin.projects.no': 'No',
+  'admin.projects.edit.title': 'Edit project',
+  'admin.projects.create.title': 'Create project',
+  'admin.projects.field.title.es': 'Title (ES)',
+  'admin.projects.field.title.en': 'Title (EN)',
+  'admin.projects.field.desc.es': 'Description (ES)',
+  'admin.projects.field.desc.en': 'Description (EN)',
+  'admin.projects.field.date': 'Date',
+  'admin.projects.field.tags': 'Tags',
+  'admin.projects.field.repo': 'Repository',
+  'admin.projects.field.demo': 'Demo',
+  'admin.projects.field.image': 'Image URL',
+  'admin.projects.field.featured': 'Featured',
+
+  // Experience
+  'admin.experience.title': 'Experience',
+  'admin.experience.sub': 'Professional experience shown in the CV.',
+  'admin.experience.new': '+ New experience',
+  'admin.experience.col.id': 'ID',
+  'admin.experience.col.role': 'Role',
+  'admin.experience.col.company': 'Company',
+  'admin.experience.col.start': 'Start',
+  'admin.experience.col.end': 'End',
+  'admin.experience.col.actions': 'Actions',
+  'admin.experience.empty': 'No experiences.',
+  'admin.experience.current': 'Present',
+  'admin.experience.edit.title': 'Edit experience',
+  'admin.experience.create.title': 'Create experience',
+  'admin.experience.field.start': 'Start',
+  'admin.experience.field.end': 'End (empty = present)',
+  'admin.experience.field.company': 'Company',
+  'admin.experience.field.role.es': 'Role (ES)',
+  'admin.experience.field.role.en': 'Role (EN)',
+  'admin.experience.field.contract.es': 'Contract type (ES)',
+  'admin.experience.field.contract.en': 'Contract type (EN)',
+  'admin.experience.field.location.es': 'Location (ES)',
+  'admin.experience.field.location.en': 'Location (EN)',
+  'admin.experience.field.desc.es': 'Description (ES)',
+  'admin.experience.field.desc.en': 'Description (EN)',
+  'admin.experience.field.tags': 'Tags',
+
+  // Visitors
+  'admin.visitors.title': 'Visits',
+  'admin.visitors.sub': '{total} visits recorded — {unique} unique.',
+  'admin.visitors.col.date': 'Date',
+  'admin.visitors.col.uuid': 'UUID',
+  'admin.visitors.col.ip': 'IP',
+  'admin.visitors.col.browser': 'Browser',
+  'admin.visitors.col.logged': 'Logged in',
+  'admin.visitors.empty': 'No visits recorded.',
+
+  // Logins
+  'admin.logins.title': 'Logins',
+  'admin.logins.sub': '{n} sessions started.',
+  'admin.logins.col.date': 'Date',
+  'admin.logins.col.email': 'Email',
+  'admin.logins.col.ip': 'IP',
+  'admin.logins.col.browser': 'Browser',
+  'admin.logins.col.lang': 'Language',
+  'admin.logins.col.resolution': 'Resolution',
+  'admin.logins.col.zone': 'Zone',
+  'admin.logins.empty': 'No logins recorded.',
+
+  // Messages
+  'admin.messages.title': 'Inbox',
+  'admin.messages.sub': '{n} messages received through the contact form.',
+  'admin.messages.empty': 'The inbox is empty.',
+
+  // Modal actions
+  'admin.action.save': 'Save',
+  'admin.action.cancel': 'Cancel',
+  'admin.action.edit': 'Edit',
+  'admin.action.delete': 'Delete',
+  'admin.action.close': 'Close',
+
+  // Confirmations
+  'admin.confirm.user.title': 'Delete user',
+  'admin.confirm.user.msg': 'Are you sure you want to delete the user "{name}"? This action cannot be undone.',
+  'admin.confirm.project.title': 'Delete project',
+  'admin.confirm.project.msg': 'Are you sure you want to delete the project "{name}"? This action cannot be undone.',
+  'admin.confirm.experience.title': 'Delete experience',
+  'admin.confirm.experience.msg': 'Are you sure you want to delete the experience "{name}"? This action cannot be undone.',
+  'admin.confirm.message.title': 'Delete message',
+  'admin.confirm.message.msg': 'Are you sure you want to delete the message from "{name}"? This action cannot be undone.',
+
+  // Errors / alerts
+  'admin.error.role': 'Could not update the role',
+  'admin.error.self.delete': 'You cannot delete your own account',
+  'admin.error.user.update': 'Could not update the user',
+  'admin.error.user.delete': 'Could not delete the user',
+  'admin.error.project.save': 'Error saving project',
+  'admin.error.project.create': 'Error creating project',
+  'admin.error.project.delete': 'Error deleting project',
+  'admin.error.experience.save': 'Error saving experience',
+  'admin.error.experience.create': 'Error creating experience',
+  'admin.error.experience.delete': 'Error deleting experience',
+  'admin.error.message.delete': 'Error deleting message',
 };

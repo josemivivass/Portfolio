@@ -51,6 +51,7 @@ CREATE TABLE contact_messages (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
     message TEXT NOT NULL,
+    is_answered BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -73,7 +74,7 @@ CREATE TABLE experience (
 );
 
 INSERT INTO users (email, password_hash, role) VALUES
-('admin@gmail.com', '$2b$10$bNvQXLVcPn/hTOheh1tchOH75oy5w4dzvgJ/lMh2HiysZhBg4cUke', 'admin'),
+('admin@gmail.com', '$2b$10$4CdvJxThn2PR0wEeo71kkOx8vzvREb8uUv80tnLpHnOq5t2yXrsE2', 'admin'),
 ('pepepe@gmail.com', '$2b$10$ZBPkPqBb6rSIyGyoOmbcDOVls2o9VtWZlm4i8oGbBfpZZGXk99kQm', 'editor'),
 ('popopo@gmail.com', '$2b$10$a/LGkc845utqQOrHq5kV4O.NYFx/RBEnBteVAJ1cYPIwn1/SnqtG2', 'user');
 

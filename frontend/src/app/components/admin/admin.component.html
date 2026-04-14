@@ -5,46 +5,46 @@
     <div class="sidebar-brand">
       <div class="brand-mark">JM</div>
       <div class="brand-text">
-        <span class="brand-title">Admin</span>
-        <span class="brand-sub">Portfolio JMVS</span>
+        <span class="brand-title">{{ i18n.t('admin.brand.title') }}</span>
+        <span class="brand-sub">{{ i18n.t('admin.brand.sub') }}</span>
       </div>
     </div>
 
     <nav class="sidebar-nav">
       <button [class.active]="activeTab === 'dashboard'" (click)="setTab('dashboard')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-        Dashboard
+        {{ i18n.t('admin.tab.dashboard') }}
       </button>
 
-      <span class="sidebar-section">Contenido</span>
+      <span class="sidebar-section">{{ i18n.t('admin.section.content') }}</span>
       <button [class.active]="activeTab === 'projects'" (click)="setTab('projects')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        Proyectos
+        {{ i18n.t('admin.tab.projects') }}
       </button>
       <button [class.active]="activeTab === 'experience'" (click)="setTab('experience')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        Experiencia
+        {{ i18n.t('admin.tab.experience') }}
       </button>
 
-      <span class="sidebar-section">Datos</span>
+      <span class="sidebar-section">{{ i18n.t('admin.section.data') }}</span>
       <button [class.active]="activeTab === 'visitors'" (click)="setTab('visitors')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        Visitas
+        {{ i18n.t('admin.tab.visitors') }}
       </button>
       <button [class.active]="activeTab === 'logins'" (click)="setTab('logins')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-        Inicios sesión
+        {{ i18n.t('admin.tab.logins') }}
       </button>
       <button [class.active]="activeTab === 'messages'" (click)="setTab('messages')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Mensajes
+        {{ i18n.t('admin.tab.messages') }}
       </button>
 
       <ng-container *ngIf="isAdmin || isEditor">
-        <span class="sidebar-section">Sistema</span>
+        <span class="sidebar-section">{{ i18n.t('admin.section.system') }}</span>
         <button [class.active]="activeTab === 'users'" (click)="setTab('users')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Usuarios
+          {{ i18n.t('admin.tab.users') }}
         </button>
       </ng-container>
     </nav>
@@ -54,7 +54,7 @@
       <div class="user-info">
         <span class="user-email">{{ currentUserEmail || '—' }}</span>
         <span class="user-role" [class.admin]="isAdmin" [class.editor]="!isAdmin && isEditor">
-          {{ isAdmin ? 'Administrador' : 'Editor' }}
+          {{ isAdmin ? i18n.t('admin.role.administrator') : i18n.t('admin.role.editor') }}
         </span>
       </div>
     </div>
@@ -65,7 +65,7 @@
 
     <div *ngIf="initialLoading" class="loading-pill">
       <div class="spinner spinner-sm"></div>
-      <span>Cargando datos…</span>
+      <span>{{ i18n.t('admin.loading') }}</span>
     </div>
 
     <div *ngIf="errorMessage" class="admin-error">{{ errorMessage }}</div>
@@ -75,63 +75,159 @@
       <!-- ─── DASHBOARD ─── -->
       <section *ngIf="activeTab === 'dashboard'" class="page">
         <header class="page-head">
-          <h1>Dashboard</h1>
-          <p class="page-sub">Resumen general de la actividad del portfolio.</p>
+          <h1>{{ i18n.t('admin.dashboard.title') }}</h1>
+          <p class="page-sub">{{ i18n.t('admin.dashboard.sub') }}</p>
         </header>
 
         <div class="stats-grid">
           <div class="stat-card">
-            <span class="stat-label">Visitas totales</span>
+            <span class="stat-label">{{ i18n.t('admin.stat.visits') }}</span>
             <span class="stat-value">{{ totalVisits }}</span>
-            <span class="stat-foot">{{ uniqueVisitors }} únicos</span>
+            <span class="stat-foot">{{ i18n.t('admin.stat.visits.foot', { n: uniqueVisitors }) }}</span>
           </div>
           <div class="stat-card">
-            <span class="stat-label">Inicios de sesión</span>
+            <span class="stat-label">{{ i18n.t('admin.stat.logins') }}</span>
             <span class="stat-value">{{ totalLogins }}</span>
-            <span class="stat-foot">acumulado</span>
+            <span class="stat-foot">{{ i18n.t('admin.stat.logins.foot') }}</span>
           </div>
           <div class="stat-card">
-            <span class="stat-label">Mensajes</span>
+            <span class="stat-label">{{ i18n.t('admin.stat.messages') }}</span>
             <span class="stat-value">{{ totalMessages }}</span>
-            <span class="stat-foot">en buzón</span>
+            <span class="stat-foot">{{ i18n.t('admin.stat.messages.foot') }}</span>
           </div>
           <div class="stat-card" *ngIf="isAdmin">
-            <span class="stat-label">Usuarios</span>
+            <span class="stat-label">{{ i18n.t('admin.stat.users') }}</span>
             <span class="stat-value">{{ totalUsers }}</span>
-            <span class="stat-foot">registrados</span>
+            <span class="stat-foot">{{ i18n.t('admin.stat.users.foot') }}</span>
           </div>
           <div class="stat-card">
-            <span class="stat-label">Proyectos</span>
+            <span class="stat-label">{{ i18n.t('admin.stat.projects') }}</span>
             <span class="stat-value">{{ totalProjects }}</span>
-            <span class="stat-foot">publicados</span>
+            <span class="stat-foot">{{ i18n.t('admin.stat.projects.foot') }}</span>
           </div>
         </div>
 
-        <div class="chart-grid">
-          <div class="chart-card">
-            <div class="chart-head">
-              <h3>Visitas — últimos 14 días</h3>
-              <span class="chart-pill">{{ totalVisits }} totales</span>
-            </div>
-            <div class="bar-chart">
-              <div *ngFor="let bar of visitorChart" class="bar-col" [title]="bar.date + ' · ' + bar.value + ' visitas'">
-                <div class="bar bar-blue" [style.height.%]="bar.height"></div>
-                <span class="bar-label">{{ bar.label }}</span>
+        <div class="chart-card line-chart-card">
+          <div class="chart-head">
+            <div>
+              <h3>{{ i18n.t('admin.chart.activity.title') }}</h3>
+              <div class="chart-legend">
+                <span class="legend-item">
+                  <span class="legend-dot legend-dot-blue"></span>
+                  {{ i18n.t('admin.tab.visitors') }} <strong>{{ totalVisits }}</strong>
+                </span>
+                <span class="legend-item">
+                  <span class="legend-dot legend-dot-amber"></span>
+                  {{ i18n.t('admin.tab.logins') }} <strong>{{ totalLogins }}</strong>
+                </span>
               </div>
             </div>
           </div>
 
-          <div class="chart-card">
-            <div class="chart-head">
-              <h3>Inicios de sesión — últimos 14 días</h3>
-              <span class="chart-pill">{{ totalLogins }} totales</span>
-            </div>
-            <div class="bar-chart">
-              <div *ngFor="let bar of loginChart" class="bar-col" [title]="bar.date + ' · ' + bar.value + ' logins'">
-                <div class="bar bar-amber" [style.height.%]="bar.height"></div>
-                <span class="bar-label">{{ bar.label }}</span>
-              </div>
-            </div>
+          <div class="line-chart-wrap">
+            <svg class="line-chart-svg"
+                 [attr.viewBox]="'0 0 ' + lineChart.w + ' ' + lineChart.h"
+                 preserveAspectRatio="none"
+                 role="img">
+              <defs>
+                <linearGradient id="grad-blue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#007bff" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#007bff" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="grad-amber" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.28"/>
+                  <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+
+              <!-- Horizontal gridlines + y labels -->
+              <g class="chart-grid-lines">
+                <line *ngFor="let tick of lineChartTicks"
+                      [attr.x1]="lineChart.padL"
+                      [attr.x2]="lineChart.w - lineChart.padR"
+                      [attr.y1]="tick.y"
+                      [attr.y2]="tick.y"
+                      class="grid-line"/>
+                <text *ngFor="let tick of lineChartTicks"
+                      [attr.x]="lineChart.padL - 12"
+                      [attr.y]="tick.y + 4"
+                      class="axis-label axis-label-y">{{ tick.value }}</text>
+              </g>
+
+              <!-- X axis labels -->
+              <g class="chart-axis-x">
+                <text *ngFor="let tk of lineChartXAxis"
+                      [attr.x]="tk.x"
+                      [attr.y]="lineChart.h - lineChart.padB + 22"
+                      class="axis-label axis-label-x">{{ tk.label }}</text>
+              </g>
+
+              <!-- Areas -->
+              <path *ngIf="visitorAreaPath" [attr.d]="visitorAreaPath" fill="url(#grad-blue)"/>
+              <path *ngIf="loginAreaPath" [attr.d]="loginAreaPath" fill="url(#grad-amber)"/>
+
+              <!-- Hover vertical guide -->
+              <line *ngIf="hoverData as hd"
+                    class="hover-guide"
+                    [attr.x1]="hd.x"
+                    [attr.x2]="hd.x"
+                    [attr.y1]="lineChart.padT"
+                    [attr.y2]="lineChart.h - lineChart.padB"/>
+
+              <!-- Lines -->
+              <path *ngIf="visitorLinePath" [attr.d]="visitorLinePath" class="line line-blue"/>
+              <path *ngIf="loginLinePath" [attr.d]="loginLinePath" class="line line-amber"/>
+
+              <!-- Points: logins -->
+              <g class="points">
+                <circle *ngFor="let p of loginPoints; let i = index"
+                        [attr.cx]="p.x"
+                        [attr.cy]="p.y"
+                        [attr.r]="hoverIndex === i ? 6 : 4"
+                        class="point point-amber"/>
+              </g>
+
+              <!-- Points: visitors -->
+              <g class="points">
+                <circle *ngFor="let p of visitorPoints; let i = index"
+                        [attr.cx]="p.x"
+                        [attr.cy]="p.y"
+                        [attr.r]="hoverIndex === i ? 6 : 4"
+                        class="point point-blue"/>
+              </g>
+
+              <!-- Invisible hover targets -->
+              <g class="hover-targets">
+                <rect *ngFor="let p of visitorPoints; let i = index"
+                      [attr.x]="p.x - 18"
+                      [attr.y]="lineChart.padT"
+                      width="36"
+                      [attr.height]="lineChart.h - lineChart.padT - lineChart.padB"
+                      fill="transparent"
+                      (mouseenter)="onChartHover(i)"
+                      (mouseleave)="onChartHover(null)"/>
+              </g>
+
+              <!-- Tooltip -->
+              <g *ngIf="hoverData as hd" class="tooltip-group">
+                <rect [attr.x]="hd.tooltipX"
+                      [attr.y]="lineChart.padT + 6"
+                      width="120" height="62" rx="8" class="tooltip-bg"/>
+                <text [attr.x]="hd.tooltipX + 10"
+                      [attr.y]="lineChart.padT + 25"
+                      class="tooltip-date">{{ hd.date }}</text>
+                <circle [attr.cx]="hd.tooltipX + 12"
+                        [attr.cy]="lineChart.padT + 40" r="3.5" fill="#007bff"/>
+                <text [attr.x]="hd.tooltipX + 20"
+                      [attr.y]="lineChart.padT + 43"
+                      class="tooltip-value">{{ i18n.t('admin.tab.visitors') }}: {{ hd.visitors }}</text>
+                <circle [attr.cx]="hd.tooltipX + 12"
+                        [attr.cy]="lineChart.padT + 56" r="3.5" fill="#f59e0b"/>
+                <text [attr.x]="hd.tooltipX + 20"
+                      [attr.y]="lineChart.padT + 59"
+                      class="tooltip-value">{{ i18n.t('admin.tab.logins') }}: {{ hd.logins }}</text>
+              </g>
+            </svg>
           </div>
         </div>
       </section>
@@ -139,27 +235,45 @@
       <!-- ─── USERS ─── -->
       <section *ngIf="activeTab === 'users' && (isAdmin || isEditor)" class="page">
         <header class="page-head">
-          <h1>Usuarios</h1>
-          <p class="page-sub">Gestiona los usuarios registrados.</p>
+          <h1>{{ i18n.t('admin.users.title') }}</h1>
+          <p class="page-sub">{{ i18n.t('admin.users.sub') }}</p>
         </header>
 
         <div class="card">
           <table class="data-table">
             <thead>
-              <tr><th>ID</th><th>Email</th><th>Rol</th><th>Creado</th><th>Acciones</th></tr>
+              <tr>
+                <th class="sortable" [class.sorted]="sortDir('users','id')" (click)="toggleSort('users','id')">
+                  <span>{{ i18n.t('admin.users.col.id') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('users','id')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('users','email')" (click)="toggleSort('users','email')">
+                  <span>{{ i18n.t('admin.users.col.email') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('users','email')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('users','role')" (click)="toggleSort('users','role')">
+                  <span>{{ i18n.t('admin.users.col.role') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('users','role')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('users','created_at')" (click)="toggleSort('users','created_at')">
+                  <span>{{ i18n.t('admin.users.col.created') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('users','created_at')"></span>
+                </th>
+                <th>{{ i18n.t('admin.users.col.actions') }}</th>
+              </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let u of users">
+              <tr *ngFor="let u of sortedUsers">
                 <td>{{ u.id }}</td>
                 <td>{{ u.email }}</td>
                 <td><span class="pill" [class.pill-dark]="u.role==='admin'" [class.pill-amber]="u.role==='editor'">{{ u.role }}</span></td>
-                <td>{{ u.created_at | date:'short' }}</td>
+                <td>{{ u.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td class="actions">
-                  <button class="btn-edit" *ngIf="isAdmin || u.role !== 'admin'" (click)="editUser(u)">Editar</button>
-                  <button class="btn-delete" *ngIf="isAdmin" (click)="deleteUser(u)">Eliminar</button>
+                  <button class="btn-edit" *ngIf="isAdmin || u.role !== 'admin'" (click)="editUser(u)">{{ i18n.t('admin.action.edit') }}</button>
+                  <button class="btn-delete" *ngIf="isAdmin" (click)="deleteUser(u)">{{ i18n.t('admin.action.delete') }}</button>
                 </td>
               </tr>
-              <tr *ngIf="users.length === 0"><td colspan="5" class="empty">No hay usuarios.</td></tr>
+              <tr *ngIf="users.length === 0"><td colspan="5" class="empty">{{ i18n.t('admin.users.empty') }}</td></tr>
             </tbody>
           </table>
         </div>
@@ -169,30 +283,52 @@
       <section *ngIf="activeTab === 'projects'" class="page">
         <header class="page-head">
           <div>
-            <h1>Proyectos</h1>
-            <p class="page-sub">Crea, edita {{ isAdmin ? 'y elimina' : '' }} los proyectos del portfolio.</p>
+            <h1>{{ i18n.t('admin.projects.title') }}</h1>
+            <p class="page-sub">{{ isAdmin ? i18n.t('admin.projects.sub.full') : i18n.t('admin.projects.sub.editor') }}</p>
           </div>
-          <button class="btn-primary" (click)="newProject()">+ Nuevo proyecto</button>
+          <button class="btn-primary" (click)="newProject()">{{ i18n.t('admin.projects.new') }}</button>
         </header>
 
         <div class="card">
           <table class="data-table">
             <thead>
-              <tr><th>ID</th><th>Título</th><th>Fecha</th><th>Tags</th><th>Destacado</th><th>Acciones</th></tr>
+              <tr>
+                <th class="sortable" [class.sorted]="sortDir('projects','id')" (click)="toggleSort('projects','id')">
+                  <span>{{ i18n.t('admin.projects.col.id') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('projects','id')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('projects','title')" (click)="toggleSort('projects','title')">
+                  <span>{{ i18n.t('admin.projects.col.title') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('projects','title')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('projects','project_date')" (click)="toggleSort('projects','project_date')">
+                  <span>{{ i18n.t('admin.projects.col.date') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('projects','project_date')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('projects','tags')" (click)="toggleSort('projects','tags')">
+                  <span>{{ i18n.t('admin.projects.col.tags') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('projects','tags')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('projects','is_featured')" (click)="toggleSort('projects','is_featured')">
+                  <span>{{ i18n.t('admin.projects.col.featured') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('projects','is_featured')"></span>
+                </th>
+                <th>{{ i18n.t('admin.projects.col.actions') }}</th>
+              </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let p of projects">
+              <tr *ngFor="let p of sortedProjects">
                 <td>{{ p.id }}</td>
                 <td>{{ p.title }}</td>
-                <td>{{ p.project_date | date:'mediumDate' }}</td>
+                <td>{{ p.project_date | date:'dd/MM/yyyy' }}</td>
                 <td>{{ p.tags }}</td>
-                <td>{{ p.is_featured ? 'Sí' : 'No' }}</td>
+                <td>{{ p.is_featured ? i18n.t('admin.projects.yes') : i18n.t('admin.projects.no') }}</td>
                 <td class="actions">
-                  <button class="btn-edit" (click)="editProject(p)">Editar</button>
-                  <button class="btn-delete" *ngIf="isAdmin" (click)="deleteProject(p)">Eliminar</button>
+                  <button class="btn-edit" (click)="editProject(p)">{{ i18n.t('admin.action.edit') }}</button>
+                  <button class="btn-delete" *ngIf="isAdmin" (click)="deleteProject(p)">{{ i18n.t('admin.action.delete') }}</button>
                 </td>
               </tr>
-              <tr *ngIf="projects.length === 0"><td colspan="6" class="empty">No hay proyectos.</td></tr>
+              <tr *ngIf="projects.length === 0"><td colspan="6" class="empty">{{ i18n.t('admin.projects.empty') }}</td></tr>
             </tbody>
           </table>
         </div>
@@ -202,30 +338,52 @@
       <section *ngIf="activeTab === 'experience'" class="page">
         <header class="page-head">
           <div>
-            <h1>Experiencia</h1>
-            <p class="page-sub">Trayectoria profesional mostrada en el CV.</p>
+            <h1>{{ i18n.t('admin.experience.title') }}</h1>
+            <p class="page-sub">{{ i18n.t('admin.experience.sub') }}</p>
           </div>
-          <button class="btn-primary" (click)="newExperience()">+ Nueva experiencia</button>
+          <button class="btn-primary" (click)="newExperience()">{{ i18n.t('admin.experience.new') }}</button>
         </header>
 
         <div class="card">
           <table class="data-table">
             <thead>
-              <tr><th>ID</th><th>Cargo</th><th>Empresa</th><th>Inicio</th><th>Fin</th><th>Acciones</th></tr>
+              <tr>
+                <th class="sortable" [class.sorted]="sortDir('experiences','id')" (click)="toggleSort('experiences','id')">
+                  <span>{{ i18n.t('admin.experience.col.id') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('experiences','id')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('experiences','title')" (click)="toggleSort('experiences','title')">
+                  <span>{{ i18n.t('admin.experience.col.role') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('experiences','title')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('experiences','company')" (click)="toggleSort('experiences','company')">
+                  <span>{{ i18n.t('admin.experience.col.company') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('experiences','company')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('experiences','start_date')" (click)="toggleSort('experiences','start_date')">
+                  <span>{{ i18n.t('admin.experience.col.start') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('experiences','start_date')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('experiences','end_date')" (click)="toggleSort('experiences','end_date')">
+                  <span>{{ i18n.t('admin.experience.col.end') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('experiences','end_date')"></span>
+                </th>
+                <th>{{ i18n.t('admin.experience.col.actions') }}</th>
+              </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let e of experiences">
+              <tr *ngFor="let e of sortedExperiences">
                 <td>{{ e.id }}</td>
                 <td>{{ e.title }}</td>
                 <td>{{ e.company }}</td>
-                <td>{{ e.start_date | date:'mediumDate' }}</td>
-                <td>{{ e.end_date ? (e.end_date | date:'mediumDate') : 'Actualidad' }}</td>
+                <td>{{ e.start_date | date:'dd/MM/yyyy' }}</td>
+                <td>{{ e.end_date ? (e.end_date | date:'dd/MM/yyyy') : i18n.t('admin.experience.current') }}</td>
                 <td class="actions">
-                  <button class="btn-edit" (click)="editExperience(e)">Editar</button>
-                  <button class="btn-delete" *ngIf="isAdmin" (click)="deleteExperience(e)">Eliminar</button>
+                  <button class="btn-edit" (click)="editExperience(e)">{{ i18n.t('admin.action.edit') }}</button>
+                  <button class="btn-delete" *ngIf="isAdmin" (click)="deleteExperience(e)">{{ i18n.t('admin.action.delete') }}</button>
                 </td>
               </tr>
-              <tr *ngIf="experiences.length === 0"><td colspan="6" class="empty">No hay experiencias.</td></tr>
+              <tr *ngIf="experiences.length === 0"><td colspan="6" class="empty">{{ i18n.t('admin.experience.empty') }}</td></tr>
             </tbody>
           </table>
         </div>
@@ -235,17 +393,17 @@
       <section *ngIf="activeTab === 'visitors'" class="page">
         <header class="page-head">
           <div>
-            <h1>Visitas</h1>
-            <p class="page-sub">{{ totalVisits }} visitas registradas — {{ uniqueVisitors }} únicas.</p>
+            <h1>{{ i18n.t('admin.visitors.title') }}</h1>
+            <p class="page-sub">{{ i18n.t('admin.visitors.sub', { total: totalVisits, unique: uniqueVisitors }) }}</p>
           </div>
         </header>
 
         <div class="card chart-card">
           <div class="chart-head">
-            <h3>Actividad — últimos 14 días</h3>
+            <h3>{{ i18n.t('admin.chart.activity.title') }}</h3>
           </div>
           <div class="bar-chart">
-            <div *ngFor="let bar of visitorChart" class="bar-col" [title]="bar.date + ' · ' + bar.value + ' visitas'">
+            <div *ngFor="let bar of visitorChart" class="bar-col" [title]="bar.date + ' · ' + bar.value">
               <div class="bar bar-blue" [style.height.%]="bar.height"></div>
               <span class="bar-label">{{ bar.label }}</span>
             </div>
@@ -255,17 +413,38 @@
         <div class="card">
           <table class="data-table">
             <thead>
-              <tr><th>Fecha</th><th>UUID</th><th>IP</th><th>Navegador</th><th>Logueado</th></tr>
+              <tr>
+                <th class="sortable" [class.sorted]="sortDir('visitors','entry_time')" (click)="toggleSort('visitors','entry_time')">
+                  <span>{{ i18n.t('admin.visitors.col.date') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('visitors','entry_time')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('visitors','visitor_uuid')" (click)="toggleSort('visitors','visitor_uuid')">
+                  <span>{{ i18n.t('admin.visitors.col.uuid') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('visitors','visitor_uuid')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('visitors','ip_address')" (click)="toggleSort('visitors','ip_address')">
+                  <span>{{ i18n.t('admin.visitors.col.ip') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('visitors','ip_address')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('visitors','user_agent')" (click)="toggleSort('visitors','user_agent')">
+                  <span>{{ i18n.t('admin.visitors.col.browser') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('visitors','user_agent')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('visitors','is_logged_in')" (click)="toggleSort('visitors','is_logged_in')">
+                  <span>{{ i18n.t('admin.visitors.col.logged') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('visitors','is_logged_in')"></span>
+                </th>
+              </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let v of visitorLogs">
-                <td>{{ v.entry_time | date:'short' }}</td>
+              <tr *ngFor="let v of sortedVisitorLogs">
+                <td>{{ v.entry_time | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td class="mono">{{ v.visitor_uuid?.substring(0, 8) }}…</td>
                 <td>{{ v.ip_address || '—' }}</td>
                 <td>{{ shortUA(v.user_agent) }}</td>
-                <td>{{ v.is_logged_in ? 'Sí' : 'No' }}</td>
+                <td>{{ v.is_logged_in ? i18n.t('admin.projects.yes') : i18n.t('admin.projects.no') }}</td>
               </tr>
-              <tr *ngIf="visitorLogs.length === 0"><td colspan="5" class="empty">No hay visitas registradas.</td></tr>
+              <tr *ngIf="visitorLogs.length === 0"><td colspan="5" class="empty">{{ i18n.t('admin.visitors.empty') }}</td></tr>
             </tbody>
           </table>
         </div>
@@ -275,17 +454,17 @@
       <section *ngIf="activeTab === 'logins'" class="page">
         <header class="page-head">
           <div>
-            <h1>Inicios de sesión</h1>
-            <p class="page-sub">{{ totalLogins }} sesiones iniciadas.</p>
+            <h1>{{ i18n.t('admin.logins.title') }}</h1>
+            <p class="page-sub">{{ i18n.t('admin.logins.sub', { n: totalLogins }) }}</p>
           </div>
         </header>
 
         <div class="card chart-card">
           <div class="chart-head">
-            <h3>Logins — últimos 14 días</h3>
+            <h3>{{ i18n.t('admin.chart.logins14.title') }}</h3>
           </div>
           <div class="bar-chart">
-            <div *ngFor="let bar of loginChart" class="bar-col" [title]="bar.date + ' · ' + bar.value + ' logins'">
+            <div *ngFor="let bar of loginChart" class="bar-col" [title]="bar.date + ' · ' + bar.value">
               <div class="bar bar-amber" [style.height.%]="bar.height"></div>
               <span class="bar-label">{{ bar.label }}</span>
             </div>
@@ -295,11 +474,40 @@
         <div class="card">
           <table class="data-table">
             <thead>
-              <tr><th>Fecha</th><th>Email</th><th>IP</th><th>Navegador</th><th>Idioma</th><th>Resolución</th><th>Zona</th></tr>
+              <tr>
+                <th class="sortable" [class.sorted]="sortDir('logins','login_time')" (click)="toggleSort('logins','login_time')">
+                  <span>{{ i18n.t('admin.logins.col.date') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','login_time')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('logins','email')" (click)="toggleSort('logins','email')">
+                  <span>{{ i18n.t('admin.logins.col.email') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','email')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('logins','ip_address')" (click)="toggleSort('logins','ip_address')">
+                  <span>{{ i18n.t('admin.logins.col.ip') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','ip_address')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('logins','user_agent')" (click)="toggleSort('logins','user_agent')">
+                  <span>{{ i18n.t('admin.logins.col.browser') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','user_agent')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('logins','language')" (click)="toggleSort('logins','language')">
+                  <span>{{ i18n.t('admin.logins.col.lang') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','language')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('logins','screen_resolution')" (click)="toggleSort('logins','screen_resolution')">
+                  <span>{{ i18n.t('admin.logins.col.resolution') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','screen_resolution')"></span>
+                </th>
+                <th class="sortable" [class.sorted]="sortDir('logins','time_zone')" (click)="toggleSort('logins','time_zone')">
+                  <span>{{ i18n.t('admin.logins.col.zone') }}</span>
+                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','time_zone')"></span>
+                </th>
+              </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let l of loginLogs">
-                <td>{{ l.login_time | date:'short' }}</td>
+              <tr *ngFor="let l of sortedLoginLogs">
+                <td>{{ l.login_time | date:'dd/MM/yyyy HH:mm' }}</td>
                 <td>{{ l.email || '—' }}</td>
                 <td>{{ l.ip_address || '—' }}</td>
                 <td>{{ shortUA(l.user_agent) }}</td>
@@ -307,7 +515,7 @@
                 <td>{{ l.screen_resolution || '—' }}</td>
                 <td>{{ l.time_zone || '—' }}</td>
               </tr>
-              <tr *ngIf="loginLogs.length === 0"><td colspan="7" class="empty">No hay logins registrados.</td></tr>
+              <tr *ngIf="loginLogs.length === 0"><td colspan="7" class="empty">{{ i18n.t('admin.logins.empty') }}</td></tr>
             </tbody>
           </table>
         </div>
@@ -317,8 +525,8 @@
       <section *ngIf="activeTab === 'messages'" class="page">
         <header class="page-head">
           <div>
-            <h1>Buzón de mensajes</h1>
-            <p class="page-sub">{{ totalMessages }} mensajes recibidos a través del formulario de contacto.</p>
+            <h1>{{ i18n.t('admin.messages.title') }}</h1>
+            <p class="page-sub">{{ i18n.t('admin.messages.sub', { n: totalMessages }) }}</p>
           </div>
         </header>
 
@@ -330,14 +538,14 @@
                 <a [href]="'mailto:' + m.email">{{ m.email }}</a>
               </div>
               <div class="message-meta">
-                <time>{{ m.created_at | date:'medium' }}</time>
-                <button *ngIf="isAdmin" class="btn-delete" (click)="deleteMessage(m)">Eliminar</button>
+                <time>{{ m.created_at | date:'dd/MM/yyyy HH:mm' }}</time>
+                <button *ngIf="isAdmin" class="btn-delete" (click)="deleteMessage(m)">{{ i18n.t('admin.action.delete') }}</button>
               </div>
             </header>
             <p class="message-body">{{ m.message }}</p>
           </article>
           <div class="empty-state" *ngIf="messages.length === 0">
-            <p>El buzón está vacío.</p>
+            <p>{{ i18n.t('admin.messages.empty') }}</p>
           </div>
         </div>
       </section>
@@ -349,28 +557,28 @@
   <div class="edit-modal-backdrop" *ngIf="editingProject" (click)="cancelProjectEdit()">
     <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="saveProject()">
       <div class="edit-modal-header">
-        <h3>{{ editingProject.id ? 'Editar' : 'Crear' }} proyecto</h3>
-        <button type="button" class="edit-modal-close" (click)="cancelProjectEdit()" aria-label="Cerrar">
+        <h3>{{ editingProject.id ? i18n.t('admin.projects.edit.title') : i18n.t('admin.projects.create.title') }}</h3>
+        <button type="button" class="edit-modal-close" (click)="cancelProjectEdit()" [attr.aria-label]="i18n.t('admin.action.close')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="edit-modal-body">
         <div class="grid-2">
-          <label>Título (ES)<input [(ngModel)]="editingProject.title" name="title" required></label>
-          <label>Título (EN)<input [(ngModel)]="editingProject.title_en" name="title_en"></label>
-          <label class="full">Descripción (ES)<textarea [(ngModel)]="editingProject.description" name="description"></textarea></label>
-          <label class="full">Descripción (EN)<textarea [(ngModel)]="editingProject.description_en" name="description_en"></textarea></label>
-          <label>Fecha<input type="date" [(ngModel)]="editingProject.project_date" name="project_date"></label>
-          <label>Tags<input [(ngModel)]="editingProject.tags" name="tags"></label>
-          <label>Repositorio<input [(ngModel)]="editingProject.repo_url" name="repo_url"></label>
-          <label>Demo<input [(ngModel)]="editingProject.live_url" name="live_url"></label>
-          <label class="full">Imagen URL<input [(ngModel)]="editingProject.image_url" name="image_url"></label>
-          <label class="checkbox"><input type="checkbox" [(ngModel)]="editingProject.is_featured" name="is_featured"> Destacado</label>
+          <label>{{ i18n.t('admin.projects.field.title.es') }}<input [(ngModel)]="editingProject.title" name="title" required></label>
+          <label>{{ i18n.t('admin.projects.field.title.en') }}<input [(ngModel)]="editingProject.title_en" name="title_en"></label>
+          <label class="full">{{ i18n.t('admin.projects.field.desc.es') }}<textarea [(ngModel)]="editingProject.description" name="description"></textarea></label>
+          <label class="full">{{ i18n.t('admin.projects.field.desc.en') }}<textarea [(ngModel)]="editingProject.description_en" name="description_en"></textarea></label>
+          <label>{{ i18n.t('admin.projects.field.date') }}<input type="date" [(ngModel)]="editingProject.project_date" name="project_date"></label>
+          <label>{{ i18n.t('admin.projects.field.tags') }}<input [(ngModel)]="editingProject.tags" name="tags"></label>
+          <label>{{ i18n.t('admin.projects.field.repo') }}<input [(ngModel)]="editingProject.repo_url" name="repo_url"></label>
+          <label>{{ i18n.t('admin.projects.field.demo') }}<input [(ngModel)]="editingProject.live_url" name="live_url"></label>
+          <label class="full">{{ i18n.t('admin.projects.field.image') }}<input [(ngModel)]="editingProject.image_url" name="image_url"></label>
+          <label class="checkbox"><input type="checkbox" [(ngModel)]="editingProject.is_featured" name="is_featured"> {{ i18n.t('admin.projects.field.featured') }}</label>
         </div>
       </div>
       <div class="edit-modal-footer">
-        <button type="button" class="btn-secondary" (click)="cancelProjectEdit()">Cancelar</button>
-        <button type="submit" class="btn-primary">Guardar</button>
+        <button type="button" class="btn-secondary" (click)="cancelProjectEdit()">{{ i18n.t('admin.action.cancel') }}</button>
+        <button type="submit" class="btn-primary">{{ i18n.t('admin.action.save') }}</button>
       </div>
     </form>
   </div>
@@ -379,36 +587,36 @@
   <div class="edit-modal-backdrop" *ngIf="editingExperience" (click)="cancelExperienceEdit()">
     <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="saveExperience()">
       <div class="edit-modal-header">
-        <h3>{{ editingExperience.id ? 'Editar' : 'Crear' }} experiencia</h3>
-        <button type="button" class="edit-modal-close" (click)="cancelExperienceEdit()" aria-label="Cerrar">
+        <h3>{{ editingExperience.id ? i18n.t('admin.experience.edit.title') : i18n.t('admin.experience.create.title') }}</h3>
+        <button type="button" class="edit-modal-close" (click)="cancelExperienceEdit()" [attr.aria-label]="i18n.t('admin.action.close')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="edit-modal-body">
         <div class="grid-2">
-          <label>Inicio<input type="date" [(ngModel)]="editingExperience.start_date" name="start_date" required></label>
-          <label>Fin (vacío = actualidad)<input type="date" [(ngModel)]="editingExperience.end_date" name="end_date"></label>
+          <label>{{ i18n.t('admin.experience.field.start') }}<input type="date" [(ngModel)]="editingExperience.start_date" name="start_date" required></label>
+          <label>{{ i18n.t('admin.experience.field.end') }}<input type="date" [(ngModel)]="editingExperience.end_date" name="end_date"></label>
 
-          <label class="full">Empresa<input [(ngModel)]="editingExperience.company" name="company" required></label>
+          <label class="full">{{ i18n.t('admin.experience.field.company') }}<input [(ngModel)]="editingExperience.company" name="company" required></label>
 
-          <label>Cargo (ES)<input [(ngModel)]="editingExperience.title" name="title" required></label>
-          <label>Cargo (EN)<input [(ngModel)]="editingExperience.title_en" name="title_en"></label>
+          <label>{{ i18n.t('admin.experience.field.role.es') }}<input [(ngModel)]="editingExperience.title" name="title" required></label>
+          <label>{{ i18n.t('admin.experience.field.role.en') }}<input [(ngModel)]="editingExperience.title_en" name="title_en"></label>
 
-          <label>Tipo contrato (ES)<input [(ngModel)]="editingExperience.contract_type" name="contract_type"></label>
-          <label>Tipo contrato (EN)<input [(ngModel)]="editingExperience.contract_type_en" name="contract_type_en"></label>
+          <label>{{ i18n.t('admin.experience.field.contract.es') }}<input [(ngModel)]="editingExperience.contract_type" name="contract_type"></label>
+          <label>{{ i18n.t('admin.experience.field.contract.en') }}<input [(ngModel)]="editingExperience.contract_type_en" name="contract_type_en"></label>
 
-          <label>Ubicación (ES)<input [(ngModel)]="editingExperience.location" name="location"></label>
-          <label>Ubicación (EN)<input [(ngModel)]="editingExperience.location_en" name="location_en"></label>
+          <label>{{ i18n.t('admin.experience.field.location.es') }}<input [(ngModel)]="editingExperience.location" name="location"></label>
+          <label>{{ i18n.t('admin.experience.field.location.en') }}<input [(ngModel)]="editingExperience.location_en" name="location_en"></label>
 
-          <label>Descripción (ES)<textarea [(ngModel)]="editingExperience.description" name="description"></textarea></label>
-          <label>Descripción (EN)<textarea [(ngModel)]="editingExperience.description_en" name="description_en"></textarea></label>
+          <label>{{ i18n.t('admin.experience.field.desc.es') }}<textarea [(ngModel)]="editingExperience.description" name="description"></textarea></label>
+          <label>{{ i18n.t('admin.experience.field.desc.en') }}<textarea [(ngModel)]="editingExperience.description_en" name="description_en"></textarea></label>
 
-          <label class="full">Tags<input [(ngModel)]="editingExperience.tags" name="tags"></label>
+          <label class="full">{{ i18n.t('admin.experience.field.tags') }}<input [(ngModel)]="editingExperience.tags" name="tags"></label>
         </div>
       </div>
       <div class="edit-modal-footer">
-        <button type="button" class="btn-secondary" (click)="cancelExperienceEdit()">Cancelar</button>
-        <button type="submit" class="btn-primary">Guardar</button>
+        <button type="button" class="btn-secondary" (click)="cancelExperienceEdit()">{{ i18n.t('admin.action.cancel') }}</button>
+        <button type="submit" class="btn-primary">{{ i18n.t('admin.action.save') }}</button>
       </div>
     </form>
   </div>
@@ -417,15 +625,15 @@
   <div class="edit-modal-backdrop" *ngIf="editingUser" (click)="cancelUserEdit()">
     <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="saveUser()">
       <div class="edit-modal-header">
-        <h3>Editar usuario</h3>
-        <button type="button" class="edit-modal-close" (click)="cancelUserEdit()" aria-label="Cerrar">
+        <h3>{{ i18n.t('admin.users.edit.title') }}</h3>
+        <button type="button" class="edit-modal-close" (click)="cancelUserEdit()" [attr.aria-label]="i18n.t('admin.action.close')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="edit-modal-body">
         <div class="grid-2">
-          <label>Email<input type="email" [(ngModel)]="editingUser.email" name="user_email" required></label>
-          <label>Rol
+          <label>{{ i18n.t('admin.users.field.email') }}<input type="email" [(ngModel)]="editingUser.email" name="user_email" required></label>
+          <label>{{ i18n.t('admin.users.field.role') }}
             <select *ngIf="isAdmin" [(ngModel)]="editingUser.role" name="user_role">
               <option value="user">user</option>
               <option value="editor">editor</option>
@@ -436,8 +644,8 @@
         </div>
       </div>
       <div class="edit-modal-footer">
-        <button type="button" class="btn-secondary" (click)="cancelUserEdit()">Cancelar</button>
-        <button type="submit" class="btn-primary">Guardar</button>
+        <button type="button" class="btn-secondary" (click)="cancelUserEdit()">{{ i18n.t('admin.action.cancel') }}</button>
+        <button type="submit" class="btn-primary">{{ i18n.t('admin.action.save') }}</button>
       </div>
     </form>
   </div>
@@ -453,7 +661,7 @@
       <h3 class="confirm-title">{{ confirmModal.title }}</h3>
       <p class="confirm-message">{{ confirmModal.message }}</p>
       <div class="confirm-actions">
-        <button type="button" class="btn-secondary" (click)="cancelConfirm()">Cancelar</button>
+        <button type="button" class="btn-secondary" (click)="cancelConfirm()">{{ i18n.t('admin.action.cancel') }}</button>
         <button type="button" class="btn-danger" (click)="confirmAction()">{{ confirmModal.confirmLabel }}</button>
       </div>
     </div>
