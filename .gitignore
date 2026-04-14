@@ -15,3 +15,7 @@ out-tsc/
 # Logs y SO
 *.log
 .DS_Store
+
+# Archivos y carpetas de Claude
+.claude/
+CLAUDE.md
