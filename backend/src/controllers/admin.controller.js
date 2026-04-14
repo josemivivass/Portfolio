@@ -37,6 +37,81 @@ exports.updateUserRole = async (req, res) => {
   }
 };
 
+exports.updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { email, role } = req.body;
+  const validRoles = ['admin', 'editor', 'user'];
+
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ message: 'Email requerido' });
+  }
+
+  if (req.user.role !== 'admin') {
+    try {
+      const [rows] = await pool.query('SELECT role FROM users WHERE id = ?', [id]);
+      if (rows.length === 0) {
+        return res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+      if (rows[0].role === 'admin') {
+        return res.status(403).json({ message: 'No puedes editar a un administrador' });
+      }
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Error al verificar usuario' });
+    }
+  }
+
+  const fields = ['email = ?'];
+  const values = [email];
+
+  if (role !== undefined) {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Solo un administrador puede cambiar el rol' });
+    }
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ message: 'Rol inválido' });
+    }
+    fields.push('role = ?');
+    values.push(role);
+  }
+
+  values.push(id);
+
+  try {
+    const [result] = await pool.query(
+      `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
+      values
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    res.status(200).json({ message: 'Usuario actualizado' });
+  } catch (err) {
+    console.error(err);
+    if (err && err.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'Ese email ya está en uso' });
+    }
+    res.status(500).json({ message: 'Error al actualizar usuario' });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  const { id } = req.params;
+  if (req.user && String(req.user.userId) === String(id)) {
+    return res.status(400).json({ message: 'No puedes eliminar tu propia cuenta' });
+  }
+  try {
+    const [result] = await pool.query('DELETE FROM users WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    res.status(200).json({ message: 'Usuario eliminado' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al eliminar usuario' });
+  }
+};
+
 // ─── PROJECTS ──────────────────────────────────────────
 exports.createProject = async (req, res) => {
   const {

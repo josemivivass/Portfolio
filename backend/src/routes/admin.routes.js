@@ -6,9 +6,11 @@ const { verifyToken, requireRole } = require('../middlewares/auth.middleware');
 const editorOrAdmin = [verifyToken, requireRole('admin', 'editor')];
 const adminOnly = [verifyToken, requireRole('admin')];
 
-// Users (solo admin)
-router.get('/users', adminOnly, admin.listUsers);
+// Users
+router.get('/users', editorOrAdmin, admin.listUsers);
 router.patch('/users/:id/role', adminOnly, admin.updateUserRole);
+router.put('/users/:id', editorOrAdmin, admin.updateUser);
+router.delete('/users/:id', adminOnly, admin.deleteUser);
 
 // Projects
 router.post('/projects', editorOrAdmin, admin.createProject);

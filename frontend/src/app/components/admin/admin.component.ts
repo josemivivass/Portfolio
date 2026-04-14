@@ -1,8 +1,7 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
 import { AdminService, AdminUser } from '../../services/admin.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -45,11 +44,20 @@ export class AdminComponent implements OnInit {
 
   editingProject: any = null;
   editingExperience: any = null;
+  editingUser: (AdminUser & { _original?: AdminUser }) | null = null;
+
+  confirmModal: {
+    title: string;
+    message: string;
+    confirmLabel: string;
+    onConfirm: () => void;
+  } | null = null;
 
   constructor(
     private adminService: AdminService,
     private auth: AuthService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -76,33 +84,43 @@ export class AdminComponent implements OnInit {
 
   private loadAllData(): void {
     this.initialLoading = true;
-    const requests: any = {
-      projects: this.adminService.listProjects(),
-      experiences: this.adminService.listExperience(),
-      visitors: this.adminService.listVisitorLogs(),
-      logins: this.adminService.listLoginLogs(),
-      messages: this.adminService.listContactMessages()
-    };
-    if (this.isAdmin) {
-      requests.users = this.adminService.listUsers();
-    }
-
-    forkJoin(requests).subscribe({
-      next: (res: any) => {
-        this.projects = res.projects ?? [];
-        this.experiences = res.experiences ?? [];
-        this.visitorLogs = res.visitors ?? [];
-        this.loginLogs = res.logins ?? [];
-        this.messages = res.messages ?? [];
-        if (res.users) this.users = res.users;
+    let pending = 6;
+    const done = () => {
+      pending--;
+      if (pending <= 0) {
         this.buildCharts();
         this.initialLoading = false;
-      },
-      error: (err) => {
-        console.error(err);
-        this.errorMessage = 'Error al cargar los datos del panel';
-        this.initialLoading = false;
       }
+      this.cdr.markForCheck();
+    };
+    const fail = (label: string) => (err: any) => {
+      console.error(`[admin] ${label} failed`, err);
+      done();
+    };
+
+    this.adminService.listProjects().subscribe({
+      next: d => { this.projects = d ?? []; done(); },
+      error: fail('projects')
+    });
+    this.adminService.listExperience().subscribe({
+      next: d => { this.experiences = d ?? []; done(); },
+      error: fail('experience')
+    });
+    this.adminService.listVisitorLogs().subscribe({
+      next: d => { this.visitorLogs = d ?? []; this.buildCharts(); done(); },
+      error: fail('visitors')
+    });
+    this.adminService.listLoginLogs().subscribe({
+      next: d => { this.loginLogs = d ?? []; this.buildCharts(); done(); },
+      error: fail('logins')
+    });
+    this.adminService.listContactMessages().subscribe({
+      next: d => { this.messages = d ?? []; done(); },
+      error: fail('messages')
+    });
+    this.adminService.listUsers().subscribe({
+      next: d => { this.users = d ?? []; done(); },
+      error: fail('users')
     });
   }
 
@@ -162,19 +180,89 @@ export class AdminComponent implements OnInit {
 
   // ─── Tabs ───
   setTab(tab: Tab): void {
-    if (tab === 'users' && !this.isAdmin) return;
+    if (tab === 'users' && !this.isAdmin && !this.isEditor) return;
     this.activeTab = tab;
     this.editingProject = null;
     this.editingExperience = null;
+    this.editingUser = null;
   }
 
   // ─── Users ───
   changeRole(user: AdminUser, role: AdminUser['role']): void {
     if (user.role === role) return;
     this.adminService.updateUserRole(user.id, role).subscribe({
-      next: () => { user.role = role; },
+      next: () => { user.role = role; this.cdr.markForCheck(); },
       error: (err) => { alert('No se pudo actualizar el rol'); console.error(err); }
     });
+  }
+
+  editUser(u: AdminUser): void {
+    if (!this.isAdmin && !this.isEditor) return;
+    if (!this.isAdmin && u.role === 'admin') return;
+    this.editingUser = { ...u, _original: u };
+  }
+
+  saveUser(): void {
+    const u = this.editingUser;
+    if (!u) return;
+    const payload: { email: string; role?: AdminUser['role'] } = { email: u.email };
+    if (this.isAdmin) payload.role = u.role;
+
+    const idx = this.users.findIndex(x => x.id === u.id);
+    const prev = idx >= 0 ? { ...this.users[idx] } : null;
+    if (idx >= 0) {
+      const updated = { ...this.users[idx], email: u.email };
+      if (this.isAdmin) updated.role = u.role;
+      this.users = [
+        ...this.users.slice(0, idx),
+        updated,
+        ...this.users.slice(idx + 1)
+      ];
+    }
+    this.editingUser = null;
+
+    this.adminService.updateUser(u.id, payload).subscribe({
+      error: (err) => {
+        if (idx >= 0 && prev) {
+          this.users = [
+            ...this.users.slice(0, idx),
+            prev,
+            ...this.users.slice(idx + 1)
+          ];
+        }
+        const msg = err?.error?.message || 'No se pudo actualizar el usuario';
+        alert(msg);
+        console.error(err);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  cancelUserEdit(): void { this.editingUser = null; }
+
+  deleteUser(u: AdminUser): void {
+    if (!this.isAdmin) return;
+    if (u.email === this.currentUserEmail) {
+      alert('No puedes eliminar tu propia cuenta');
+      return;
+    }
+    this.askConfirm(
+      'Eliminar usuario',
+      `¿Seguro que quieres eliminar al usuario "${u.email}"? Esta acción no se puede deshacer.`,
+      () => {
+        const prev = this.users;
+        this.users = this.users.filter(x => x.id !== u.id);
+        this.adminService.deleteUser(u.id).subscribe({
+          error: (err) => {
+            this.users = prev;
+            const msg = err?.error?.message || 'No se pudo eliminar el usuario';
+            alert(msg);
+            console.error(err);
+            this.cdr.markForCheck();
+          }
+        });
+      }
+    );
   }
 
   // ─── Projects ───
@@ -194,27 +282,65 @@ export class AdminComponent implements OnInit {
   saveProject(): void {
     const p = this.editingProject;
     if (!p) return;
-    const obs = p.id
-      ? this.adminService.updateProject(p.id, p)
-      : this.adminService.createProject(p);
-    obs.subscribe({
-      next: () => {
-        this.editingProject = null;
-        this.adminService.listProjects().subscribe(d => this.projects = d);
-      },
-      error: (err) => { alert('Error al guardar proyecto'); console.error(err); }
-    });
+    const payload = { ...p };
+    this.editingProject = null;
+
+    if (payload.id) {
+      const idx = this.projects.findIndex(x => x.id === payload.id);
+      const prev = idx >= 0 ? this.projects[idx] : null;
+      if (idx >= 0) {
+        this.projects = [
+          ...this.projects.slice(0, idx),
+          { ...this.projects[idx], ...payload },
+          ...this.projects.slice(idx + 1)
+        ];
+      }
+      this.adminService.updateProject(payload.id, payload).subscribe({
+        error: (err) => {
+          if (idx >= 0 && prev) {
+            this.projects = [
+              ...this.projects.slice(0, idx),
+              prev,
+              ...this.projects.slice(idx + 1)
+            ];
+          }
+          alert('Error al guardar proyecto');
+          console.error(err);
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.adminService.createProject(payload).subscribe({
+        next: (res: any) => {
+          const created = { ...payload, id: res?.id };
+          this.projects = [created, ...this.projects];
+          this.cdr.markForCheck();
+        },
+        error: (err) => { alert('Error al crear proyecto'); console.error(err); }
+      });
+    }
   }
 
   cancelProjectEdit(): void { this.editingProject = null; }
 
   deleteProject(p: any): void {
     if (!this.isAdmin) return;
-    if (!confirm(`¿Eliminar el proyecto "${p.title}"?`)) return;
-    this.adminService.deleteProject(p.id).subscribe({
-      next: () => { this.projects = this.projects.filter(x => x.id !== p.id); },
-      error: (err) => { alert('Error al eliminar proyecto'); console.error(err); }
-    });
+    this.askConfirm(
+      'Eliminar proyecto',
+      `¿Seguro que quieres eliminar el proyecto "${p.title}"? Esta acción no se puede deshacer.`,
+      () => {
+        const prev = this.projects;
+        this.projects = this.projects.filter(x => x.id !== p.id);
+        this.adminService.deleteProject(p.id).subscribe({
+          error: (err) => {
+            this.projects = prev;
+            alert('Error al eliminar proyecto');
+            console.error(err);
+            this.cdr.markForCheck();
+          }
+        });
+      }
+    );
   }
 
   // ─── Experience ───
@@ -238,37 +364,100 @@ export class AdminComponent implements OnInit {
   saveExperience(): void {
     const e = this.editingExperience;
     if (!e) return;
-    const obs = e.id
-      ? this.adminService.updateExperience(e.id, e)
-      : this.adminService.createExperience(e);
-    obs.subscribe({
-      next: () => {
-        this.editingExperience = null;
-        this.adminService.listExperience().subscribe(d => this.experiences = d);
-      },
-      error: (err) => { alert('Error al guardar experiencia'); console.error(err); }
-    });
+    const payload = { ...e };
+    this.editingExperience = null;
+
+    if (payload.id) {
+      const idx = this.experiences.findIndex(x => x.id === payload.id);
+      const prev = idx >= 0 ? this.experiences[idx] : null;
+      if (idx >= 0) {
+        this.experiences = [
+          ...this.experiences.slice(0, idx),
+          { ...this.experiences[idx], ...payload },
+          ...this.experiences.slice(idx + 1)
+        ];
+      }
+      this.adminService.updateExperience(payload.id, payload).subscribe({
+        error: (err) => {
+          if (idx >= 0 && prev) {
+            this.experiences = [
+              ...this.experiences.slice(0, idx),
+              prev,
+              ...this.experiences.slice(idx + 1)
+            ];
+          }
+          alert('Error al guardar experiencia');
+          console.error(err);
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.adminService.createExperience(payload).subscribe({
+        next: (res: any) => {
+          const created = { ...payload, id: res?.id };
+          this.experiences = [created, ...this.experiences];
+          this.cdr.markForCheck();
+        },
+        error: (err) => { alert('Error al crear experiencia'); console.error(err); }
+      });
+    }
   }
 
   cancelExperienceEdit(): void { this.editingExperience = null; }
 
   deleteExperience(e: any): void {
     if (!this.isAdmin) return;
-    if (!confirm(`¿Eliminar la experiencia "${e.title}"?`)) return;
-    this.adminService.deleteExperience(e.id).subscribe({
-      next: () => { this.experiences = this.experiences.filter(x => x.id !== e.id); },
-      error: (err) => { alert('Error al eliminar experiencia'); console.error(err); }
-    });
+    this.askConfirm(
+      'Eliminar experiencia',
+      `¿Seguro que quieres eliminar la experiencia "${e.title}"? Esta acción no se puede deshacer.`,
+      () => {
+        const prev = this.experiences;
+        this.experiences = this.experiences.filter(x => x.id !== e.id);
+        this.adminService.deleteExperience(e.id).subscribe({
+          error: (err) => {
+            this.experiences = prev;
+            alert('Error al eliminar experiencia');
+            console.error(err);
+            this.cdr.markForCheck();
+          }
+        });
+      }
+    );
   }
 
   // ─── Messages ───
   deleteMessage(m: any): void {
     if (!this.isAdmin) return;
-    if (!confirm(`¿Eliminar el mensaje de "${m.name}"?`)) return;
-    this.adminService.deleteContactMessage(m.id).subscribe({
-      next: () => { this.messages = this.messages.filter(x => x.id !== m.id); },
-      error: (err) => { alert('Error al eliminar mensaje'); console.error(err); }
-    });
+    this.askConfirm(
+      'Eliminar mensaje',
+      `¿Seguro que quieres eliminar el mensaje de "${m.name}"? Esta acción no se puede deshacer.`,
+      () => {
+        const prev = this.messages;
+        this.messages = this.messages.filter(x => x.id !== m.id);
+        this.adminService.deleteContactMessage(m.id).subscribe({
+          error: (err) => {
+            this.messages = prev;
+            alert('Error al eliminar mensaje');
+            console.error(err);
+            this.cdr.markForCheck();
+          }
+        });
+      }
+    );
+  }
+
+  private askConfirm(title: string, message: string, onConfirm: () => void, confirmLabel = 'Eliminar'): void {
+    this.confirmModal = { title, message, confirmLabel, onConfirm };
+  }
+
+  confirmAction(): void {
+    const cb = this.confirmModal?.onConfirm;
+    this.confirmModal = null;
+    if (cb) cb();
+  }
+
+  cancelConfirm(): void {
+    this.confirmModal = null;
   }
 
   shortUA(ua: string): string {

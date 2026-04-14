@@ -29,6 +29,12 @@ export class AdminService {
   updateUserRole(id: number, role: AdminUser['role']): Observable<any> {
     return this.http.patch(`${this.apiUrl}/admin/users/${id}/role`, { role }, { headers: this.headers() });
   }
+  updateUser(id: number, data: { email: string; role?: AdminUser['role'] }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/admin/users/${id}`, data, { headers: this.headers() });
+  }
+  deleteUser(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/admin/users/${id}`, { headers: this.headers() });
+  }
 
   // Projects
   listProjects(): Observable<any[]> {

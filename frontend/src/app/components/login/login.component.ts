@@ -1,7 +1,7 @@
 import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
 
@@ -24,6 +24,7 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     @Inject(PLATFORM_ID) private platformId: Object,
     public i18n: TranslationService
   ) {
@@ -37,6 +38,9 @@ export class LoginComponent {
       if (token) {
         this.isLoggedIn = true;
         this.userEmail = this.decodeEmail(token);
+      }
+      if (this.route.snapshot.queryParamMap.get('expired') === '1') {
+        this.errorMessage = 'Tu sesión ha expirado. Vuelve a iniciar sesión.';
       }
     }
   }
