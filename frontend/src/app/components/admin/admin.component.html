@@ -1,7 +1,25 @@
-<div class="admin-shell">
+<div class="admin-shell" [class.menu-open]="mobileMenuOpen">
+
+  <!-- ─── MOBILE TOPBAR ─── -->
+  <header class="admin-topbar">
+    <button class="hamburger" (click)="toggleMobileMenu()" [class.is-open]="mobileMenuOpen" [attr.aria-label]="i18n.t('admin.action.menu')" [attr.aria-expanded]="mobileMenuOpen">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-brand">
+      <div class="brand-mark">JM</div>
+      <div class="topbar-title">{{ i18n.t(activeTabLabelKey) }}</div>
+    </div>
+    <div class="topbar-avatar" [attr.title]="currentUserEmail">{{ (currentUserEmail || '?').charAt(0).toUpperCase() }}</div>
+  </header>
+
+  <!-- ─── MOBILE BACKDROP ─── -->
+  <div class="sidebar-backdrop" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()"></div>
 
   <!-- ─── SIDEBAR ─── -->
-  <aside class="admin-sidebar">
+  <aside class="admin-sidebar" [class.open]="mobileMenuOpen">
+    <button type="button" class="sidebar-close" (click)="closeMobileMenu()" [attr.aria-label]="i18n.t('admin.action.close')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
     <div class="sidebar-brand">
       <div class="brand-mark">JM</div>
       <div class="brand-text">
@@ -239,7 +257,7 @@
           <p class="page-sub">{{ i18n.t('admin.users.sub') }}</p>
         </header>
 
-        <div class="card">
+        <div class="card table-card">
           <table class="data-table">
             <thead>
               <tr>
@@ -277,6 +295,41 @@
             </tbody>
           </table>
         </div>
+
+        <div class="mobile-toolbar">
+          <label class="mobile-sort">
+            <span>{{ i18n.t('admin.mobile.sort.label') }}</span>
+            <select [ngModel]="sortState.users.col" (ngModelChange)="sortState.users.col = $event">
+              <option value="id">{{ i18n.t('admin.users.col.id') }}</option>
+              <option value="email">{{ i18n.t('admin.users.col.email') }}</option>
+              <option value="role">{{ i18n.t('admin.users.col.role') }}</option>
+              <option value="created_at">{{ i18n.t('admin.users.col.created') }}</option>
+            </select>
+          </label>
+          <button type="button" class="dir-btn" (click)="sortState.users.dir = sortState.users.dir === 'asc' ? 'desc' : 'asc'" [attr.aria-label]="i18n.t('admin.mobile.sort.dir')">
+            <span class="dir-arrow" [class.desc]="sortState.users.dir === 'desc'">▲</span>
+          </button>
+        </div>
+
+        <div class="mobile-list">
+          <article class="mobile-card" *ngFor="let u of sortedUsers">
+            <header class="mobile-card-head">
+              <div class="mobile-card-avatar">{{ (u.email || '?').charAt(0).toUpperCase() }}</div>
+              <div class="mobile-card-title">
+                <strong>{{ u.email }}</strong>
+                <span class="mobile-card-sub">#{{ u.id }} · {{ u.created_at | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <span class="pill" [class.pill-dark]="u.role==='admin'" [class.pill-amber]="u.role==='editor'">{{ u.role }}</span>
+            </header>
+            <footer class="mobile-card-actions">
+              <button class="btn-edit" *ngIf="isAdmin || u.role !== 'admin'" (click)="editUser(u)">{{ i18n.t('admin.action.edit') }}</button>
+              <button class="btn-delete" *ngIf="isAdmin" (click)="deleteUser(u)">{{ i18n.t('admin.action.delete') }}</button>
+            </footer>
+          </article>
+          <div class="empty-state" *ngIf="users.length === 0">
+            <p>{{ i18n.t('admin.users.empty') }}</p>
+          </div>
+        </div>
       </section>
 
       <!-- ─── PROJECTS ─── -->
@@ -289,7 +342,7 @@
           <button class="btn-primary" (click)="newProject()">{{ i18n.t('admin.projects.new') }}</button>
         </header>
 
-        <div class="card">
+        <div class="card table-card">
           <table class="data-table">
             <thead>
               <tr>
@@ -332,6 +385,46 @@
             </tbody>
           </table>
         </div>
+
+        <div class="mobile-toolbar">
+          <label class="mobile-sort">
+            <span>{{ i18n.t('admin.mobile.sort.label') }}</span>
+            <select [ngModel]="sortState.projects.col" (ngModelChange)="sortState.projects.col = $event">
+              <option value="id">{{ i18n.t('admin.projects.col.id') }}</option>
+              <option value="title">{{ i18n.t('admin.projects.col.title') }}</option>
+              <option value="project_date">{{ i18n.t('admin.projects.col.date') }}</option>
+              <option value="is_featured">{{ i18n.t('admin.projects.col.featured') }}</option>
+            </select>
+          </label>
+          <button type="button" class="dir-btn" (click)="sortState.projects.dir = sortState.projects.dir === 'asc' ? 'desc' : 'asc'" [attr.aria-label]="i18n.t('admin.mobile.sort.dir')">
+            <span class="dir-arrow" [class.desc]="sortState.projects.dir === 'desc'">▲</span>
+          </button>
+        </div>
+
+        <div class="mobile-list">
+          <article class="mobile-card project-card" *ngFor="let p of sortedProjects">
+            <header class="mobile-card-head">
+              <div class="mobile-card-title">
+                <strong>{{ p.title }}</strong>
+                <span class="mobile-card-sub">{{ p.project_date | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <span class="pill pill-amber" *ngIf="p.is_featured">★ {{ i18n.t('admin.projects.col.featured') }}</span>
+            </header>
+            <div class="mobile-card-body">
+              <p class="mobile-card-desc" *ngIf="p.description">{{ p.description }}</p>
+              <div class="mobile-tags" *ngIf="p.tags">
+                <span class="tag-chip" *ngFor="let t of (p.tags || '').split(',')">{{ t.trim() }}</span>
+              </div>
+            </div>
+            <footer class="mobile-card-actions">
+              <button class="btn-edit" (click)="editProject(p)">{{ i18n.t('admin.action.edit') }}</button>
+              <button class="btn-delete" *ngIf="isAdmin" (click)="deleteProject(p)">{{ i18n.t('admin.action.delete') }}</button>
+            </footer>
+          </article>
+          <div class="empty-state" *ngIf="projects.length === 0">
+            <p>{{ i18n.t('admin.projects.empty') }}</p>
+          </div>
+        </div>
       </section>
 
       <!-- ─── EXPERIENCE ─── -->
@@ -344,7 +437,7 @@
           <button class="btn-primary" (click)="newExperience()">{{ i18n.t('admin.experience.new') }}</button>
         </header>
 
-        <div class="card">
+        <div class="card table-card">
           <table class="data-table">
             <thead>
               <tr>
@@ -387,6 +480,52 @@
             </tbody>
           </table>
         </div>
+
+        <div class="mobile-toolbar">
+          <label class="mobile-sort">
+            <span>{{ i18n.t('admin.mobile.sort.label') }}</span>
+            <select [ngModel]="sortState.experiences.col" (ngModelChange)="sortState.experiences.col = $event">
+              <option value="start_date">{{ i18n.t('admin.experience.col.start') }}</option>
+              <option value="end_date">{{ i18n.t('admin.experience.col.end') }}</option>
+              <option value="title">{{ i18n.t('admin.experience.col.role') }}</option>
+              <option value="company">{{ i18n.t('admin.experience.col.company') }}</option>
+            </select>
+          </label>
+          <button type="button" class="dir-btn" (click)="sortState.experiences.dir = sortState.experiences.dir === 'asc' ? 'desc' : 'asc'" [attr.aria-label]="i18n.t('admin.mobile.sort.dir')">
+            <span class="dir-arrow" [class.desc]="sortState.experiences.dir === 'desc'">▲</span>
+          </button>
+        </div>
+
+        <div class="mobile-list">
+          <article class="mobile-card experience-card" *ngFor="let e of sortedExperiences">
+            <header class="mobile-card-head">
+              <div class="mobile-card-title">
+                <strong>{{ e.title }}</strong>
+                <span class="mobile-card-sub">{{ e.company }}</span>
+              </div>
+              <span class="pill" [class.pill-dark]="!e.end_date">
+                {{ e.end_date ? ((e.start_date | date:'MM/yy') + ' → ' + (e.end_date | date:'MM/yy')) : i18n.t('admin.experience.current') }}
+              </span>
+            </header>
+            <div class="mobile-card-body">
+              <p class="mobile-card-desc" *ngIf="e.description">{{ e.description }}</p>
+              <div class="mobile-meta-row" *ngIf="e.location">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>{{ e.location }}</span>
+              </div>
+              <div class="mobile-tags" *ngIf="e.tags">
+                <span class="tag-chip" *ngFor="let t of (e.tags || '').split(',')">{{ t.trim() }}</span>
+              </div>
+            </div>
+            <footer class="mobile-card-actions">
+              <button class="btn-edit" (click)="editExperience(e)">{{ i18n.t('admin.action.edit') }}</button>
+              <button class="btn-delete" *ngIf="isAdmin" (click)="deleteExperience(e)">{{ i18n.t('admin.action.delete') }}</button>
+            </footer>
+          </article>
+          <div class="empty-state" *ngIf="experiences.length === 0">
+            <p>{{ i18n.t('admin.experience.empty') }}</p>
+          </div>
+        </div>
       </section>
 
       <!-- ─── VISITORS ─── -->
@@ -410,7 +549,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card table-card">
           <table class="data-table">
             <thead>
               <tr>
@@ -448,6 +587,38 @@
             </tbody>
           </table>
         </div>
+
+        <div class="mobile-toolbar">
+          <label class="mobile-sort">
+            <span>{{ i18n.t('admin.mobile.sort.label') }}</span>
+            <select [ngModel]="sortState.visitors.col" (ngModelChange)="sortState.visitors.col = $event">
+              <option value="entry_time">{{ i18n.t('admin.visitors.col.date') }}</option>
+              <option value="ip_address">{{ i18n.t('admin.visitors.col.ip') }}</option>
+              <option value="user_agent">{{ i18n.t('admin.visitors.col.browser') }}</option>
+              <option value="is_logged_in">{{ i18n.t('admin.visitors.col.logged') }}</option>
+            </select>
+          </label>
+          <button type="button" class="dir-btn" (click)="sortState.visitors.dir = sortState.visitors.dir === 'asc' ? 'desc' : 'asc'" [attr.aria-label]="i18n.t('admin.mobile.sort.dir')">
+            <span class="dir-arrow" [class.desc]="sortState.visitors.dir === 'desc'">▲</span>
+          </button>
+        </div>
+
+        <div class="mobile-list log-list">
+          <article class="mobile-card log-card" *ngFor="let v of sortedVisitorLogs">
+            <header class="log-card-head">
+              <time>{{ v.entry_time | date:'dd/MM/yyyy HH:mm' }}</time>
+              <span class="pill" [class.pill-dark]="v.is_logged_in">{{ v.is_logged_in ? i18n.t('admin.projects.yes') : i18n.t('admin.projects.no') }}</span>
+            </header>
+            <dl class="log-grid">
+              <div><dt>{{ i18n.t('admin.visitors.col.ip') }}</dt><dd>{{ v.ip_address || '—' }}</dd></div>
+              <div><dt>{{ i18n.t('admin.visitors.col.browser') }}</dt><dd>{{ shortUA(v.user_agent) }}</dd></div>
+              <div class="full"><dt>{{ i18n.t('admin.visitors.col.uuid') }}</dt><dd class="mono">{{ v.visitor_uuid }}</dd></div>
+            </dl>
+          </article>
+          <div class="empty-state" *ngIf="visitorLogs.length === 0">
+            <p>{{ i18n.t('admin.visitors.empty') }}</p>
+          </div>
+        </div>
       </section>
 
       <!-- ─── LOGINS ─── -->
@@ -471,7 +642,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card table-card">
           <table class="data-table">
             <thead>
               <tr>
@@ -519,6 +690,41 @@
             </tbody>
           </table>
         </div>
+
+        <div class="mobile-toolbar">
+          <label class="mobile-sort">
+            <span>{{ i18n.t('admin.mobile.sort.label') }}</span>
+            <select [ngModel]="sortState.logins.col" (ngModelChange)="sortState.logins.col = $event">
+              <option value="login_time">{{ i18n.t('admin.logins.col.date') }}</option>
+              <option value="email">{{ i18n.t('admin.logins.col.email') }}</option>
+              <option value="ip_address">{{ i18n.t('admin.logins.col.ip') }}</option>
+              <option value="user_agent">{{ i18n.t('admin.logins.col.browser') }}</option>
+              <option value="time_zone">{{ i18n.t('admin.logins.col.zone') }}</option>
+            </select>
+          </label>
+          <button type="button" class="dir-btn" (click)="sortState.logins.dir = sortState.logins.dir === 'asc' ? 'desc' : 'asc'" [attr.aria-label]="i18n.t('admin.mobile.sort.dir')">
+            <span class="dir-arrow" [class.desc]="sortState.logins.dir === 'desc'">▲</span>
+          </button>
+        </div>
+
+        <div class="mobile-list log-list">
+          <article class="mobile-card log-card" *ngFor="let l of sortedLoginLogs">
+            <header class="log-card-head">
+              <time>{{ l.login_time | date:'dd/MM/yyyy HH:mm' }}</time>
+              <strong class="log-email">{{ l.email || '—' }}</strong>
+            </header>
+            <dl class="log-grid">
+              <div><dt>{{ i18n.t('admin.logins.col.ip') }}</dt><dd>{{ l.ip_address || '—' }}</dd></div>
+              <div><dt>{{ i18n.t('admin.logins.col.browser') }}</dt><dd>{{ shortUA(l.user_agent) }}</dd></div>
+              <div><dt>{{ i18n.t('admin.logins.col.lang') }}</dt><dd>{{ l.language || '—' }}</dd></div>
+              <div><dt>{{ i18n.t('admin.logins.col.resolution') }}</dt><dd>{{ l.screen_resolution || '—' }}</dd></div>
+              <div class="full"><dt>{{ i18n.t('admin.logins.col.zone') }}</dt><dd>{{ l.time_zone || '—' }}</dd></div>
+            </dl>
+          </article>
+          <div class="empty-state" *ngIf="loginLogs.length === 0">
+            <p>{{ i18n.t('admin.logins.empty') }}</p>
+          </div>
+        </div>
       </section>
 
       <!-- ─── MESSAGES ─── -->
@@ -526,26 +732,59 @@
         <header class="page-head">
           <div>
             <h1>{{ i18n.t('admin.messages.title') }}</h1>
-            <p class="page-sub">{{ i18n.t('admin.messages.sub', { n: totalMessages }) }}</p>
+            <p class="page-sub">{{ i18n.t('admin.messages.sub', { n: totalMessages, p: pendingMessages }) }}</p>
           </div>
         </header>
 
+        <div class="messages-toolbar">
+          <div class="messages-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              type="text"
+              [(ngModel)]="messagesSearch"
+              [placeholder]="i18n.t('admin.messages.search.placeholder')"
+              [attr.aria-label]="i18n.t('admin.messages.search.placeholder')" />
+          </div>
+          <label class="messages-select">
+            <span>{{ i18n.t('admin.messages.filter.label') }}</span>
+            <select [(ngModel)]="messagesStatus">
+              <option value="all">{{ i18n.t('admin.messages.filter.all') }}</option>
+              <option value="pending">{{ i18n.t('admin.messages.filter.pending') }}</option>
+              <option value="answered">{{ i18n.t('admin.messages.filter.answered') }}</option>
+            </select>
+          </label>
+          <label class="messages-select">
+            <span>{{ i18n.t('admin.messages.sort.label') }}</span>
+            <select [(ngModel)]="messagesSort">
+              <option value="newest">{{ i18n.t('admin.messages.sort.newest') }}</option>
+              <option value="oldest">{{ i18n.t('admin.messages.sort.oldest') }}</option>
+            </select>
+          </label>
+        </div>
+
         <div class="messages-list">
-          <article class="message-card" *ngFor="let m of messages">
+          <article class="message-card" [class.answered]="m.is_answered" *ngFor="let m of filteredMessages">
             <header class="message-head">
-              <div>
+              <div class="message-head-main">
                 <strong>{{ m.name }}</strong>
                 <a [href]="'mailto:' + m.email">{{ m.email }}</a>
               </div>
               <div class="message-meta">
                 <time>{{ m.created_at | date:'dd/MM/yyyy HH:mm' }}</time>
+                <label class="answered-toggle" [class.is-on]="m.is_answered">
+                  <input type="checkbox" [checked]="!!m.is_answered" (change)="toggleAnswered(m)" />
+                  <span class="answered-box" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </span>
+                  <span class="answered-label">{{ m.is_answered ? i18n.t('admin.messages.status.answered') : i18n.t('admin.messages.status.pending') }}</span>
+                </label>
                 <button *ngIf="isAdmin" class="btn-delete" (click)="deleteMessage(m)">{{ i18n.t('admin.action.delete') }}</button>
               </div>
             </header>
             <p class="message-body">{{ m.message }}</p>
           </article>
-          <div class="empty-state" *ngIf="messages.length === 0">
-            <p>{{ i18n.t('admin.messages.empty') }}</p>
+          <div class="empty-state" *ngIf="filteredMessages.length === 0">
+            <p>{{ messages.length === 0 ? i18n.t('admin.messages.empty') : i18n.t('admin.messages.empty.filtered') }}</p>
           </div>
         </div>
       </section>

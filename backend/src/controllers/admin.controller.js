@@ -267,7 +267,7 @@ exports.listLoginLogs = async (req, res) => {
 exports.listContactMessages = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT id, name, email, message, created_at
+      `SELECT id, name, email, message, is_answered, created_at
        FROM contact_messages
        ORDER BY created_at DESC
        LIMIT 500`
@@ -276,6 +276,24 @@ exports.listContactMessages = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error al listar mensajes' });
+  }
+};
+
+exports.updateContactMessageAnswered = async (req, res) => {
+  const { id } = req.params;
+  const { is_answered } = req.body;
+  try {
+    const [result] = await pool.query(
+      'UPDATE contact_messages SET is_answered = ? WHERE id = ?',
+      [is_answered ? 1 : 0, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Mensaje no encontrado' });
+    }
+    res.status(200).json({ message: 'Mensaje actualizado' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al actualizar mensaje' });
   }
 };
 

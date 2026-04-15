@@ -38,6 +38,11 @@ export class AdminComponent implements OnInit {
   loginLogs: any[] = [];
   messages: any[] = [];
 
+  // ─── Messages filters ───
+  messagesSearch = '';
+  messagesStatus: 'all' | 'answered' | 'pending' = 'all';
+  messagesSort: 'newest' | 'oldest' = 'newest';
+
   visitorChart: ChartBar[] = [];
   loginChart: ChartBar[] = [];
   visitorChartMax = 0;
@@ -74,6 +79,7 @@ export class AdminComponent implements OnInit {
 
   initialLoading = true;
   errorMessage = '';
+  mobileMenuOpen = false;
 
   editingProject: any = null;
   editingExperience: any = null;
@@ -347,6 +353,27 @@ export class AdminComponent implements OnInit {
     this.editingProject = null;
     this.editingExperience = null;
     this.editingUser = null;
+    this.mobileMenuOpen = false;
+  }
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen = false;
+  }
+
+  get activeTabLabelKey(): string {
+    switch (this.activeTab) {
+      case 'dashboard': return 'admin.tab.dashboard';
+      case 'users': return 'admin.tab.users';
+      case 'projects': return 'admin.tab.projects';
+      case 'experience': return 'admin.tab.experience';
+      case 'visitors': return 'admin.tab.visitors';
+      case 'logins': return 'admin.tab.logins';
+      case 'messages': return 'admin.tab.messages';
+    }
   }
 
   // ─── Users ───
@@ -588,6 +615,46 @@ export class AdminComponent implements OnInit {
   }
 
   // ─── Messages ───
+  get filteredMessages(): any[] {
+    const term = this.messagesSearch.trim().toLowerCase();
+    let rows = this.messages.filter(m => {
+      if (this.messagesStatus === 'answered' && !m.is_answered) return false;
+      if (this.messagesStatus === 'pending' && m.is_answered) return false;
+      if (!term) return true;
+      return (
+        (m.name || '').toLowerCase().includes(term) ||
+        (m.email || '').toLowerCase().includes(term) ||
+        (m.message || '').toLowerCase().includes(term)
+      );
+    });
+    const mult = this.messagesSort === 'newest' ? -1 : 1;
+    rows = [...rows].sort((a, b) => {
+      const ad = Date.parse(a?.created_at ?? '') || 0;
+      const bd = Date.parse(b?.created_at ?? '') || 0;
+      return (ad - bd) * mult;
+    });
+    return rows;
+  }
+
+  get pendingMessages(): number {
+    return this.messages.filter(m => !m.is_answered).length;
+  }
+
+  toggleAnswered(m: any): void {
+    const next = !m.is_answered;
+    const prev = m.is_answered;
+    m.is_answered = next;
+    this.cdr.markForCheck();
+    this.adminService.updateContactMessageAnswered(m.id, next).subscribe({
+      error: (err) => {
+        m.is_answered = prev;
+        alert(this.i18n.t('admin.error.message.update'));
+        console.error(err);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   deleteMessage(m: any): void {
     if (!this.isAdmin) return;
     this.askConfirm(

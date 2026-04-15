@@ -26,6 +26,7 @@ router.delete('/experience/:id', adminOnly, admin.deleteExperience);
 router.get('/visitor-logs', editorOrAdmin, admin.listVisitorLogs);
 router.get('/login-logs', editorOrAdmin, admin.listLoginLogs);
 router.get('/contact-messages', editorOrAdmin, admin.listContactMessages);
+router.patch('/contact-messages/:id/answered', editorOrAdmin, admin.updateContactMessageAnswered);
 router.delete('/contact-messages/:id', adminOnly, admin.deleteContactMessage);
 
 module.exports = router;

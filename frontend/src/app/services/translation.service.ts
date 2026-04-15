@@ -311,8 +311,19 @@ const ES: Record<string, string> = {
 
   // Messages
   'admin.messages.title': 'Buzón de mensajes',
-  'admin.messages.sub': '{n} mensajes recibidos a través del formulario de contacto.',
+  'admin.messages.sub': '{n} mensajes recibidos · {p} pendientes',
   'admin.messages.empty': 'El buzón está vacío.',
+  'admin.messages.empty.filtered': 'Ningún mensaje coincide con los filtros aplicados.',
+  'admin.messages.search.placeholder': 'Buscar por nombre, email o contenido…',
+  'admin.messages.filter.label': 'Estado',
+  'admin.messages.filter.all': 'Todos',
+  'admin.messages.filter.pending': 'Pendientes',
+  'admin.messages.filter.answered': 'Respondidos',
+  'admin.messages.sort.label': 'Orden',
+  'admin.messages.sort.newest': 'Más recientes',
+  'admin.messages.sort.oldest': 'Más antiguos',
+  'admin.messages.status.answered': 'Respondido',
+  'admin.messages.status.pending': 'Pendiente',
 
   // Modal actions
   'admin.action.save': 'Guardar',
@@ -320,6 +331,9 @@ const ES: Record<string, string> = {
   'admin.action.edit': 'Editar',
   'admin.action.delete': 'Eliminar',
   'admin.action.close': 'Cerrar',
+  'admin.action.menu': 'Abrir menú',
+  'admin.mobile.sort.label': 'Ordenar por',
+  'admin.mobile.sort.dir': 'Cambiar dirección',
 
   // Confirmations
   'admin.confirm.user.title': 'Eliminar usuario',
@@ -343,6 +357,7 @@ const ES: Record<string, string> = {
   'admin.error.experience.create': 'Error al crear experiencia',
   'admin.error.experience.delete': 'Error al eliminar experiencia',
   'admin.error.message.delete': 'Error al eliminar mensaje',
+  'admin.error.message.update': 'No se pudo actualizar el mensaje',
 };
 
 const EN: Record<string, string> = {
@@ -613,8 +628,19 @@ const EN: Record<string, string> = {
 
   // Messages
   'admin.messages.title': 'Inbox',
-  'admin.messages.sub': '{n} messages received through the contact form.',
+  'admin.messages.sub': '{n} messages received · {p} pending',
   'admin.messages.empty': 'The inbox is empty.',
+  'admin.messages.empty.filtered': 'No messages match the current filters.',
+  'admin.messages.search.placeholder': 'Search by name, email or content…',
+  'admin.messages.filter.label': 'Status',
+  'admin.messages.filter.all': 'All',
+  'admin.messages.filter.pending': 'Pending',
+  'admin.messages.filter.answered': 'Answered',
+  'admin.messages.sort.label': 'Sort',
+  'admin.messages.sort.newest': 'Newest first',
+  'admin.messages.sort.oldest': 'Oldest first',
+  'admin.messages.status.answered': 'Answered',
+  'admin.messages.status.pending': 'Pending',
 
   // Modal actions
   'admin.action.save': 'Save',
@@ -622,6 +648,9 @@ const EN: Record<string, string> = {
   'admin.action.edit': 'Edit',
   'admin.action.delete': 'Delete',
   'admin.action.close': 'Close',
+  'admin.action.menu': 'Open menu',
+  'admin.mobile.sort.label': 'Sort by',
+  'admin.mobile.sort.dir': 'Toggle direction',
 
   // Confirmations
   'admin.confirm.user.title': 'Delete user',
@@ -645,4 +674,5 @@ const EN: Record<string, string> = {
   'admin.error.experience.create': 'Error creating experience',
   'admin.error.experience.delete': 'Error deleting experience',
   'admin.error.message.delete': 'Error deleting message',
+  'admin.error.message.update': 'Could not update the message',
 };

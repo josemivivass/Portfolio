@@ -342,7 +342,8 @@
 @media (max-width: 900px) {
   .admin-back-arrow {
     top: 14px;
-    left: 14px;
+    left: auto;
+    right: 14px;
     width: 34px;
     height: 34px;
   }
