@@ -64,11 +64,15 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // ─── Virtual smooth scroll system ───
   private virtualScrollEnabled = false;
+  private scrollMode: 'intro' | 'main' = 'intro';
   private targetScrollY = 0;
   private currentScrollY = 0;
   private scrollRafId: number | null = null;
-  private readonly SCROLL_LERP = 0.08;        // interpolation speed (higher = faster catch-up)
+  private readonly SCROLL_LERP = 0.08;        // intro lerp speed
   private readonly SCROLL_SNAP_THRESHOLD = 0.5; // px threshold to snap to target
+  private readonly INTRO_MIN_DURATION_FRAMES = 90; // ~1.5s @60fps for full 2*vh traversal
+  private readonly MAIN_SCROLL_LERP = 0.18;   // snappier catch-up for the main page
+  private readonly MAIN_SCROLL_MAX_PX_PER_FRAME = 42; // ~2520 px/s cap — fast but prevents skipping
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -205,6 +209,9 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.showPreloader) {
       setTimeout(() => {
         this.showPreloader = false;
+        // Reset any native scroll that may have leaked before listeners attached,
+        // so the intro virtual scroll starts from a clean 0.
+        window.scrollTo(0, 0);
         this.cdr.detectChanges();
       }, 3200);
     }
@@ -221,11 +228,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // ─── Virtual smooth scroll system ───
 
-  private startVirtualScroll(): void {
+  private startVirtualScroll(seedFromWindow = true): void {
     if (this.virtualScrollEnabled) return;
     this.virtualScrollEnabled = true;
-    this.currentScrollY = window.scrollY;
-    this.targetScrollY = this.currentScrollY;
+    if (seedFromWindow) {
+      this.currentScrollY = window.scrollY;
+      this.targetScrollY = this.currentScrollY;
+    }
     this.tickVirtualScroll();
   }
 
@@ -240,16 +249,34 @@ export class AppComponent implements OnInit, OnDestroy {
   private tickVirtualScroll(): void {
     if (!this.virtualScrollEnabled) return;
 
+    // Re-clamp the main-mode target every frame — the document height can
+    // change while ScrollTrigger pins/unpins sections.
+    if (this.scrollMode === 'main') {
+      const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      if (this.targetScrollY > maxY) this.targetScrollY = maxY;
+    }
+
     const diff = this.targetScrollY - this.currentScrollY;
 
     if (Math.abs(diff) > this.SCROLL_SNAP_THRESHOLD) {
-      this.currentScrollY += diff * this.SCROLL_LERP;
+      const isIntro = this.scrollMode === 'intro';
+      const maxStepPerFrame = isIntro
+        ? (2 * window.innerHeight) / this.INTRO_MIN_DURATION_FRAMES
+        : this.MAIN_SCROLL_MAX_PX_PER_FRAME;
+      const lerp = isIntro ? this.SCROLL_LERP : this.MAIN_SCROLL_LERP;
+      let step = diff * lerp;
+      if (Math.abs(step) > maxStepPerFrame) {
+        step = Math.sign(step) * maxStepPerFrame;
+      }
+      this.currentScrollY += step;
     } else {
       this.currentScrollY = this.targetScrollY;
     }
 
     window.scrollTo(0, this.currentScrollY);
-    this.applyIntroScroll(this.currentScrollY);
+    if (this.scrollMode === 'intro') {
+      this.applyIntroScroll(this.currentScrollY);
+    }
 
     this.scrollRafId = requestAnimationFrame(() => this.tickVirtualScroll());
   }
@@ -333,26 +360,55 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   onWheel(event: WheelEvent): void {
-    if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute || this.showPreloader) return;
+    if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
 
-    // Return-to-intro: when main content is active and user scrolls up at top
-    if (!this.showIntro && window.scrollY <= 0 && event.deltaY < -40 && !this.isTransitioning) {
-      this.returnToIntro();
+    // Block native scroll during preloader so window.scrollY can't accumulate
+    // past the intro trigger before the virtual scroll system takes over.
+    if (this.showPreloader) {
+      event.preventDefault();
       return;
     }
 
-    // During intro: intercept wheel and feed virtual scroll
-    if (this.showIntro && !this.isTransitioning) {
+    // Return-to-intro: when main content is active and user scrolls up at top
+    if (!this.showIntro && this.currentScrollY <= 0 && event.deltaY < -40 && !this.isTransitioning) {
       event.preventDefault();
-
-      if (!this.virtualScrollEnabled) {
-        this.startVirtualScroll();
-      }
-
+      this.returnToIntro();
+      // Seed the reverse animation with the triggering wheel's deltaY so the
+      // virtual scroll immediately starts moving without a dead frame.
       const vh = window.innerHeight;
-      const maxScroll = 2 * vh + 10; // slightly past trigger point
+      const maxScroll = 2 * vh + 10;
       this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + event.deltaY, maxScroll));
+      return;
     }
+
+    // Intro: always block native scroll while the overlay is mounted.
+    if (this.showIntro) {
+      event.preventDefault();
+      if (!this.isTransitioning) {
+        if (!this.virtualScrollEnabled || this.scrollMode !== 'intro') {
+          this.scrollMode = 'intro';
+          this.startVirtualScroll();
+        }
+        const vh = window.innerHeight;
+        const maxScroll = 2 * vh + 10;
+        this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + event.deltaY, maxScroll));
+      }
+      return;
+    }
+
+    // Main page: intercept wheel and feed velocity-limited virtual scroll
+    // so fast wheel bursts can't skip past sections.
+    event.preventDefault();
+    if (this.isTransitioning) return;
+
+    if (!this.virtualScrollEnabled || this.scrollMode !== 'main') {
+      this.scrollMode = 'main';
+      this.currentScrollY = window.scrollY;
+      this.targetScrollY = window.scrollY;
+      this.startVirtualScroll();
+    }
+    const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + event.deltaY, maxY));
   }
 
   @HostListener('window:touchstart', ['$event'])
@@ -365,40 +421,77 @@ export class AppComponent implements OnInit, OnDestroy {
   onTouchMove(event: TouchEvent): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
 
+    // Block native scroll during preloader to avoid skipping the intro.
+    if (this.showPreloader) {
+      event.preventDefault();
+      return;
+    }
+
     // Return-to-intro via swipe down
-    if (!this.showIntro && window.scrollY <= 0 && event.touches.length > 0 && !this.isTransitioning) {
+    if (!this.showIntro && this.currentScrollY <= 0 && event.touches.length > 0 && !this.isTransitioning) {
       const touchEndY = event.touches[0].clientY;
       if (touchEndY - this.touchStartY > 80) {
+        event.preventDefault();
         this.returnToIntro();
+        // Seed reverse animation with the swipe delta so it starts moving at once.
+        const vh = window.innerHeight;
+        const maxScroll = 2 * vh + 10;
+        const delta = this.touchStartY - touchEndY; // negative (user swiped down)
+        this.touchStartY = touchEndY;
+        this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + delta * 2, maxScroll));
         return;
       }
     }
 
-    // During intro: intercept touch and feed virtual scroll
-    if (this.showIntro && !this.isTransitioning && event.touches.length > 0) {
+    // Intro: block native scroll while the overlay is mounted.
+    if (this.showIntro) {
       event.preventDefault();
+      if (!this.isTransitioning && event.touches.length > 0) {
+        const touchCurrentY = event.touches[0].clientY;
+        const delta = this.touchStartY - touchCurrentY;
+        this.touchStartY = touchCurrentY;
 
-      const touchCurrentY = event.touches[0].clientY;
-      const delta = this.touchStartY - touchCurrentY; // positive = scroll down
-      this.touchStartY = touchCurrentY;
+        if (!this.virtualScrollEnabled || this.scrollMode !== 'intro') {
+          this.scrollMode = 'intro';
+          this.startVirtualScroll();
+        }
 
-      if (!this.virtualScrollEnabled) {
-        this.startVirtualScroll();
+        const vh = window.innerHeight;
+        const maxScroll = 2 * vh + 10;
+        this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + delta * 2, maxScroll));
       }
-
-      const vh = window.innerHeight;
-      const maxScroll = 2 * vh + 10;
-      this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + delta * 2, maxScroll));
+      return;
     }
+
+    // Main page: intercept touch and feed velocity-limited virtual scroll.
+    event.preventDefault();
+    if (this.isTransitioning || event.touches.length === 0) return;
+
+    const touchCurrentY = event.touches[0].clientY;
+    const delta = this.touchStartY - touchCurrentY;
+    this.touchStartY = touchCurrentY;
+
+    if (!this.virtualScrollEnabled || this.scrollMode !== 'main') {
+      this.scrollMode = 'main';
+      this.currentScrollY = window.scrollY;
+      this.targetScrollY = window.scrollY;
+      this.startVirtualScroll();
+    }
+
+    const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + delta * 2, maxY));
   }
 
   private returnToIntro(): void {
-    if (this.isTransitioning || !isPlatformBrowser(this.platformId)) return;
-    this.isTransitioning = true;
+    if (this.isTransitioning || !isPlatformBrowser(this.platformId) || this.showIntro) return;
     this.menuTranslateY  = 0;
     this.firmaScrollTicks = 0; // resetear contador para la próxima visita
 
     this.homeComponent?.resetAnimations();
+
+    // Switch virtual scroll back into intro mode so caps/lerp match the entry.
+    this.stopVirtualScroll();
+    this.scrollMode = 'intro';
 
     this.showIntro = true;
     this.cdr.detectChanges();
@@ -412,10 +505,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.targetScrollY = startPos;
     this.applyIntroScroll(startPos);
 
-    setTimeout(() => {
-      this.isTransitioning = false;
-      this.startVirtualScroll();
-    }, 500);
+    // Start virtual scroll immediately — caller seeds targetScrollY right
+    // after this returns, so the reverse animation begins on the next tick.
+    this.startVirtualScroll(false);
   }
 
   enterAdmin(): void {
