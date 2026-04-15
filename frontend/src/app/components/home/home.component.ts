@@ -148,7 +148,23 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
-    ScrollTrigger.getAll().forEach(t => t.kill());
+    // revert: true restaura pin-spacers y estilos inline que GSAP inyecta
+    // en body/html con pin:true. Sin esto, al navegar a /admin el scroll
+    // queda bloqueado y aparece una animación de rebote.
+    ScrollTrigger.getAll().forEach(t => t.kill(true));
+    if (isPlatformBrowser(this.platformId)) {
+      // Limpieza defensiva de estilos residuales
+      const body = document.body;
+      const html = document.documentElement;
+      body.style.overflow = '';
+      body.style.paddingRight = '';
+      body.style.paddingBottom = '';
+      body.style.position = '';
+      body.style.top = '';
+      body.style.touchAction = '';
+      html.style.overflow = '';
+      html.style.scrollBehavior = '';
+    }
   }
 
   // ─── API pública — llamada por AppComponent tras la transición intro ───
@@ -246,7 +262,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   /** Resetea animaciones para que puedan reproducirse de nuevo (al volver a la intro). */
   resetAnimations(): void {
-    ScrollTrigger.getAll().forEach(t => t.kill());
+    ScrollTrigger.getAll().forEach(t => t.kill(true));
     gsap.set('.section-header-cv, .about-card, .edu-card, .skill-category, .project-card-horizontal', {
       clearProps: 'all'
     });

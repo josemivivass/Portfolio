@@ -136,6 +136,24 @@ export class AppComponent implements OnInit, OnDestroy {
       this.showIntro      = false;
       this.mainTranslateY = 0;
       if (isPlatformBrowser(this.platformId)) {
+        // Parar cualquier estado residual del sistema de scroll virtual
+        // y de las transiciones de intro para que la nueva ruta (p.ej. /admin)
+        // pueda hacer scroll libremente.
+        this.stopVirtualScroll();
+        this.isTransitioning = false;
+        // Matar ScrollTriggers activos y limpiar estilos inline que GSAP pin
+        // pudiera haber dejado en body/html, causando el bloqueo de scroll.
+        ScrollTrigger.getAll().forEach(t => t.kill(true));
+        const body = document.body;
+        const html = document.documentElement;
+        body.style.overflow = '';
+        body.style.paddingRight = '';
+        body.style.paddingBottom = '';
+        body.style.position = '';
+        body.style.top = '';
+        body.style.touchAction = '';
+        html.style.overflow = '';
+        html.style.scrollBehavior = '';
         window.scrollTo(0, 0);
       }
       return;
@@ -155,10 +173,15 @@ export class AppComponent implements OnInit, OnDestroy {
           this.showIntro      = false;
           this.mainTranslateY = 0;
           setTimeout(() => {
-            window.scrollTo({ top: saved.scrollY, behavior: 'instant' });
-            ScrollTrigger.refresh();
+            // Registrar los ScrollTrigger con el viewport en 0 para que GSAP
+            // capture el pinSpacing correcto del scroll horizontal de experiencia.
+            window.scrollTo(0, 0);
             this.homeComponent?.initAnimations();
             this.cdr.detectChanges();
+            requestAnimationFrame(() => {
+              window.scrollTo({ top: saved.scrollY, behavior: 'instant' });
+              ScrollTrigger.refresh();
+            });
           }, 60);
         } else {
           this.showIntro      = false;

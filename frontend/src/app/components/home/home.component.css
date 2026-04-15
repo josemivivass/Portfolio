@@ -795,8 +795,8 @@
   .project-image { min-height: 200px; }
 
   /* Experiencia: fallback vertical en móvil — reset del full-bleed */
-  .exp-scroll-section   { width: 100%; margin-left: 0; overflow: visible; background: #f4f7f6; }
-  .exp-track-wrapper    { height: auto; overflow: visible; display: block; background: #f4f7f6; }
+  .exp-scroll-section   { width: 100%; margin-left: 0; overflow: visible; background: transparent; }
+  .exp-track-wrapper    { height: auto; overflow: visible; display: block; background: transparent; }
   .exp-horizontal-track {
     flex-direction: column;
     align-items: stretch;
@@ -814,7 +814,7 @@
     margin-top: 0 !important;
     margin-bottom: 0 !important;
   }
-  .exp-title-panel     { width: 100%; padding-right: 0; }
+  .exp-title-panel     { width: 100%; padding-right: 0; background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
   .exp-divider         { display: none; }
   .exp-year-bar        { display: none; }
   .exp-deco-block      { flex-direction: row; justify-content: flex-start; }

@@ -27,6 +27,10 @@ interface ChartBar {
 })
 export class AdminComponent implements OnInit {
   activeTab: Tab = 'dashboard';
+  private tabScroll: Record<Tab, number> = {
+    dashboard: 0, users: 0, projects: 0, experience: 0,
+    visitors: 0, logins: 0, messages: 0
+  };
   isAdmin = false;
   isEditor = false;
   currentUserEmail = '';
@@ -349,11 +353,22 @@ export class AdminComponent implements OnInit {
   // ─── Tabs ───
   setTab(tab: Tab): void {
     if (tab === 'users' && !this.isAdmin && !this.isEditor) return;
+    if (tab === this.activeTab) {
+      this.mobileMenuOpen = false;
+      return;
+    }
+    if (isPlatformBrowser(this.platformId)) {
+      this.tabScroll[this.activeTab] = window.scrollY;
+    }
     this.activeTab = tab;
     this.editingProject = null;
     this.editingExperience = null;
     this.editingUser = null;
     this.mobileMenuOpen = false;
+    if (isPlatformBrowser(this.platformId)) {
+      const target = this.tabScroll[tab] ?? 0;
+      requestAnimationFrame(() => window.scrollTo(0, target));
+    }
   }
 
   toggleMobileMenu(): void {
