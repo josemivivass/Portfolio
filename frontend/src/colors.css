@@ -1,0 +1,99 @@
+/* ═══════════════════════════════════════════════════════════════
+   PALETA DE COLORES — fuente unica de verdad
+   Cambia estos valores para recolorear toda la pagina.
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  /* ── Primario ── */
+  --c-primary:          #007bff;
+  --c-primary-hover:    #0062cc;
+  --c-primary-light:    #4da3ff;
+  --c-primary-disabled: #a0c4ff;
+  --c-primary-soft:     rgba(0, 123, 255, 0.10);
+  --c-primary-softer:   rgba(0, 123, 255, 0.06);
+
+  /* ── Texto ── */
+  --c-brand:            #1e2d3d;
+  --c-text:             #1e2d3d;
+  --c-text-heading:     #2c3e50;
+  --c-text-body:        #444;
+  --c-text-secondary:   #555;
+  --c-text-muted:       #7f8c8d;
+  --c-text-label:       #34495e;
+  --c-text-tag:         #495057;
+  --c-text-placeholder: #bdc3cc;
+  --c-text-icon:        #aab4be;
+
+  /* ── Fondos ── */
+  --c-bg:               #f4f7f6;
+  --c-surface:          #ffffff;
+  --c-surface-alt:      #f9fbfd;
+  --c-surface-warm:     #f8f9fa;
+
+  /* ── Bordes ── */
+  --c-border:           #dde3ec;
+  --c-border-light:     #dce1e5;
+  --c-border-input:     #dde3ec;
+  --c-border-strong:    #c7d0dc;
+  --c-border-card:      #f0f2f4;
+  --c-border-separator: #e9ecef;
+  --c-border-form:      #ccc;
+
+  /* ── Danger ── */
+  --c-danger:           #dc3545;
+  --c-danger-soft:      #fff5f5;
+  --c-danger-text:      #c0392b;
+  --c-danger-border:    #fcc;
+
+  /* ── Success ── */
+  --c-success:          #28a745;
+  --c-success-bg:       #d4edda;
+  --c-success-border:   #c3e6cb;
+  --c-success-text:     #155724;
+
+  /* ── Amber ── */
+  --c-amber:            #f59e0b;
+  --c-amber-light:      #fef3c7;
+  --c-amber-dark:       #92400e;
+  --c-amber-bar:        #d97706;
+  --c-amber-bar-light:  #fbbf24;
+
+  /* ── Verde vivo (badges "actual", promo) ── */
+  --c-green-vivid:       #2ecc71;
+  --c-green-vivid-dark:  #27ae60;
+  --c-green-vivid-light: #55e898;
+  --c-green-answered:    #10b981;
+  --c-green-answered-dk: #0f7a5a;
+
+  /* ── Hero badge ── */
+  --c-badge-bg:         #e8f5e9;
+  --c-badge-text:       #2e7d32;
+
+  /* ── Fondos de acento ── */
+  --c-accent-bg:        #e8f0fe;
+  --c-tag-bg:           #f1f3f5;
+
+  /* ── Preloader / tinte ── */
+  --c-preloader-1:      #d0e8ff;
+  --c-preloader-2:      #4a8fd4;
+  --c-tint:             #cce5ff;
+
+  /* ── Bloque de codigo ── */
+  --c-code-bg:          #1e2030;
+  --c-code-text:        #cdd6f4;
+  --c-code-keyword:     #cba6f7;
+  --c-code-string:      #a6e3a1;
+
+  /* ── Gradiente calido (exp bar warm) ── */
+  --c-warm:             #f39c12;
+  --c-warm-light:       #f7c059;
+
+  /* ── Glow (reveal) ── */
+  --c-glow:             rgba(56, 246, 100, 0.9);
+  --c-glow-soft:        rgba(0, 255, 70, 0.7);
+
+  /* ── Sombras ── */
+  --c-shadow:           0 2px 8px rgba(30, 45, 61, 0.05), 0 1px 2px rgba(30, 45, 61, 0.04);
+  --c-shadow-lg:        0 12px 28px -8px rgba(30, 45, 61, 0.14), 0 8px 12px -8px rgba(30, 45, 61, 0.08);
+  --c-shadow-primary:   0 4px 14px rgba(0, 123, 255, 0.35);
+  --c-shadow-primary-lg:0 6px 20px rgba(0, 123, 255, 0.45);
+}

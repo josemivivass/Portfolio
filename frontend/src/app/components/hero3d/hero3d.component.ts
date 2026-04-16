@@ -85,13 +85,17 @@ export class Hero3dComponent implements AfterViewInit, OnDestroy {
 
   // ─── Inicialización ─────────────────────────────────────────────────────────
 
+  private cssColor(prop: string, fallback: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(prop).trim() || fallback;
+  }
+
   private init(): void {
     const W = window.innerWidth;
     const H = window.innerHeight;
     const canvas = this.canvasRef.nativeElement;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color('#f4f7f6');
+    this.scene.background = new THREE.Color(this.cssColor('--c-bg', '#f4f7f5'));
 
     this.camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 500);
     this.camera.position.set(0, 0, CAM_Z);
@@ -129,8 +133,9 @@ export class Hero3dComponent implements AfterViewInit, OnDestroy {
     this.particleGeo = new THREE.BufferGeometry();
     this.particleGeo.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
 
+    const particleColor = this.cssColor('--c-text-heading', '#2c3e3a');
     const mat = new THREE.PointsMaterial({
-      color:           new THREE.Color('#2c3e50'),
+      color:           new THREE.Color(particleColor),
       size:            0.28,
       sizeAttenuation: true,
       transparent:     true,
@@ -146,8 +151,9 @@ export class Hero3dComponent implements AfterViewInit, OnDestroy {
     this.lineGeo.setAttribute('position', new THREE.BufferAttribute(this.linePositions, 3));
     this.lineGeo.setDrawRange(0, 0);
 
+    const lineColor = this.cssColor('--c-text-heading', '#2c3e3a');
     const mat = new THREE.LineBasicMaterial({
-      color:       new THREE.Color('#2c3e50'),
+      color:       new THREE.Color(lineColor),
       transparent: true,
       opacity:     0.18,
     });

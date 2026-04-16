@@ -1,3 +1,5 @@
+@import 'colors.css';
+
 /* Ocultar barra de desplazamiento en Chrome, Safari y Opera */
 ::-webkit-scrollbar {
   display: none !important;
@@ -11,8 +13,7 @@ html, body {
   scrollbar-width: none !important;  /* Firefox */
   margin: 0;
   padding: 0;
-  /* CAMBIA ESTE COLOR POR EL EXACTO DE TU FONDO */
-  background-color: #f4f7f6; 
+  background-color: var(--c-bg);
 }
 
 * {
@@ -33,7 +34,7 @@ html, body {
 
 body {
     background-color: transparent;
-    color: #333;
+    color: var(--c-text-body);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -47,7 +48,7 @@ body {
 }
 
 .card {
-    background: #fff;
+    background: var(--c-surface);
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     padding: 30px;
@@ -68,17 +69,17 @@ body {
 .form-control {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--c-border-form);
     border-radius: 4px;
     font-size: 16px;
 }
 
 .form-control.is-invalid {
-    border-color: #dc3545;
+    border-color: var(--c-danger);
 }
 
 .text-danger {
-    color: #dc3545;
+    color: var(--c-danger);
     font-size: 14px;
     margin-top: 5px;
     display: block;
@@ -89,7 +90,7 @@ body {
     padding: 12px;
     border: none;
     border-radius: 4px;
-    background-color: #007bff;
+    background-color: var(--c-primary);
     color: white;
     font-size: 16px;
     cursor: pointer;
@@ -97,11 +98,11 @@ body {
 }
 
 .btn:hover {
-    background-color: #0056b3;
+    background-color: var(--c-primary-hover);
 }
 
 .btn:disabled {
-    background-color: #a0c4ff;
+    background-color: var(--c-primary-disabled);
     cursor: not-allowed;
 }
 

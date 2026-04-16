@@ -1,6 +1,6 @@
 .contact-container {
   padding: 20px;
-  background: #ffffff;
+  background: var(--c-surface);
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
   max-width: 800px;
@@ -8,7 +8,7 @@
 }
 
 .contact-header {
-  border-bottom: 2px solid #f4f7f6;
+  border-bottom: 2px solid var(--c-bg);
   padding-bottom: 25px;
   margin-bottom: 35px;
   text-align: center;
@@ -16,13 +16,13 @@
 
 .contact-header h1 {
   font-size: 2.8rem;
-  color: #2c3e50;
+  color: var(--c-text-heading);
   margin-bottom: 8px;
 }
 
 .subtitle {
   font-size: 1.2rem;
-  color: #7f8c8d;
+  color: var(--c-text-muted);
   font-weight: 500;
 }
 
@@ -33,16 +33,16 @@
   gap: 24px;
   margin-bottom: 35px;
   padding: 20px 24px;
-  background: #f8f9fa;
+  background: var(--c-surface-warm);
   border-radius: 10px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--c-border-separator);
 }
 
 .contact-info-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #2c3e50;
+  color: var(--c-text-heading);
   text-decoration: none;
   font-size: 0.92rem;
   font-weight: 500;
@@ -50,12 +50,12 @@
 }
 
 a.contact-info-item:hover {
-  color: #007bff;
+  color: var(--c-primary);
 }
 
 .contact-info-item svg {
   flex-shrink: 0;
-  color: #007bff;
+  color: var(--c-primary);
 }
 
 .contact-card {
@@ -71,9 +71,9 @@ textarea.form-control {
 }
 
 .success-message {
-  color: #155724;
-  background-color: #d4edda;
-  border: 1px solid #c3e6cb;
+  color: var(--c-success-text);
+  background-color: var(--c-success-bg);
+  border: 1px solid var(--c-success-border);
   padding: 15px;
   border-radius: 5px;
   margin-top: 20px;

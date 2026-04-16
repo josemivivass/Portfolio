@@ -149,12 +149,12 @@
                  role="img">
               <defs>
                 <linearGradient id="grad-blue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#007bff" stop-opacity="0.35"/>
-                  <stop offset="100%" stop-color="#007bff" stop-opacity="0"/>
+                  <stop offset="0%" class="grad-stop-blue" stop-opacity="0.35"/>
+                  <stop offset="100%" class="grad-stop-blue" stop-opacity="0"/>
                 </linearGradient>
                 <linearGradient id="grad-amber" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.28"/>
-                  <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                  <stop offset="0%" class="grad-stop-amber" stop-opacity="0.28"/>
+                  <stop offset="100%" class="grad-stop-amber" stop-opacity="0"/>
                 </linearGradient>
               </defs>
 
@@ -235,12 +235,12 @@
                       [attr.y]="lineChart.padT + 25"
                       class="tooltip-date">{{ hd.date }}</text>
                 <circle [attr.cx]="hd.tooltipX + 12"
-                        [attr.cy]="lineChart.padT + 40" r="3.5" fill="#007bff"/>
+                        [attr.cy]="lineChart.padT + 40" r="3.5" class="tooltip-dot-blue"/>
                 <text [attr.x]="hd.tooltipX + 20"
                       [attr.y]="lineChart.padT + 43"
                       class="tooltip-value">{{ i18n.t('admin.tab.visitors') }}: {{ hd.visitors }}</text>
                 <circle [attr.cx]="hd.tooltipX + 12"
-                        [attr.cy]="lineChart.padT + 56" r="3.5" fill="#f59e0b"/>
+                        [attr.cy]="lineChart.padT + 56" r="3.5" class="tooltip-dot-amber"/>
                 <text [attr.x]="hd.tooltipX + 20"
                       [attr.y]="lineChart.padT + 59"
                       class="tooltip-value">{{ i18n.t('admin.tab.logins') }}: {{ hd.logins }}</text>
