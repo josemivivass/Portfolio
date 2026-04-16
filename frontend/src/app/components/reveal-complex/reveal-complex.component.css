@@ -7,7 +7,7 @@
   inset: 0;
   overflow: hidden;
   cursor: default;
-  background: black;
+  background: var(--c-reveal-bg);
   z-index: 0;
 }
 
@@ -34,9 +34,9 @@
   z-index: 2;
   background: radial-gradient(
     ellipse at center,
-    transparent           25%,
-    rgba(0, 0, 0, 0.55)   70%,
-    rgba(0, 0, 0, 0.88)   100%
+    transparent                  25%,
+    var(--c-reveal-vignette-mid)  70%,
+    var(--c-reveal-vignette-edge) 100%
   );
 }
 
@@ -120,7 +120,7 @@
   font-weight: 700;
   font-family: 'Playfair Display', serif;
   text-transform: uppercase;
-  color: #ffffff;
+  color: var(--c-reveal-text);
   white-space: pre;
 }
 

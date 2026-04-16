@@ -9,7 +9,7 @@ import { gsap } from 'gsap';
 const MATRIX_CHARS =
   'アァイィウヴエエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const FONT_SIZE    = 14;
-const MOUSE_RADIUS = 150;
+const MOUSE_RADIUS = 90;
 
 @Component({
   selector: 'app-reveal-complex',
@@ -53,10 +53,18 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   private prevMouseX = 0;
   private prevMouseY = 0;
 
+  // Cached CSS colors for canvas drawing
+  private fadeColor = 'rgba(0, 0, 0, 0.05)';
+  private charColor = '#0f0';
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     public i18n: TranslationService
   ) {}
+
+  private cssColor(prop: string, fallback: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(prop).trim() || fallback;
+  }
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -100,6 +108,8 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   // ── Matrix ────────────────────────────────────────────────────────────────
 
   private initMatrix(): void {
+    this.fadeColor = this.cssColor('--c-reveal-fade', 'rgba(0, 0, 0, 0.05)');
+    this.charColor = this.cssColor('--c-reveal-char', '#0f0');
     const canvas = this.matrixCanvasRef.nativeElement;
     this.ctx = canvas.getContext('2d')!;
     this.resizeMatrix();
@@ -125,7 +135,7 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
     const canvas = this.matrixCanvasRef.nativeElement;
     const ctx    = this.ctx;
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillStyle = this.fadeColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.font = `${FONT_SIZE}px monospace`;
 
@@ -154,7 +164,7 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
       this.offsets[i]    += (0 - this.offsets[i]) * 0.05;
 
       // Draw head at offset position — trail pixels stay in canvas (original behavior)
-      ctx.fillStyle = '#0f0';
+      ctx.fillStyle = this.charColor;
       const text = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
       ctx.fillText(text, colX + this.offsets[i], y);
 
