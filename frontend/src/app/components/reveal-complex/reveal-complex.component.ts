@@ -54,8 +54,8 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   private prevMouseY = 0;
 
   // Cached CSS colors for canvas drawing
-  private fadeColor = 'rgba(0, 0, 0, 0.05)';
-  private charColor = '#0f0';
+  private fadeColor = 'rgba(6, 10, 20, 0.05)';
+  private charColor = '#4da3ff';
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -108,8 +108,8 @@ export class RevealComplexComponent implements AfterViewInit, OnDestroy {
   // ── Matrix ────────────────────────────────────────────────────────────────
 
   private initMatrix(): void {
-    this.fadeColor = this.cssColor('--c-reveal-fade', 'rgba(0, 0, 0, 0.05)');
-    this.charColor = this.cssColor('--c-reveal-char', '#0f0');
+    this.fadeColor = this.cssColor('--c-reveal-fade', 'rgba(6, 10, 20, 0.05)');
+    this.charColor = this.cssColor('--c-reveal-char', '#4da3ff');
     const canvas = this.matrixCanvasRef.nativeElement;
     this.ctx = canvas.getContext('2d')!;
     this.resizeMatrix();

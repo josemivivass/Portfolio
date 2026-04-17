@@ -57,6 +57,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         {{ i18n.t('admin.tab.messages') }}
       </button>
+      <button [class.active]="activeTab === 'chatbot'" (click)="setTab('chatbot')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        {{ i18n.t('admin.tab.chatbot') }}
+      </button>
 
       <ng-container *ngIf="isAdmin || isEditor">
         <span class="sidebar-section">{{ i18n.t('admin.section.system') }}</span>
@@ -122,6 +126,11 @@
             <span class="stat-label">{{ i18n.t('admin.stat.projects') }}</span>
             <span class="stat-value">{{ totalProjects }}</span>
             <span class="stat-foot">{{ i18n.t('admin.stat.projects.foot') }}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">{{ i18n.t('admin.stat.chatbot') }}</span>
+            <span class="stat-value">{{ totalChatbotMessages }}</span>
+            <span class="stat-foot">{{ i18n.t('admin.stat.chatbot.foot', { n: totalChatbotConversations }) }}</span>
           </div>
         </div>
 
@@ -244,6 +253,97 @@
                 <text [attr.x]="hd.tooltipX + 20"
                       [attr.y]="lineChart.padT + 59"
                       class="tooltip-value">{{ i18n.t('admin.tab.logins') }}: {{ hd.logins }}</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+        <div class="chart-card line-chart-card tokens-chart-card">
+          <div class="chart-head">
+            <div>
+              <h3>{{ i18n.t('admin.chart.tokens.title') }}</h3>
+              <div class="chart-legend">
+                <span class="legend-item">
+                  <span class="legend-dot legend-dot-green"></span>
+                  Tokens <strong>{{ formatTokens(totalTokensUsed) }}</strong>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="line-chart-wrap">
+            <svg class="line-chart-svg"
+                 [attr.viewBox]="'0 0 ' + tokensChart.w + ' ' + tokensChart.h"
+                 preserveAspectRatio="none"
+                 role="img">
+              <defs>
+                <linearGradient id="grad-green" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" class="grad-stop-green" stop-opacity="0.35"/>
+                  <stop offset="100%" class="grad-stop-green" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+
+              <g class="chart-grid-lines">
+                <line *ngFor="let tick of tokensChartTicks"
+                      [attr.x1]="tokensChart.padL"
+                      [attr.x2]="tokensChart.w - tokensChart.padR"
+                      [attr.y1]="tick.y"
+                      [attr.y2]="tick.y"
+                      class="grid-line"/>
+                <text *ngFor="let tick of tokensChartTicks"
+                      [attr.x]="tokensChart.padL - 12"
+                      [attr.y]="tick.y + 4"
+                      class="axis-label axis-label-y">{{ formatTokens(tick.value) }}</text>
+              </g>
+
+              <g class="chart-axis-x">
+                <text *ngFor="let tk of tokensChartXAxis"
+                      [attr.x]="tk.x"
+                      [attr.y]="tokensChart.h - tokensChart.padB + 22"
+                      class="axis-label axis-label-x">{{ tk.label }}</text>
+              </g>
+
+              <path *ngIf="tokensAreaPath" [attr.d]="tokensAreaPath" fill="url(#grad-green)"/>
+
+              <line *ngIf="tokensHoverData as thd"
+                    class="hover-guide"
+                    [attr.x1]="thd.x"
+                    [attr.x2]="thd.x"
+                    [attr.y1]="tokensChart.padT"
+                    [attr.y2]="tokensChart.h - tokensChart.padB"/>
+
+              <path *ngIf="tokensLinePath" [attr.d]="tokensLinePath" class="line line-green"/>
+
+              <g class="points">
+                <circle *ngFor="let p of tokensPoints; let i = index"
+                        [attr.cx]="p.x"
+                        [attr.cy]="p.y"
+                        [attr.r]="tokensHoverIndex === i ? 6 : 4"
+                        class="point point-green"/>
+              </g>
+
+              <g class="hover-targets">
+                <rect *ngFor="let p of tokensPoints; let i = index"
+                      [attr.x]="p.x - 18"
+                      [attr.y]="tokensChart.padT"
+                      width="36"
+                      [attr.height]="tokensChart.h - tokensChart.padT - tokensChart.padB"
+                      fill="transparent"
+                      (mouseenter)="onTokensChartHover(i)"
+                      (mouseleave)="onTokensChartHover(null)"/>
+              </g>
+
+              <g *ngIf="tokensHoverData as thd" class="tooltip-group">
+                <rect [attr.x]="thd.tooltipX"
+                      [attr.y]="tokensChart.padT + 6"
+                      width="120" height="46" rx="8" class="tooltip-bg"/>
+                <text [attr.x]="thd.tooltipX + 10"
+                      [attr.y]="tokensChart.padT + 25"
+                      class="tooltip-date">{{ thd.date }}</text>
+                <circle [attr.cx]="thd.tooltipX + 12"
+                        [attr.cy]="tokensChart.padT + 40" r="3.5" class="tooltip-dot-green"/>
+                <text [attr.x]="thd.tooltipX + 20"
+                      [attr.y]="tokensChart.padT + 43"
+                      class="tooltip-value">{{ formatTokens(thd.tokens) }} tokens</text>
               </g>
             </svg>
           </div>
@@ -785,6 +885,81 @@
           </article>
           <div class="empty-state" *ngIf="filteredMessages.length === 0">
             <p>{{ messages.length === 0 ? i18n.t('admin.messages.empty') : i18n.t('admin.messages.empty.filtered') }}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── CHATBOT ─── -->
+      <section *ngIf="activeTab === 'chatbot'" class="page">
+        <header class="page-head">
+          <div>
+            <h1>{{ i18n.t('admin.chatbot.title') }}</h1>
+            <p class="page-sub">{{ i18n.t('admin.chatbot.sub', { n: totalChatbotMessages, c: totalChatbotConversations }) }}</p>
+          </div>
+        </header>
+
+        <div class="messages-toolbar">
+          <div class="messages-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              type="text"
+              [(ngModel)]="chatbotSearch"
+              [placeholder]="i18n.t('admin.chatbot.search.placeholder')"
+              [attr.aria-label]="i18n.t('admin.chatbot.search.placeholder')" />
+          </div>
+          <label class="messages-select">
+            <span>{{ i18n.t('admin.messages.sort.label') }}</span>
+            <select [(ngModel)]="chatbotSort">
+              <option value="newest">{{ i18n.t('admin.messages.sort.newest') }}</option>
+              <option value="oldest">{{ i18n.t('admin.messages.sort.oldest') }}</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="chatbot-conversations">
+          <article class="convo-card" *ngFor="let convo of chatbotConversations"
+                   [class.expanded]="expandedConversation === convo.key">
+
+            <header class="convo-head" (click)="toggleConversation(convo.key)">
+              <div class="convo-head-left">
+                <div class="convo-avatar">{{ (convo.email || '?').charAt(0).toUpperCase() }}</div>
+                <div class="convo-info">
+                  <strong>{{ convo.email }}</strong>
+                  <span class="convo-meta">#{{ convo.sessionIndex + 1 }} · {{ convo.date }} · {{ convo.messages.length }} {{ i18n.t('admin.chatbot.msgs') }} · {{ convo.totalTokens }} tokens</span>
+                </div>
+              </div>
+              <div class="convo-head-right">
+                <button *ngIf="isAdmin" class="btn-delete" (click)="deleteChatbotConvo(convo); $event.stopPropagation()">{{ i18n.t('admin.action.delete') }}</button>
+                <span class="convo-chevron" [class.open]="expandedConversation === convo.key">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </div>
+            </header>
+
+            <div class="convo-body" *ngIf="expandedConversation === convo.key">
+              <div class="convo-thread">
+                <div *ngFor="let msg of convo.messages"
+                     class="convo-bubble"
+                     [class.convo-user]="msg.role === 'user'"
+                     [class.convo-assistant]="msg.role === 'assistant'">
+                  <div class="convo-bubble-head">
+                    <span class="convo-role-tag" [class.tag-user]="msg.role === 'user'" [class.tag-assistant]="msg.role === 'assistant'">
+                      {{ msg.role === 'user' ? i18n.t('admin.chatbot.role.user') : i18n.t('admin.chatbot.role.assistant') }}
+                    </span>
+                    <span class="convo-bubble-time">{{ msg.created_at | date:'HH:mm:ss' }}</span>
+                    <button *ngIf="isAdmin" class="convo-delete-msg" (click)="deleteChatbotMsg(msg)" [attr.aria-label]="i18n.t('admin.action.delete')">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
+                  </div>
+                  <p class="convo-bubble-text">{{ msg.message }}</p>
+                  <span *ngIf="msg.tokens_used" class="convo-tokens">{{ msg.tokens_used }} tokens</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <div class="empty-state" *ngIf="chatbotConversations.length === 0">
+            <p>{{ chatbotMessages.length === 0 ? i18n.t('admin.chatbot.empty') : i18n.t('admin.chatbot.empty.filtered') }}</p>
           </div>
         </div>
       </section>

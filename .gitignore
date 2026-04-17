@@ -6,6 +6,7 @@ backend/node_modules/
 # Entornos
 .env
 .env.*
+ai.env
 
 # Compilados de Angular
 dist/

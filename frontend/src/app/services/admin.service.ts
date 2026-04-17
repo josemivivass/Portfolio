@@ -77,6 +77,17 @@ export class AdminService {
   deleteContactMessage(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/admin/contact-messages/${id}`, { headers: this.headers() });
   }
+  // Chatbot
+  listChatbotMessages(): Observable<{ messages: any[]; clears: any[] }> {
+    return this.http.get<{ messages: any[]; clears: any[] }>(`${this.apiUrl}/admin/chatbot-messages`, { headers: this.headers() });
+  }
+  deleteChatbotMessage(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/admin/chatbot-messages/${id}`, { headers: this.headers() });
+  }
+  deleteChatbotConversation(ids: number[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/chatbot-conversations/delete`, { ids }, { headers: this.headers() });
+  }
+
   updateContactMessageAnswered(id: number, is_answered: boolean): Observable<any> {
     return this.http.patch(
       `${this.apiUrl}/admin/contact-messages/${id}/answered`,

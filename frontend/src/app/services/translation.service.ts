@@ -213,6 +213,8 @@ const ES: Record<string, string> = {
   'admin.stat.users.foot': 'registrados',
   'admin.stat.projects': 'Proyectos',
   'admin.stat.projects.foot': 'publicados',
+  'admin.stat.chatbot': 'Chatbot',
+  'admin.stat.chatbot.foot': '{n} conversaciones',
   'admin.chart.visits.title': 'Visitas — últimos 14 días',
   'admin.chart.visits.pill': '{n} totales',
   'admin.chart.logins.title': 'Inicios de sesión — últimos 14 días',
@@ -358,6 +360,31 @@ const ES: Record<string, string> = {
   'admin.error.experience.delete': 'Error al eliminar experiencia',
   'admin.error.message.delete': 'Error al eliminar mensaje',
   'admin.error.message.update': 'No se pudo actualizar el mensaje',
+
+  // Admin Chatbot
+  'admin.tab.chatbot': 'Chatbot',
+  'admin.chatbot.title': 'Conversaciones del Chatbot',
+  'admin.chatbot.sub': '{n} mensajes en {c} conversaciones',
+  'admin.chatbot.search.placeholder': 'Buscar por email o contenido…',
+  'admin.chatbot.msgs': 'msgs',
+  'admin.chatbot.role.user': 'Usuario',
+  'admin.chatbot.role.assistant': 'Nanas',
+  'admin.chatbot.empty': 'No hay conversaciones del chatbot.',
+  'admin.chatbot.empty.filtered': 'Ninguna conversación coincide con la búsqueda.',
+  'admin.chatbot.confirm.msg.title': 'Eliminar mensaje',
+  'admin.chatbot.confirm.msg.body': '¿Seguro que quieres eliminar este mensaje del chatbot? Esta acción no se puede deshacer.',
+  'admin.chatbot.confirm.convo.title': 'Eliminar conversación',
+  'admin.chatbot.confirm.convo.body': '¿Seguro que quieres eliminar toda esta conversación? Esta acción no se puede deshacer.',
+  'admin.error.chatbot.delete': 'Error al eliminar mensaje del chatbot',
+
+  // --- Chatbot ---
+  'chatbot.title': 'Nanas — Asistente IA',
+  'chatbot.welcome': 'Hola, soy Nanas, el asistente virtual del portfolio de José Miguel. Pregunta lo que quieras.',
+  'chatbot.placeholder': 'Escribe un mensaje...',
+  'chatbot.send': 'Enviar',
+  'chatbot.clear': 'Borrar chat',
+  'chatbot.unavailable': 'El asistente no está disponible temporalmente. Inténtalo mañana.',
+  'chatbot.error': 'Error al enviar el mensaje. Inténtalo de nuevo.',
 };
 
 const EN: Record<string, string> = {
@@ -530,6 +557,8 @@ const EN: Record<string, string> = {
   'admin.stat.users.foot': 'registered',
   'admin.stat.projects': 'Projects',
   'admin.stat.projects.foot': 'published',
+  'admin.stat.chatbot': 'Chatbot',
+  'admin.stat.chatbot.foot': '{n} conversations',
   'admin.chart.visits.title': 'Visits — last 14 days',
   'admin.chart.visits.pill': '{n} total',
   'admin.chart.logins.title': 'Logins — last 14 days',
@@ -675,4 +704,29 @@ const EN: Record<string, string> = {
   'admin.error.experience.delete': 'Error deleting experience',
   'admin.error.message.delete': 'Error deleting message',
   'admin.error.message.update': 'Could not update the message',
+
+  // Admin Chatbot
+  'admin.tab.chatbot': 'Chatbot',
+  'admin.chatbot.title': 'Chatbot Conversations',
+  'admin.chatbot.sub': '{n} messages in {c} conversations',
+  'admin.chatbot.search.placeholder': 'Search by email or content…',
+  'admin.chatbot.msgs': 'msgs',
+  'admin.chatbot.role.user': 'User',
+  'admin.chatbot.role.assistant': 'Nanas',
+  'admin.chatbot.empty': 'No chatbot conversations.',
+  'admin.chatbot.empty.filtered': 'No conversations match the search.',
+  'admin.chatbot.confirm.msg.title': 'Delete message',
+  'admin.chatbot.confirm.msg.body': 'Are you sure you want to delete this chatbot message? This action cannot be undone.',
+  'admin.chatbot.confirm.convo.title': 'Delete conversation',
+  'admin.chatbot.confirm.convo.body': 'Are you sure you want to delete this entire conversation? This action cannot be undone.',
+  'admin.error.chatbot.delete': 'Error deleting chatbot message',
+
+  // --- Chatbot ---
+  'chatbot.title': 'Nanas — AI Assistant',
+  'chatbot.welcome': 'Hi! I\'m Nanas, the virtual assistant for José Miguel\'s portfolio. Ask me anything.',
+  'chatbot.placeholder': 'Type a message...',
+  'chatbot.send': 'Send',
+  'chatbot.clear': 'Clear chat',
+  'chatbot.unavailable': 'The assistant is temporarily unavailable. Please try again tomorrow.',
+  'chatbot.error': 'Error sending the message. Please try again.',
 };

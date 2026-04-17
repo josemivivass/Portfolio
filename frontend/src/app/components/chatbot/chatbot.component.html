@@ -1,0 +1,68 @@
+<!-- Floating toggle button -->
+<button class="chatbot-toggle" (click)="toggle()" [class.open]="isOpen"
+        [attr.aria-label]="i18n.t('chatbot.title')">
+  <svg *ngIf="!isOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+  <svg *ngIf="isOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+</button>
+
+<!-- Chat panel -->
+<div class="chatbot-panel" [class.open]="isOpen" (wheel)="onPanelWheel($event)" (touchmove)="$event.stopPropagation()">
+  <div class="chatbot-header">
+    <span class="chatbot-title">{{ i18n.t('chatbot.title') }}</span>
+    <button *ngIf="messages.length > 0" class="chatbot-clear" (click)="clearChat()"
+            [attr.aria-label]="i18n.t('chatbot.clear')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="chatbot-messages" #messagesContainer>
+    <div *ngIf="messages.length === 0 && !isLoading" class="chatbot-empty">
+      {{ i18n.t('chatbot.welcome') }}
+    </div>
+
+    <div *ngFor="let msg of messages"
+         class="chatbot-bubble"
+         [class.user]="msg.role === 'user'"
+         [class.assistant]="msg.role === 'assistant'">
+      {{ msg.message }}
+    </div>
+
+    <div *ngIf="isLoading" class="chatbot-bubble assistant loading">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="chatbot-error">{{ error }}</div>
+
+  <form class="chatbot-input-area" (submit)="send(); $event.preventDefault()">
+    <input
+      #chatInput
+      type="text"
+      [(ngModel)]="inputMessage"
+      name="chatInput"
+      [placeholder]="i18n.t('chatbot.placeholder')"
+      [disabled]="isLoading"
+      autocomplete="off" />
+    <button type="submit" [disabled]="!inputMessage.trim() || isLoading"
+            [attr.aria-label]="i18n.t('chatbot.send')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </form>
+</div>

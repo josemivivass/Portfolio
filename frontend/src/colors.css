@@ -101,6 +101,21 @@
   --c-shadow-primary:   0 4px 14px rgba(0, 123, 255, 0.30);
   --c-shadow-primary-lg:0 6px 20px rgba(0, 123, 255, 0.40);
 
+  /* ── Chatbot ── */
+  --c-chat-toggle-shadow:    0 4px 20px rgba(0, 0, 0, 0.3);
+  --c-chat-panel-bg:         #ffffff;
+  --c-chat-panel-shadow:     0 12px 40px rgba(0, 0, 0, 0.15);
+  --c-chat-header-text:      #ffffff;
+  --c-chat-clear:            rgba(255, 255, 255, 0.6);
+  --c-chat-clear-hover:      #ffffff;
+  --c-chat-clear-hover-bg:   rgba(255, 255, 255, 0.15);
+  --c-chat-scroll-track:     #f1f3f5;
+  --c-chat-scroll-thumb:     #ced4da;
+  --c-chat-scroll-thumb-hover:#adb5bd;
+  --c-chat-user-text:        #ffffff;
+  --c-chat-input-bg:         #ffffff;
+  --c-chat-send-text:        #ffffff;
+
   /* ── Reveal / Matrix ── */
   --c-reveal-bg:            #060a14;
   --c-reveal-fade:          rgba(6, 10, 20, 0.05);

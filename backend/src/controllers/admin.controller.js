@@ -311,6 +311,63 @@ exports.deleteContactMessage = async (req, res) => {
   }
 };
 
+// ─── CHATBOT ──────────────────────────────────────────
+exports.listChatbotConversations = async (req, res) => {
+  try {
+    const [messages] = await pool.query(
+      `SELECT m.id, m.user_id, u.email, m.role, m.message,
+              m.tokens_used, m.model, m.ip_address, m.user_agent, m.created_at
+       FROM chatbot_messages m
+       LEFT JOIN users u ON u.id = m.user_id
+       ORDER BY m.created_at DESC
+       LIMIT 2000`
+    );
+    const [clears] = await pool.query(
+      `SELECT c.user_id, c.cleared_at
+       FROM chatbot_clears c
+       ORDER BY c.cleared_at ASC`
+    );
+    res.status(200).json({ messages, clears });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al listar conversaciones del chatbot' });
+  }
+};
+
+exports.deleteChatbotMessage = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [result] = await pool.query('DELETE FROM chatbot_messages WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Mensaje no encontrado' });
+    }
+    res.status(200).json({ message: 'Mensaje eliminado' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al eliminar mensaje del chatbot' });
+  }
+};
+
+exports.deleteChatbotConversation = async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ message: 'Se requiere un array de IDs' });
+  }
+  try {
+    const [result] = await pool.query(
+      'DELETE FROM chatbot_messages WHERE id IN (?)',
+      [ids]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Conversación no encontrada' });
+    }
+    res.status(200).json({ message: 'Conversación eliminada' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al eliminar conversación' });
+  }
+};
+
 exports.deleteExperience = async (req, res) => {
   const { id } = req.params;
   try {

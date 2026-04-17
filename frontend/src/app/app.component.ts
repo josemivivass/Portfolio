@@ -14,6 +14,7 @@ import { RevealComplexComponent } from './components/reveal-complex/reveal-compl
 import { TranslationService } from './services/translation.service';
 import { AuthService } from './services/auth.service';
 import { TrackingService } from './services/tracking.service';
+import { ChatbotComponent } from './components/chatbot/chatbot.component';
 
 @Component({
   selector: 'app-root',
@@ -24,7 +25,8 @@ import { TrackingService } from './services/tracking.service';
     CommonModule,
     Hero3dComponent,
     HomeComponent,
-    RevealComplexComponent
+    RevealComplexComponent,
+    ChatbotComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
@@ -57,6 +59,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // Contador de ticks de scroll: la firma solo aparece pasados 6 ticks (~100ms)
   private firmaScrollTicks = 0;
+  private chatbotWasOpen = false;
 
   private touchStartY = 0;
   private isTransitioning = false;
@@ -362,6 +365,29 @@ export class AppComponent implements OnInit, OnDestroy {
   onWheel(event: WheelEvent): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
 
+    // Ignore wheel events when cursor is inside the chatbot
+    if (this.isCursorInsideChatbot(event)) {
+      event.preventDefault();
+      event.stopPropagation();
+      // Only forward scroll to chat messages, not when over the input area
+      const target = event.target as HTMLElement;
+      if (!target.closest('.chatbot-input-area')) {
+        const msgContainer = document.querySelector('.chatbot-messages') as HTMLElement;
+        if (msgContainer) {
+          msgContainer.scrollTop += event.deltaY;
+        }
+      }
+      this.chatbotWasOpen = true;
+      return;
+    }
+
+    // Resync virtual scroll after chatbot was open
+    if (this.chatbotWasOpen) {
+      this.chatbotWasOpen = false;
+      this.currentScrollY = window.scrollY;
+      this.targetScrollY = window.scrollY;
+    }
+
     // Block native scroll during preloader so window.scrollY can't accumulate
     // past the intro trigger before the virtual scroll system takes over.
     if (this.showPreloader) {
@@ -420,6 +446,19 @@ export class AppComponent implements OnInit, OnDestroy {
 
   onTouchMove(event: TouchEvent): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
+
+    // Ignore touch events from within the chatbot
+    if ((event.target as HTMLElement)?.closest('.chatbot-panel, .chatbot-toggle')) {
+      this.chatbotWasOpen = true;
+      return;
+    }
+
+    // Resync virtual scroll after chatbot was open
+    if (this.chatbotWasOpen) {
+      this.chatbotWasOpen = false;
+      this.currentScrollY = window.scrollY;
+      this.targetScrollY = window.scrollY;
+    }
 
     // Block native scroll during preloader to avoid skipping the intro.
     if (this.showPreloader) {
@@ -480,6 +519,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
     this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + delta * 2, maxY));
+  }
+
+  private isCursorInsideChatbot(event: WheelEvent): boolean {
+    const target = event.target as HTMLElement;
+    if (!target) return false;
+    if (target.closest('app-chatbot, .chatbot-panel, .chatbot-toggle, .chatbot-input-area')) return true;
+    return false;
   }
 
   private returnToIntro(): void {

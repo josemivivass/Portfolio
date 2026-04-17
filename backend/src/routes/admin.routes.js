@@ -29,4 +29,9 @@ router.get('/contact-messages', editorOrAdmin, admin.listContactMessages);
 router.patch('/contact-messages/:id/answered', editorOrAdmin, admin.updateContactMessageAnswered);
 router.delete('/contact-messages/:id', adminOnly, admin.deleteContactMessage);
 
+// Chatbot
+router.get('/chatbot-messages', editorOrAdmin, admin.listChatbotConversations);
+router.delete('/chatbot-messages/:id', adminOnly, admin.deleteChatbotMessage);
+router.post('/chatbot-conversations/delete', adminOnly, admin.deleteChatbotConversation);
+
 module.exports = router;

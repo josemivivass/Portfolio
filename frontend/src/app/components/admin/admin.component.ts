@@ -6,7 +6,7 @@ import { AdminService, AdminUser } from '../../services/admin.service';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
 
-type Tab = 'dashboard' | 'users' | 'projects' | 'experience' | 'visitors' | 'logins' | 'messages';
+type Tab = 'dashboard' | 'users' | 'projects' | 'experience' | 'visitors' | 'logins' | 'messages' | 'chatbot';
 type SortDir = 'asc' | 'desc';
 type SortTable = 'users' | 'projects' | 'experiences' | 'visitors' | 'logins';
 interface SortState { col: string; dir: SortDir; }
@@ -29,7 +29,7 @@ export class AdminComponent implements OnInit {
   activeTab: Tab = 'dashboard';
   private tabScroll: Record<Tab, number> = {
     dashboard: 0, users: 0, projects: 0, experience: 0,
-    visitors: 0, logins: 0, messages: 0
+    visitors: 0, logins: 0, messages: 0, chatbot: 0
   };
   isAdmin = false;
   isEditor = false;
@@ -46,6 +46,13 @@ export class AdminComponent implements OnInit {
   messagesSearch = '';
   messagesStatus: 'all' | 'answered' | 'pending' = 'all';
   messagesSort: 'newest' | 'oldest' = 'newest';
+
+  // ─── Chatbot ───
+  chatbotMessages: any[] = [];
+  chatbotClears: any[] = [];
+  chatbotSearch = '';
+  chatbotSort: 'newest' | 'oldest' = 'newest';
+  expandedConversation: string | null = null;
 
   visitorChart: ChartBar[] = [];
   loginChart: ChartBar[] = [];
@@ -71,6 +78,18 @@ export class AdminComponent implements OnInit {
   visitorAreaPath = '';
   loginAreaPath = '';
   hoverIndex: number | null = null;
+
+  // ─── Tokens line chart ───
+  readonly tokensChart = {
+    w: 880, h: 280, padL: 62, padR: 28, padT: 24, padB: 46
+  };
+  tokensChartMax = 1;
+  tokensChartTicks: { y: number; value: number }[] = [];
+  tokensChartXAxis: { x: number; label: string; date: string }[] = [];
+  tokensPoints: { x: number; y: number; value: number; label: string; date: string }[] = [];
+  tokensLinePath = '';
+  tokensAreaPath = '';
+  tokensHoverIndex: number | null = null;
 
   // ─── Sort state per table ───
   sortState: Record<SortTable, SortState> = {
@@ -128,7 +147,7 @@ export class AdminComponent implements OnInit {
 
   private loadAllData(): void {
     this.initialLoading = true;
-    let pending = 6;
+    let pending = 7;
     const done = () => {
       pending--;
       if (pending <= 0) {
@@ -166,6 +185,10 @@ export class AdminComponent implements OnInit {
       next: d => { this.users = d ?? []; done(); },
       error: fail('users')
     });
+    this.adminService.listChatbotMessages().subscribe({
+      next: d => { this.chatbotMessages = d?.messages ?? []; this.chatbotClears = d?.clears ?? []; done(); },
+      error: fail('chatbot')
+    });
   }
 
   // ─── Stats ───
@@ -189,6 +212,7 @@ export class AdminComponent implements OnInit {
     this.loginChart.forEach(b => b.height = (b.value / this.loginChartMax) * 100);
 
     this.buildLineChart();
+    this.buildTokensLineChart();
   }
 
   private buildLineChart(): void {
@@ -250,6 +274,93 @@ export class AdminComponent implements OnInit {
       label: (i % 2 === 0 || i === n - 1) ? b.label : '',
       date: b.date
     }));
+  }
+
+  private buildTokensLineChart(): void {
+    const { w, h, padL, padR, padT, padB } = this.tokensChart;
+
+    // Build daily token sums for last 14 days
+    const days = 14;
+    const buckets: Record<string, number> = {};
+    const now = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      buckets[d.toISOString().substring(0, 10)] = 0;
+    }
+    for (const m of this.chatbotMessages) {
+      if (!m.created_at || !m.tokens_used) continue;
+      const key = new Date(m.created_at).toISOString().substring(0, 10);
+      if (key in buckets) buckets[key] += m.tokens_used;
+    }
+
+    const series = Object.entries(buckets).map(([date, value]) => ({
+      label: String(new Date(date).getDate()),
+      date,
+      value
+    }));
+
+    const n = series.length;
+    if (n === 0) {
+      this.tokensPoints = [];
+      this.tokensLinePath = this.tokensAreaPath = '';
+      this.tokensChartTicks = [];
+      this.tokensChartXAxis = [];
+      return;
+    }
+
+    const innerW = w - padL - padR;
+    const innerH = h - padT - padB;
+    const stepX = n > 1 ? innerW / (n - 1) : 0;
+    const rawMax = Math.max(1, ...series.map(s => s.value));
+    const niceMax = this.niceCeil(rawMax);
+    this.tokensChartMax = niceMax;
+
+    this.tokensPoints = series.map((s, i) => ({
+      x: padL + i * stepX,
+      y: padT + innerH - (s.value / niceMax) * innerH,
+      value: s.value,
+      label: s.label,
+      date: s.date
+    }));
+
+    this.tokensLinePath = this.buildSmoothPath(this.tokensPoints);
+    this.tokensAreaPath = this.buildAreaPath(this.tokensPoints, padT + innerH);
+
+    this.tokensChartTicks = [];
+    const tickCount = 4;
+    for (let i = 0; i <= tickCount; i++) {
+      const value = Math.round((niceMax * (tickCount - i)) / tickCount);
+      this.tokensChartTicks.push({ y: padT + (innerH * i) / tickCount, value });
+    }
+
+    this.tokensChartXAxis = series.map((s, i) => ({
+      x: padL + i * stepX,
+      label: (i % 2 === 0 || i === n - 1) ? s.label : '',
+      date: s.date
+    }));
+  }
+
+  onTokensChartHover(i: number | null): void {
+    this.tokensHoverIndex = i;
+  }
+
+  get tokensHoverData(): { x: number; date: string; tokens: number; tooltipX: number } | null {
+    if (this.tokensHoverIndex === null) return null;
+    const p = this.tokensPoints[this.tokensHoverIndex];
+    if (!p) return null;
+    const tooltipX = p.x > this.tokensChart.w / 2 ? p.x - 120 : p.x + 12;
+    return { x: p.x, date: p.date, tokens: p.value, tooltipX };
+  }
+
+  get totalTokensUsed(): number {
+    return this.chatbotMessages.reduce((sum, m) => sum + (m.tokens_used || 0), 0);
+  }
+
+  formatTokens(n: number): string {
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+    return String(n);
   }
 
   private niceCeil(value: number): number {
@@ -388,6 +499,7 @@ export class AdminComponent implements OnInit {
       case 'visitors': return 'admin.tab.visitors';
       case 'logins': return 'admin.tab.logins';
       case 'messages': return 'admin.tab.messages';
+      case 'chatbot': return 'admin.tab.chatbot';
     }
   }
 
@@ -770,6 +882,122 @@ export class AdminComponent implements OnInit {
   get sortedLoginLogs(): any[] {
     const s = this.sortState.logins;
     return this.sortRows(this.loginLogs, s.col, s.dir);
+  }
+
+  // ─── Chatbot ───
+  get chatbotConversations(): { key: string; email: string; userId: number; date: string; messages: any[]; totalTokens: number; sessionIndex: number }[] {
+    const term = this.chatbotSearch.trim().toLowerCase();
+
+    // Build per-user clear timestamps sorted ascending
+    const userClears: Record<number, number[]> = {};
+    for (const c of this.chatbotClears) {
+      const uid = c.user_id;
+      if (!userClears[uid]) userClears[uid] = [];
+      userClears[uid].push(new Date(c.cleared_at).getTime());
+    }
+    for (const uid of Object.keys(userClears)) {
+      userClears[Number(uid)].sort((a, b) => a - b);
+    }
+
+    // Assign each message a session index based on clear boundaries
+    const grouped: Record<string, any[]> = {};
+    for (const m of this.chatbotMessages) {
+      const uid = m.user_id;
+      const ts = new Date(m.created_at).getTime();
+      const clears = userClears[uid] || [];
+      // Session index = number of clears that happened before this message
+      let session = 0;
+      for (let i = clears.length - 1; i >= 0; i--) {
+        if (ts > clears[i]) { session = i + 1; break; }
+      }
+      const key = `${uid}_s${session}`;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push({ ...m, _session: session });
+    }
+
+    let convos = Object.entries(grouped).map(([key, msgs]) => {
+      msgs.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      const first = msgs[0];
+      const last = msgs[msgs.length - 1];
+      const startDate = new Date(first.created_at).toISOString().substring(0, 10);
+      const endDate = new Date(last.created_at).toISOString().substring(0, 10);
+      const date = startDate === endDate ? startDate : `${startDate} → ${endDate}`;
+      return {
+        key,
+        email: first.email || '—',
+        userId: first.user_id,
+        date,
+        messages: msgs,
+        totalTokens: msgs.reduce((sum: number, m: any) => sum + (m.tokens_used || 0), 0),
+        sessionIndex: first._session
+      };
+    });
+
+    if (term) {
+      convos = convos.filter(c =>
+        c.email.toLowerCase().includes(term) ||
+        c.messages.some((m: any) => (m.message || '').toLowerCase().includes(term))
+      );
+    }
+
+    const mult = this.chatbotSort === 'newest' ? -1 : 1;
+    convos.sort((a, b) => {
+      const aFirst = new Date(a.messages[0].created_at).getTime();
+      const bFirst = new Date(b.messages[0].created_at).getTime();
+      return (aFirst - bFirst) * mult;
+    });
+
+    return convos;
+  }
+
+  get totalChatbotMessages(): number { return this.chatbotMessages.length; }
+  get totalChatbotConversations(): number { return this.chatbotConversations.length; }
+
+  toggleConversation(key: string): void {
+    this.expandedConversation = this.expandedConversation === key ? null : key;
+  }
+
+  deleteChatbotMsg(m: any): void {
+    if (!this.isAdmin) return;
+    this.askConfirm(
+      this.i18n.t('admin.chatbot.confirm.msg.title'),
+      this.i18n.t('admin.chatbot.confirm.msg.body'),
+      () => {
+        const prev = this.chatbotMessages;
+        this.chatbotMessages = this.chatbotMessages.filter(x => x.id !== m.id);
+        this.adminService.deleteChatbotMessage(m.id).subscribe({
+          error: (err) => {
+            this.chatbotMessages = prev;
+            alert(this.i18n.t('admin.error.chatbot.delete'));
+            console.error(err);
+            this.cdr.markForCheck();
+          }
+        });
+      }
+    );
+  }
+
+  deleteChatbotConvo(convo: { messages: any[]; key: string }): void {
+    if (!this.isAdmin) return;
+    this.askConfirm(
+      this.i18n.t('admin.chatbot.confirm.convo.title'),
+      this.i18n.t('admin.chatbot.confirm.convo.body'),
+      () => {
+        const ids = convo.messages.map((m: any) => m.id);
+        const idSet = new Set(ids);
+        const prev = this.chatbotMessages;
+        this.chatbotMessages = this.chatbotMessages.filter(x => !idSet.has(x.id));
+        if (this.expandedConversation === convo.key) this.expandedConversation = null;
+        this.adminService.deleteChatbotConversation(ids).subscribe({
+          error: (err) => {
+            this.chatbotMessages = prev;
+            alert(this.i18n.t('admin.error.chatbot.delete'));
+            console.error(err);
+            this.cdr.markForCheck();
+          }
+        });
+      }
+    );
   }
 
   shortUA(ua: string): string {
