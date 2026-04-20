@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import * as THREE from 'three';
+import { BackgroundThemeService } from '../../services/background-theme.service';
 
 const PARTICLE_COUNT    = 160;
 const CONNECTION_DIST   = 5.5;   // unidades Three.js
@@ -48,7 +49,20 @@ export class Hero3dComponent implements AfterViewInit, OnDestroy {
   private halfW = 0;
   private halfH = 0;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  // Materiales para poder interpolar su color con el progreso del tema
+  private particleMat!: THREE.PointsMaterial;
+  private lineMat!: THREE.LineBasicMaterial;
+
+  // Colores para el tema claro / oscuro (se fijan en init)
+  private readonly lightBg       = new THREE.Color();
+  private readonly darkBg        = new THREE.Color('#24292b');
+  private readonly lightParticle = new THREE.Color();
+  private readonly darkParticle  = new THREE.Color('#ffffff');
+
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private theme: BackgroundThemeService
+  ) {}
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -95,7 +109,8 @@ export class Hero3dComponent implements AfterViewInit, OnDestroy {
     const canvas = this.canvasRef.nativeElement;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(this.cssColor('--c-bg', '#f4f7f5'));
+    this.lightBg.set(this.cssColor('--c-bg', '#f4f7f5'));
+    this.scene.background = this.lightBg.clone();
 
     this.camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 500);
     this.camera.position.set(0, 0, CAM_Z);
@@ -133,16 +148,16 @@ export class Hero3dComponent implements AfterViewInit, OnDestroy {
     this.particleGeo = new THREE.BufferGeometry();
     this.particleGeo.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
 
-    const particleColor = this.cssColor('--c-text-heading', '#2c3e3a');
-    const mat = new THREE.PointsMaterial({
-      color:           new THREE.Color(particleColor),
+    this.lightParticle.set(this.cssColor('--c-text-heading', '#2c3e3a'));
+    this.particleMat = new THREE.PointsMaterial({
+      color:           this.lightParticle.clone(),
       size:            0.28,
       sizeAttenuation: true,
       transparent:     true,
       opacity:         0.85,
     });
 
-    this.scene.add(new THREE.Points(this.particleGeo, mat));
+    this.scene.add(new THREE.Points(this.particleGeo, this.particleMat));
   }
 
   private buildLines(): void {
@@ -151,14 +166,13 @@ export class Hero3dComponent implements AfterViewInit, OnDestroy {
     this.lineGeo.setAttribute('position', new THREE.BufferAttribute(this.linePositions, 3));
     this.lineGeo.setDrawRange(0, 0);
 
-    const lineColor = this.cssColor('--c-text-heading', '#2c3e3a');
-    const mat = new THREE.LineBasicMaterial({
-      color:       new THREE.Color(lineColor),
+    this.lineMat = new THREE.LineBasicMaterial({
+      color:       this.lightParticle.clone(),
       transparent: true,
       opacity:     0.18,
     });
 
-    this.scene.add(new THREE.LineSegments(this.lineGeo, mat));
+    this.scene.add(new THREE.LineSegments(this.lineGeo, this.lineMat));
   }
 
   // ─── Loop ───────────────────────────────────────────────────────────────────
@@ -247,6 +261,16 @@ export class Hero3dComponent implements AfterViewInit, OnDestroy {
     this.particleGeo.attributes['position'].needsUpdate = true;
     this.lineGeo.setDrawRange(0, lineVtx);
     this.lineGeo.attributes['position'].needsUpdate = true;
+
+    // Interpolar colores (fondo + puntos + líneas) según el progreso del tema.
+    // Las posiciones no se tocan, solo el color: la animación continúa sin cortes.
+    const p = this.theme.progress;
+    (this.scene.background as THREE.Color).lerpColors(this.lightBg, this.darkBg, p);
+    this.particleMat.color.lerpColors(this.lightParticle, this.darkParticle, p);
+    this.lineMat.color.lerpColors(this.lightParticle, this.darkParticle, p);
+    // En oscuro, aumentamos ligeramente la opacidad de las líneas para que
+    // se lean bien sobre el gris.
+    this.lineMat.opacity = 0.18 + 0.14 * p;
 
     this.renderer.render(this.scene, this.camera);
   };

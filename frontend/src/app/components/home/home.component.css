@@ -1,3 +1,25 @@
+/* Ajustes de color para las secciones posteriores cuando el fondo está oscuro */
+:host-context(.dark-scroll-active) .education-section .section-header-cv h2,
+:host-context(.dark-scroll-active) .skills-section .section-header-cv h2,
+:host-context(.dark-scroll-active) .projects-section .section-header-cv h2,
+:host-context(.dark-scroll-active) .portfolio-footer .footer-name,
+:host-context(.dark-scroll-active) .portfolio-footer .footer-role,
+:host-context(.dark-scroll-active) .portfolio-footer .footer-sep {
+  color: #f1f5f4;
+}
+
+:host-context(.dark-scroll-active) .portfolio-footer {
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.section-header-cv h2,
+.portfolio-footer .footer-name,
+.portfolio-footer .footer-role,
+.portfolio-footer .footer-sep,
+.portfolio-footer {
+  transition: color 0.35s ease, border-color 0.35s ease;
+}
+
 /* ═══════════════════════════════════════════════════════
    HERO
    ═══════════════════════════════════════════════════════ */
@@ -242,11 +264,8 @@
   flex-direction: column;
   justify-content: center;
   align-self: center;
-  background: rgba(244, 247, 245, 0.78);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 16px;
-  padding: 32px;
+  padding: 0;
+  background: transparent;
 }
 
 .exp-title-panel .section-header-cv {

@@ -221,6 +221,7 @@ const ES: Record<string, string> = {
   'admin.chart.logins.pill': '{n} totales',
   'admin.chart.activity.title': 'Actividad — últimos 14 días',
   'admin.chart.logins14.title': 'Logins — últimos 14 días',
+  'admin.chart.tokens.title': 'Tokens gastados — histórico',
 
   // Users
   'admin.users.title': 'Usuarios',
@@ -565,6 +566,7 @@ const EN: Record<string, string> = {
   'admin.chart.logins.pill': '{n} total',
   'admin.chart.activity.title': 'Activity — last 14 days',
   'admin.chart.logins14.title': 'Logins — last 14 days',
+  'admin.chart.tokens.title': 'Tokens spent — history',
 
   // Users
   'admin.users.title': 'Users',

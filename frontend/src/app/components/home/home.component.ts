@@ -9,6 +9,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ProjectService } from '../../services/project.service';
 import { ExperienceService } from '../../services/experience.service';
 import { TranslationService } from '../../services/translation.service';
+import { BackgroundThemeService } from '../../services/background-theme.service';
 
 @Component({
   selector: 'app-home',
@@ -43,7 +44,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private experienceService: ExperienceService,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object,
-    public i18n: TranslationService
+    public i18n: TranslationService,
+    private theme: BackgroundThemeService
   ) {
     if (isPlatformBrowser(this.platformId)) {
       gsap.registerPlugin(ScrollTrigger);
@@ -152,6 +154,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // en body/html con pin:true. Sin esto, al navegar a /admin el scroll
     // queda bloqueado y aparece una animación de rebote.
     ScrollTrigger.getAll().forEach(t => t.kill(true));
+    this.theme.setProgress(0);
     if (isPlatformBrowser(this.platformId)) {
       // Limpieza defensiva de estilos residuales
       const body = document.body;
@@ -164,6 +167,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       body.style.touchAction = '';
       html.style.overflow = '';
       html.style.scrollBehavior = '';
+      html.classList.remove('dark-scroll-active');
     }
   }
 
@@ -209,23 +213,37 @@ export class HomeComponent implements OnInit, OnDestroy {
         section.style.width = '100vw';
       };
 
-      // Aplicar ANTES de crear el ScrollTrigger para que GSAP capture el ancho correcto
       applyFullBleed();
 
-      gsap.to(track, {
-        x: () => -(track.scrollWidth - window.innerWidth),
-        ease: 'none',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: () => `+=${track.scrollWidth - window.innerWidth}`,
-          scrub: 1,
-          pin: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onRefresh: applyFullBleed,
+      // Offset inicial: la pista arranca desplazada a la derecha para que el
+      // primer panel (título) aparezca en la mitad derecha del viewport.
+      const initialOffset = () => window.innerWidth * 0.5;
+      const totalScroll   = () => track.scrollWidth - window.innerWidth + initialOffset();
+
+      gsap.fromTo(track,
+        { x: initialOffset },
+        {
+          x: () => -(track.scrollWidth - window.innerWidth),
+          ease: 'none',
+          scrollTrigger: {
+            trigger: section,
+            start: 'top top',
+            end: () => `+=${totalScroll()}`,
+            scrub: 1,
+            pin: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onRefresh: applyFullBleed,
+            onUpdate: (self) => {
+              // Envía el progreso al canvas 3D: interpola bg/puntos/líneas
+              // sin reposicionar nada, solo color.
+              this.theme.setProgress(self.progress);
+              // A partir de la mitad, los apartados de abajo usan texto claro
+              document.documentElement.classList.toggle('dark-scroll-active', self.progress > 0.5);
+            },
+          }
         }
-      });
+      );
     }
 
     // Education cards — scale-up con bounce
@@ -272,6 +290,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.expSection) {
       this.expSection.nativeElement.style.marginLeft = '';
       this.expSection.nativeElement.style.width = '';
+    }
+    this.theme.setProgress(0);
+    if (isPlatformBrowser(this.platformId)) {
+      document.documentElement.classList.remove('dark-scroll-active');
     }
     this.animationsInitialized = false;
   }

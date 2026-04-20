@@ -279,29 +279,9 @@ export class AdminComponent implements OnInit {
   private buildTokensLineChart(): void {
     const { w, h, padL, padR, padT, padB } = this.tokensChart;
 
-    // Build daily token sums for last 14 days
-    const days = 14;
-    const buckets: Record<string, number> = {};
-    const now = new Date();
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      buckets[d.toISOString().substring(0, 10)] = 0;
-    }
-    for (const m of this.chatbotMessages) {
-      if (!m.created_at || !m.tokens_used) continue;
-      const key = new Date(m.created_at).toISOString().substring(0, 10);
-      if (key in buckets) buckets[key] += m.tokens_used;
-    }
+    const tokenMsgs = this.chatbotMessages.filter(m => m.created_at && m.tokens_used);
 
-    const series = Object.entries(buckets).map(([date, value]) => ({
-      label: String(new Date(date).getDate()),
-      date,
-      value
-    }));
-
-    const n = series.length;
-    if (n === 0) {
+    if (tokenMsgs.length === 0) {
       this.tokensPoints = [];
       this.tokensLinePath = this.tokensAreaPath = '';
       this.tokensChartTicks = [];
@@ -309,6 +289,30 @@ export class AdminComponent implements OnInit {
       return;
     }
 
+    // Span from the earliest day with token data up to today (UTC-bucketed)
+    const startTs = Math.min(...tokenMsgs.map(m => new Date(m.created_at).getTime()));
+    const startKey = new Date(startTs).toISOString().substring(0, 10);
+    const endKey = new Date().toISOString().substring(0, 10);
+
+    const buckets: Record<string, number> = {};
+    const cursor = new Date(startKey + 'T00:00:00Z');
+    const end = new Date(endKey + 'T00:00:00Z');
+    while (cursor.getTime() <= end.getTime()) {
+      buckets[cursor.toISOString().substring(0, 10)] = 0;
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+
+    for (const m of tokenMsgs) {
+      const key = new Date(m.created_at).toISOString().substring(0, 10);
+      if (key in buckets) buckets[key] += m.tokens_used;
+    }
+
+    const series = Object.entries(buckets).map(([date, value]) => {
+      const day = Number(date.substring(8, 10));
+      return { label: String(day), date, value };
+    });
+
+    const n = series.length;
     const innerW = w - padL - padR;
     const innerH = h - padT - padB;
     const stepX = n > 1 ? innerW / (n - 1) : 0;
@@ -334,11 +338,20 @@ export class AdminComponent implements OnInit {
       this.tokensChartTicks.push({ y: padT + (innerH * i) / tickCount, value });
     }
 
-    this.tokensChartXAxis = series.map((s, i) => ({
-      x: padL + i * stepX,
-      label: (i % 2 === 0 || i === n - 1) ? s.label : '',
-      date: s.date
-    }));
+    // Keep the x-axis readable as the range grows: cap at ~10 labels
+    const maxLabels = 10;
+    const stride = Math.max(1, Math.ceil(n / maxLabels));
+    const spansMonths = series[0].date.substring(0, 7) !== series[n - 1].date.substring(0, 7);
+    this.tokensChartXAxis = series.map((s, i) => {
+      const show = i % stride === 0 || i === n - 1;
+      let label = '';
+      if (show) {
+        const day = Number(s.date.substring(8, 10));
+        const month = Number(s.date.substring(5, 7));
+        label = spansMonths ? `${day}/${month}` : String(day);
+      }
+      return { x: padL + i * stepX, label, date: s.date };
+    });
   }
 
   onTokensChartHover(i: number | null): void {
