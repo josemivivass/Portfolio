@@ -120,6 +120,9 @@ const ES: Record<string, string> = {
   'projects.none': 'No hay proyectos disponibles en este momento.',
   'projects.code': 'Código',
   'projects.demo': 'Demo',
+  'projects.kicker': 'PORTFOLIO',
+  'projects.scan': 'Escanéame',
+  'projects.featured_label': 'Selección destacada',
 
   // --- Footer ---
   'footer.role': 'Desarrollador Web · IA & Big Data',
@@ -465,6 +468,9 @@ const EN: Record<string, string> = {
   'projects.none': 'No projects available at this time.',
   'projects.code': 'Code',
   'projects.demo': 'Demo',
+  'projects.kicker': 'PORTFOLIO',
+  'projects.scan': 'Scan me',
+  'projects.featured_label': 'Featured selection',
 
   // --- Footer ---
   'footer.role': 'Web Developer · AI & Big Data',

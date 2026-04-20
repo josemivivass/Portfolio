@@ -22,12 +22,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   // --- ViewChildren / ViewChild para animaciones GSAP ---
   @ViewChildren('cvSection')  cvSections!:  QueryList<ElementRef>;
   @ViewChildren('eduEl')      eduEls!:      QueryList<ElementRef>;
-  @ViewChildren('skillEl')    skillEls!:    QueryList<ElementRef>;
-  @ViewChildren('projectCard') projectCards!: QueryList<ElementRef>;
 
   // Scroll horizontal — Experiencia
   @ViewChild('expSection') expSection!: ElementRef;
   @ViewChild('expTrack')   expTrack!:   ElementRef;
+
+  // Telón skills → proyectos destacados
+  @ViewChild('showcaseSection') showcaseSection!: ElementRef;
+  @ViewChild('spPin')            spPin!:           ElementRef;
+  @ViewChild('skillsColLeft')    skillsColLeft!:   ElementRef;
+  @ViewChild('skillsColRight')   skillsColRight!:  ElementRef;
+  @ViewChild('projectsCurtain')  projectsCurtain!: ElementRef;
 
   // --- Datos de proyectos ---
   projects: any[] = [];
@@ -148,6 +153,15 @@ export class HomeComponent implements OnInit, OnDestroy {
            (exp.contract_type_en ?? '').toLowerCase() === 'internship';
   }
 
+  // ─── Helpers para la vitrina de proyectos ────────────────────────────────
+
+  /** QR generado vía servicio público a partir de la URL más relevante del proyecto */
+  qrUrl(project: any): string {
+    const target = project?.live_url || project?.repo_url ||
+      (isPlatformBrowser(this.platformId) ? window.location.origin : '');
+    return `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=6&data=${encodeURIComponent(target)}`;
+  }
+
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
     // revert: true restaura pin-spacers y estilos inline que GSAP inyecta
@@ -255,24 +269,86 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     });
 
-    // Skill categories — alternando izquierda/derecha
-    this.skillEls.forEach((card, i) => {
-      gsap.from(card.nativeElement, {
-        opacity: 0, x: i % 2 === 0 ? -40 : 40,
-        duration: 0.65, delay: i * 0.1, ease: 'power2.out',
-        scrollTrigger: { trigger: card.nativeElement, start: 'top 90%', toggleActions: 'play none none reverse' }
-      });
-    });
+    // Skills → Proyectos — telón combinado (solo desktop).
+    // Fase 1 (0-50%): ambas columnas entran desde los laterales hacia el centro.
+    // Fase 2 (50-100%): el telón de proyectos sube desde abajo hasta cubrir la página.
+    if (window.innerWidth > 850 && this.showcaseSection && this.spPin
+        && this.skillsColLeft && this.skillsColRight && this.projectsCurtain) {
+      const section   = this.showcaseSection.nativeElement;
+      const pin       = this.spPin.nativeElement;
+      const leftCol   = this.skillsColLeft.nativeElement;
+      const rightCol  = this.skillsColRight.nativeElement;
+      const curtain   = this.projectsCurtain.nativeElement;
 
-    // Project cards — alternando izquierda/derecha
-    if (this.projectCards?.length) {
-      this.projectCards.forEach((card, i) => {
-        gsap.from(card.nativeElement, {
-          opacity: 0, x: i % 2 === 0 ? -100 : 100,
-          duration: 1, ease: 'power2.out',
-          scrollTrigger: { trigger: card.nativeElement, start: 'top 85%', toggleActions: 'play none none reverse' }
-        });
+      // Escapa del padding del .main-content (250px/lado) para que la sección
+      // ocupe el 100% del ancho del viewport.
+      const applyFullBleedShowcase = () => {
+        const rect = section.getBoundingClientRect();
+        section.style.marginLeft = rect.left > 0 ? `-${rect.left}px` : '0px';
+        section.style.width = '100vw';
+      };
+      applyFullBleedShowcase();
+
+      // Ambas columnas entran con la misma lógica que la derecha (evita el
+      // bug al hacer scroll que aparecía con el desplazamiento negativo).
+      // Las dos arrancan desplazadas hacia la derecha — dentro del viewport —
+      // y convergen a su posición natural.
+      const measureEntryShift = () => {
+        const savedR = rightCol.style.transform;
+        rightCol.style.transform = '';
+        const rRect = rightCol.getBoundingClientRect();
+        rightCol.style.transform = savedR;
+        const vw = window.innerWidth;
+        return Math.max(0, vw - rRect.right - 24);
+      };
+
+      let entryShift = measureEntryShift();
+
+      // Estado inicial: ambas columnas desplazadas a la derecha (sin salir del
+      // viewport), telón oculto debajo. Sin transparencias.
+      gsap.set(curtain, { yPercent: 100 });
+      gsap.set(leftCol,  { x: entryShift });
+      gsap.set(rightCol, { x: entryShift });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: 'top top',
+          end: () => `+=${window.innerHeight * 2}`,
+          pin: pin,
+          pinType: 'fixed',
+          pinSpacing: true,
+          scrub: 1,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onRefresh: () => {
+            applyFullBleedShowcase();
+            ({ leftShift, rightShift } = measureEntryShift());
+          },
+        }
       });
+
+      // Fase 1: columnas entran desde los laterales al centro (sin opacidad).
+      tl.fromTo(leftCol,
+        { x: () => -leftShift },
+        { x: 0, ease: 'none', duration: 1 },
+        0
+      );
+      tl.fromTo(rightCol,
+        { x: () => rightShift },
+        { x: 0, ease: 'none', duration: 1 },
+        0
+      );
+
+      // Fase 2: telón sube desde abajo cubriendo todo
+      tl.fromTo(curtain,
+        { yPercent: 100 },
+        { yPercent: 0, ease: 'none', duration: 1 },
+        1
+      );
+    } else if (this.projectsCurtain) {
+      // En móvil o si faltan refs, mostrar el telón en su sitio sin animación
+      gsap.set(this.projectsCurtain.nativeElement, { yPercent: 0, position: 'relative' });
     }
 
     ScrollTrigger.refresh();
@@ -281,7 +357,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   /** Resetea animaciones para que puedan reproducirse de nuevo (al volver a la intro). */
   resetAnimations(): void {
     ScrollTrigger.getAll().forEach(t => t.kill(true));
-    gsap.set('.section-header-cv, .about-card, .edu-card, .skill-category, .project-card-horizontal', {
+    gsap.set('.section-header-cv, .about-card, .edu-card, .skill-category', {
       clearProps: 'all'
     });
     if (this.expTrack) {
@@ -291,6 +367,13 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.expSection.nativeElement.style.marginLeft = '';
       this.expSection.nativeElement.style.width = '';
     }
+    if (this.showcaseSection) {
+      this.showcaseSection.nativeElement.style.marginLeft = '';
+      this.showcaseSection.nativeElement.style.width = '';
+    }
+    if (this.skillsColLeft)   gsap.set(this.skillsColLeft.nativeElement,   { clearProps: 'all' });
+    if (this.skillsColRight)  gsap.set(this.skillsColRight.nativeElement,  { clearProps: 'all' });
+    if (this.projectsCurtain) gsap.set(this.projectsCurtain.nativeElement, { clearProps: 'all' });
     this.theme.setProgress(0);
     if (isPlatformBrowser(this.platformId)) {
       document.documentElement.classList.remove('dark-scroll-active');

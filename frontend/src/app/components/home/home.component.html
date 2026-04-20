@@ -153,88 +153,120 @@
   </div>
 </section>
 
-<!-- HABILIDADES TECNICAS -->
-<section #cvSection class="skills-section">
-  <div class="section-inner">
-    <header class="section-header-cv">
-      <h2>{{ i18n.t('skills.title') }}</h2>
-      <div class="accent-line"></div>
-    </header>
-    <div class="skills-grid">
-      <div #skillEl class="skill-category">
-        <h3>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          {{ i18n.t('skills.ai') }}
-        </h3>
-        <div class="skill-tags">
-          <span>Python</span><span>Machine Learning</span><span>LangChain</span><span>RAGs</span><span>OpenAI API</span><span>Scikit-learn</span><span>Pandas</span><span>NumPy</span><span>Power BI</span><span>LlamaIndex</span><span>LLMs</span>
-        </div>
-      </div>
-      <div #skillEl class="skill-category">
-        <h3>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          {{ i18n.t('skills.dev') }}
-        </h3>
-        <div class="skill-tags">
-          <span>Angular</span><span>TypeScript</span><span>React.js</span><span>Node.js</span><span>Android</span><span>Java</span><span>SQL</span><span>HTML5/CSS3</span>
-        </div>
-      </div>
-      <div #skillEl class="skill-category">
-        <h3>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
-          {{ i18n.t('skills.cloud') }}
-        </h3>
-        <div class="skill-tags">
-          <span>AWS</span><span>Docker</span><span>GitHub</span><span>Linux</span>
-        </div>
-      </div>
-      <div #skillEl class="skill-category">
-        <h3>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          {{ i18n.t('skills.qa') }}
-        </h3>
-        <div class="skill-tags">
-          <span>JMeter</span><span>LoadRunner</span><span>Postman</span><span>SoapUI</span><span>ALM</span><span>Grafana</span><span>InfluxDB</span><span>REST APIs</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+<!-- HABILIDADES TÉCNICAS + PROYECTOS (telón revelador) -->
+<section #cvSection class="skills-showcase-section" #showcaseSection>
+  <div class="sp-pin" #spPin>
 
-<!-- PROYECTOS -->
-<section #cvSection class="projects-section">
-  <div class="section-inner">
-    <header class="section-header-cv">
-      <h2>{{ i18n.t('projects.title') }}</h2>
-      <div class="accent-line"></div>
-    </header>
-
-    <div *ngIf="errorMessage" class="error-message">
-      {{ i18n.t('projects.error') }}
-    </div>
-
-    <div class="projects-list" *ngIf="projects.length > 0; else noProjects">
-      <article #projectCard class="project-card-horizontal" *ngFor="let project of projects">
-        <div class="project-image" [ngStyle]="{'background-image': 'url(' + (project.image_url || 'https://placehold.co/800x600/EEE/31343C') + ')'}">
-        </div>
-        <div class="project-content">
-          <h3>{{ i18n.lang === 'en' && project.title_en ? project.title_en : project.title }}</h3>
-          <p class="date">{{ project.project_date | date:'longDate' }}</p>
-          <p class="description">{{ i18n.lang === 'en' && project.description_en ? project.description_en : project.description }}</p>
-          <div class="tags">
-            <span class="tag" *ngFor="let tag of project.tags.split(',')">{{ tag.trim() }}</span>
+    <!-- Capa base: habilidades en dos columnas -->
+    <div class="sp-skills-layer">
+      <div class="section-inner">
+        <header class="section-header-cv">
+          <h2>{{ i18n.t('skills.title') }}</h2>
+          <div class="accent-line"></div>
+        </header>
+        <div class="skills-two-col">
+          <div class="skills-col skills-col--left" #skillsColLeft>
+            <div class="skill-category">
+              <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                {{ i18n.t('skills.ai') }}
+              </h3>
+              <div class="skill-tags">
+                <span>Python</span><span>Machine Learning</span><span>LangChain</span><span>RAGs</span><span>OpenAI API</span><span>Scikit-learn</span><span>Pandas</span><span>NumPy</span><span>Power BI</span><span>LlamaIndex</span><span>LLMs</span>
+              </div>
+            </div>
+            <div class="skill-category">
+              <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                {{ i18n.t('skills.cloud') }}
+              </h3>
+              <div class="skill-tags">
+                <span>AWS</span><span>Docker</span><span>GitHub</span><span>Linux</span>
+              </div>
+            </div>
           </div>
-          <div class="project-links">
-            <a *ngIf="project.repo_url" [href]="project.repo_url" target="_blank" class="btn-outline">{{ i18n.t('projects.code') }}</a>
-            <a *ngIf="project.live_url" [href]="project.live_url" target="_blank" class="btn-primary">{{ i18n.t('projects.demo') }}</a>
+          <div class="skills-col skills-col--right" #skillsColRight>
+            <div class="skill-category">
+              <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                {{ i18n.t('skills.dev') }}
+              </h3>
+              <div class="skill-tags">
+                <span>Angular</span><span>TypeScript</span><span>React.js</span><span>Node.js</span><span>Android</span><span>Java</span><span>SQL</span><span>HTML5/CSS3</span>
+              </div>
+            </div>
+            <div class="skill-category">
+              <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                {{ i18n.t('skills.qa') }}
+              </h3>
+              <div class="skill-tags">
+                <span>JMeter</span><span>LoadRunner</span><span>Postman</span><span>SoapUI</span><span>ALM</span><span>Grafana</span><span>InfluxDB</span><span>REST APIs</span>
+              </div>
+            </div>
           </div>
         </div>
-      </article>
+      </div>
     </div>
 
-    <ng-template #noProjects>
-      <p class="no-projects" *ngIf="!errorMessage">{{ i18n.t('projects.none') }}</p>
-    </ng-template>
+    <!-- Capa telón: proyectos destacados -->
+    <div class="sp-projects-curtain" #projectsCurtain>
+      <div class="showcase-inner">
+        <header class="showcase-header">
+          <span class="showcase-kicker">{{ i18n.t('projects.kicker') }}</span>
+          <h2 class="showcase-title">{{ i18n.t('projects.title') }}</h2>
+          <span class="showcase-sub">{{ i18n.t('projects.featured_label') }}</span>
+        </header>
+
+        <div *ngIf="errorMessage" class="showcase-error">
+          {{ i18n.t('projects.error') }}
+        </div>
+
+        <div class="showcase-list" *ngIf="projects.length > 0; else noProjectsTpl">
+          <article class="showcase-card" *ngFor="let project of projects; let i = index">
+            <div class="showcase-num">{{ i + 1 | number:'2.0-0' }}</div>
+
+            <div class="showcase-image-wrap">
+              <div class="showcase-image" [ngStyle]="{'background-image': 'url(' + (project.image_url || 'https://placehold.co/1200x600/1a1f1d/7de2c3?text=Proyecto') + ')'}"></div>
+              <div class="showcase-image-sheen"></div>
+            </div>
+
+            <div class="showcase-content">
+              <div class="showcase-meta">
+                <span class="showcase-date">{{ project.project_date | date:'MMM yyyy' }}</span>
+                <span class="showcase-dot">·</span>
+                <span class="showcase-id">#{{ i + 1 | number:'2.0-0' }}</span>
+              </div>
+              <h3 class="showcase-card-title">
+                {{ i18n.lang === 'en' && project.title_en ? project.title_en : project.title }}
+              </h3>
+              <p class="showcase-desc">
+                {{ i18n.lang === 'en' && project.description_en ? project.description_en : project.description }}
+              </p>
+              <div class="showcase-tags">
+                <span class="showcase-tag" *ngFor="let tag of project.tags.split(',')">{{ tag.trim() }}</span>
+              </div>
+              <div class="showcase-links">
+                <a *ngIf="project.repo_url" [href]="project.repo_url" target="_blank" class="showcase-btn showcase-btn--ghost">{{ i18n.t('projects.code') }}</a>
+                <a *ngIf="project.live_url" [href]="project.live_url" target="_blank" class="showcase-btn showcase-btn--solid">{{ i18n.t('projects.demo') }} →</a>
+              </div>
+            </div>
+
+            <div class="showcase-qr">
+              <div class="showcase-qr-frame">
+                <img [src]="qrUrl(project)" alt="QR" loading="lazy" />
+              </div>
+              <span class="showcase-qr-label">{{ i18n.t('projects.scan') }}</span>
+            </div>
+          </article>
+        </div>
+
+        <ng-template #noProjectsTpl>
+          <p class="showcase-empty" *ngIf="!errorMessage">{{ i18n.t('projects.none') }}</p>
+        </ng-template>
+      </div>
+    </div>
+
   </div>
 </section>
 
