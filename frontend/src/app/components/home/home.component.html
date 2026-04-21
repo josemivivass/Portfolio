@@ -213,7 +213,6 @@
     <div class="sp-projects-curtain" #projectsCurtain>
       <div class="showcase-inner">
         <header class="showcase-header">
-          <span class="showcase-kicker">{{ i18n.t('projects.kicker') }}</span>
           <h2 class="showcase-title">{{ i18n.t('projects.title') }}</h2>
           <span class="showcase-sub">{{ i18n.t('projects.featured_label') }}</span>
         </header>
@@ -222,12 +221,12 @@
           {{ i18n.t('projects.error') }}
         </div>
 
-        <div class="showcase-list" *ngIf="projects.length > 0; else noProjectsTpl">
+        <div class="showcase-list" #showcaseList *ngIf="projects.length > 0; else noProjectsTpl">
           <article class="showcase-card" *ngFor="let project of projects; let i = index">
             <div class="showcase-num">{{ i + 1 | number:'2.0-0' }}</div>
 
             <div class="showcase-image-wrap">
-              <div class="showcase-image" [ngStyle]="{'background-image': 'url(' + (project.image_url || 'https://placehold.co/1200x600/1a1f1d/7de2c3?text=Proyecto') + ')'}"></div>
+              <div class="showcase-image" [ngStyle]="{'background-image': 'url(/images/proyecto1.PNG)'}"></div>
               <div class="showcase-image-sheen"></div>
             </div>
 
@@ -243,7 +242,7 @@
               <p class="showcase-desc">
                 {{ i18n.lang === 'en' && project.description_en ? project.description_en : project.description }}
               </p>
-              <div class="showcase-tags">
+              <div class="showcase-tags" *ngIf="project.tags">
                 <span class="showcase-tag" *ngFor="let tag of project.tags.split(',')">{{ tag.trim() }}</span>
               </div>
               <div class="showcase-links">
@@ -264,26 +263,27 @@
         <ng-template #noProjectsTpl>
           <p class="showcase-empty" *ngIf="!errorMessage">{{ i18n.t('projects.none') }}</p>
         </ng-template>
+
+        <!-- FOOTER (integrado dentro del telón para que permanezca visible
+             mientras el telón está subido) -->
+        <footer class="portfolio-footer">
+          <div class="footer-inner">
+            <div class="footer-brand">
+              <span class="footer-name">Jose Miguel Vivas Sanchez</span>
+              <span class="footer-sep">&middot;</span>
+              <span class="footer-role">{{ i18n.t('footer.role') }}</span>
+            </div>
+            <div class="footer-contact">
+              <a href="mailto:jose.miguel.vivas.sanchez@gmail.com">jose.miguel.vivas.sanchez&#64;gmail.com</a>
+              <span class="footer-sep">&middot;</span>
+              <a href="https://linkedin.com/in/josemiguelvivassanchez/" target="_blank">LinkedIn</a>
+              <span class="footer-sep">&middot;</span>
+              <a href="tel:+34645316309">+34 645 31 63 09</a>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
 
   </div>
 </section>
-
-<!-- FOOTER -->
-<footer class="portfolio-footer">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <span class="footer-name">Jose Miguel Vivas Sanchez</span>
-      <span class="footer-sep">&middot;</span>
-      <span class="footer-role">{{ i18n.t('footer.role') }}</span>
-    </div>
-    <div class="footer-contact">
-      <a href="mailto:jose.miguel.vivas.sanchez@gmail.com">jose.miguel.vivas.sanchez&#64;gmail.com</a>
-      <span class="footer-sep">&middot;</span>
-      <a href="https://linkedin.com/in/josemiguelvivassanchez/" target="_blank">LinkedIn</a>
-      <span class="footer-sep">&middot;</span>
-      <a href="tel:+34645316309">+34 645 31 63 09</a>
-    </div>
-  </div>
-</footer>

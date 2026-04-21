@@ -33,6 +33,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('skillsColLeft')    skillsColLeft!:   ElementRef;
   @ViewChild('skillsColRight')   skillsColRight!:  ElementRef;
   @ViewChild('projectsCurtain')  projectsCurtain!: ElementRef;
+  @ViewChild('showcaseList')     showcaseList!:    ElementRef;
 
   // --- Datos de proyectos ---
   projects: any[] = [];
@@ -43,6 +44,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private animationsInitialized = false;
   private langSub!: Subscription;
+  private listWheelHandler?: (e: WheelEvent) => void;
 
   constructor(
     private projectService: ProjectService,
@@ -63,8 +65,13 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.projectService.getProjects().subscribe({
       next: (data) => {
-        this.projects = data?.length ? data.slice(0, 3) : [];
+        this.projects = data ?? [];
         this.cdr.detectChanges();
+        // Refrescar ScrollTrigger para que la fase 3 del telón
+        // (scroll de la pista de proyectos) mida el alto real.
+        if (isPlatformBrowser(this.platformId)) {
+          ScrollTrigger.refresh();
+        }
       },
       error: (err) => {
         console.error('Error de red al cargar proyectos:', err);
@@ -164,6 +171,11 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
+    // Handler de rueda sobre la lista de proyectos
+    if (this.listWheelHandler && this.showcaseList) {
+      this.showcaseList.nativeElement.removeEventListener('wheel', this.listWheelHandler);
+      this.listWheelHandler = undefined;
+    }
     // revert: true restaura pin-spacers y estilos inline que GSAP inyecta
     // en body/html con pin:true. Sin esto, al navegar a /admin el scroll
     // queda bloqueado y aparece una animación de rebote.
@@ -193,8 +205,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.animationsInitialized = true;
 
     // Headers de sección — fade-up
+    // Omitimos el de la sección pineada de habilidades: al estar anclada
+    // dentro del scroll, cualquier animación de y daba sensación de que el
+    // título "se movía" con el scroll.
     this.cvSections.forEach((section) => {
-      const header = section.nativeElement.querySelector('.section-header-cv');
+      const el = section.nativeElement;
+      if (el.classList.contains('skills-showcase-section')) return;
+      const header = el.querySelector('.section-header-cv');
       if (header) {
         gsap.from(header, {
           opacity: 0, y: 30,
@@ -229,35 +246,58 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       applyFullBleed();
 
-      // Offset inicial: la pista arranca desplazada a la derecha para que el
-      // primer panel (título) aparezca en la mitad derecha del viewport.
-      const initialOffset = () => window.innerWidth * 0.5;
-      const totalScroll   = () => track.scrollWidth - window.innerWidth + initialOffset();
+      // Offset inicial pequeño: antes era vw*0.5 (título a la derecha).
+      // Ahora el título arranca pegado a la izquierda.
+      const setTrackX = gsap.quickSetter(track, 'x', 'px') as (v: number) => void;
 
-      gsap.fromTo(track,
-        { x: initialOffset },
-        {
-          x: () => -(track.scrollWidth - window.innerWidth),
-          ease: 'none',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top top',
-            end: () => `+=${totalScroll()}`,
-            scrub: 1,
-            pin: true,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-            onRefresh: applyFullBleed,
-            onUpdate: (self) => {
-              // Envía el progreso al canvas 3D: interpola bg/puntos/líneas
-              // sin reposicionar nada, solo color.
-              this.theme.setProgress(self.progress);
-              // A partir de la mitad, los apartados de abajo usan texto claro
-              document.documentElement.classList.toggle('dark-scroll-active', self.progress > 0.5);
-            },
-          }
-        }
-      );
+      let startX    = 0;
+      let entryEndX = 0;
+      let pinEndX   = 0;
+
+      const computePositions = () => {
+        applyFullBleed();
+        // Arranca con el título aproximadamente centrado en el viewport.
+        startX    = window.innerWidth * 0.5;
+        entryEndX = 0;
+        pinEndX   = -(track.scrollWidth - window.innerWidth);
+      };
+
+      computePositions();
+      setTrackX(startX);
+
+      // ST1 — Entrada: el track se desplaza horizontalmente mientras la
+      // sección entra en viewport (desde "top bottom" hasta "top top"), sin
+      // pin. Así el scroll horizontal comienza en cuanto la sección asoma.
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top bottom',
+        end:   'top top',
+        scrub: 1,
+        invalidateOnRefresh: true,
+        onRefresh: computePositions,
+        onUpdate: (self) => {
+          setTrackX(startX + (entryEndX - startX) * self.progress);
+        },
+      });
+
+      // ST2 — Pin + scroll horizontal restante.
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top top',
+        end: () => `+=${Math.abs(pinEndX - entryEndX)}`,
+        scrub: 1,
+        pin: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onRefresh: computePositions,
+        onUpdate: (self) => {
+          setTrackX(entryEndX + (pinEndX - entryEndX) * self.progress);
+          // Envía el progreso al canvas 3D: interpola bg/puntos/líneas.
+          this.theme.setProgress(self.progress);
+          // A partir de la mitad, los apartados de abajo usan texto claro.
+          document.documentElement.classList.toggle('dark-scroll-active', self.progress > 0.5);
+        },
+      });
     }
 
     // Education cards — scale-up con bounce
@@ -269,9 +309,19 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     });
 
-    // Skills → Proyectos — telón combinado (solo desktop).
-    // Fase 1 (0-50%): ambas columnas entran desde los laterales hacia el centro.
-    // Fase 2 (50-100%): el telón de proyectos sube desde abajo hasta cubrir la página.
+    // Skills → Proyectos (solo desktop).
+    // Estrategia con DOS ScrollTriggers:
+    //   ST1 (entrada, sin pin): se activa cuando la sección asoma por la
+    //        parte baja del viewport y termina cuando su top llega arriba.
+    //        Durante ese recorrido (≈100vh de scroll) se animan en paralelo
+    //        — con solape — las dos capas:
+    //          · Fase A (0..0.5 del progreso): las columnas convergen.
+    //          · Fase B (0.3..1.0):            el telón de proyectos sube.
+    //        El solape (0.3..0.5) hace que el telón empiece a subir antes
+    //        de que terminen las columnas.
+    //   ST2 (pin + buffer): cuando el top toca el viewport, ancla sp-pin
+    //        para que el usuario explore la lista. La rueda sobre la lista
+    //        se queda dentro (wheel handler + overscroll-behavior: contain).
     if (window.innerWidth > 850 && this.showcaseSection && this.spPin
         && this.skillsColLeft && this.skillsColRight && this.projectsCurtain) {
       const section   = this.showcaseSection.nativeElement;
@@ -280,72 +330,103 @@ export class HomeComponent implements OnInit, OnDestroy {
       const rightCol  = this.skillsColRight.nativeElement;
       const curtain   = this.projectsCurtain.nativeElement;
 
-      // Escapa del padding del .main-content (250px/lado) para que la sección
-      // ocupe el 100% del ancho del viewport.
-      const applyFullBleedShowcase = () => {
-        const rect = section.getBoundingClientRect();
-        section.style.marginLeft = rect.left > 0 ? `-${rect.left}px` : '0px';
-        section.style.width = '100vw';
-      };
-      applyFullBleedShowcase();
-
-      // Ambas columnas entran con la misma lógica que la derecha (evita el
-      // bug al hacer scroll que aparecía con el desplazamiento negativo).
-      // Las dos arrancan desplazadas hacia la derecha — dentro del viewport —
-      // y convergen a su posición natural.
-      const measureEntryShift = () => {
+      const measureShifts = () => {
+        const savedL = leftCol.style.transform;
         const savedR = rightCol.style.transform;
+        leftCol.style.transform = '';
         rightCol.style.transform = '';
+        const lRect = leftCol.getBoundingClientRect();
         const rRect = rightCol.getBoundingClientRect();
+        leftCol.style.transform = savedL;
         rightCol.style.transform = savedR;
         const vw = window.innerWidth;
-        return Math.max(0, vw - rRect.right - 24);
+        return {
+          leftShift:  Math.max(0, lRect.left - 24),
+          rightShift: Math.max(0, vw - rRect.right - 24)
+        };
       };
 
-      let entryShift = measureEntryShift();
+      let { leftShift, rightShift } = measureShifts();
 
-      // Estado inicial: ambas columnas desplazadas a la derecha (sin salir del
-      // viewport), telón oculto debajo. Sin transparencias.
-      gsap.set(curtain, { yPercent: 100 });
-      gsap.set(leftCol,  { x: entryShift });
-      gsap.set(rightCol, { x: entryShift });
+      const setLeftX   = gsap.quickSetter(leftCol,  'x', 'px')   as (v: number) => void;
+      const setRightX  = gsap.quickSetter(rightCol, 'x', 'px')   as (v: number) => void;
+      const setCurtain = gsap.quickSetter(curtain,  'yPercent') as (v: number) => void;
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: () => `+=${window.innerHeight * 2}`,
-          pin: pin,
-          pinType: 'fixed',
-          pinSpacing: true,
-          scrub: 1,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onRefresh: () => {
-            applyFullBleedShowcase();
-            ({ leftShift, rightShift } = measureEntryShift());
-          },
-        }
+      setLeftX(-leftShift);
+      setRightX(rightShift);
+      setCurtain(100);
+
+      // ── ST1: Entrada (columnas + telón, sin pin) ────────────────────────
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top bottom',
+        // Extendemos la duración para que la Fase B (telón) se reparta
+        // sobre más scroll y suba más despacio.
+        end: () => `+=${window.innerHeight * 1.5}`,
+        scrub: 0.3,
+        invalidateOnRefresh: true,
+        onRefresh: () => {
+          ({ leftShift, rightShift } = measureShifts());
+        },
+        onUpdate: (self) => {
+          const p = self.progress;
+          // Fase A — columnas convergen (0..0.5 del trigger extendido,
+          // equivalente a los ~75vh originales).
+          const pA = Math.min(1, Math.max(0, p / 0.5));
+          setLeftX(-leftShift * (1 - pA));
+          setRightX(rightShift * (1 - pA));
+          // Fase B — telón sube (0.5..1.0 del trigger extendido = 75vh,
+          // 3× más lento que antes). El divisor debe ser (1 − inicio) para
+          // que pB llegue a 1 al final del trigger.
+          const pB = Math.min(1, Math.max(0, (p - 0.5) / 0.5));
+          setCurtain((1 - pB) * 100);
+          // is-unveiled cuando la cortina está esencialmente arriba
+          const unveiled = pB >= 0.95;
+          curtain.classList.toggle('is-unveiled', unveiled);
+          if (!unveiled && this.showcaseList) {
+            const list = this.showcaseList.nativeElement as HTMLElement;
+            if (list.scrollTop !== 0) list.scrollTop = 0;
+          }
+        },
       });
 
-      // Fase 1: columnas entran desde los laterales al centro (sin opacidad).
-      tl.fromTo(leftCol,
-        { x: () => -leftShift },
-        { x: 0, ease: 'none', duration: 1 },
-        0
-      );
-      tl.fromTo(rightCol,
-        { x: () => rightShift },
-        { x: 0, ease: 'none', duration: 1 },
-        0
-      );
+      // ── ST2: Pin + buffer para explorar la lista ───────────────────────
+      // ST1 termina 0.5vh después de "top top"; el pin debe cubrir esa cola
+      // además del buffer de 3vh para navegar la lista.
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top top',
+        end: () => `+=${window.innerHeight * 3.5}`,
+        pin: pin,
+        pinType: 'fixed',
+        pinSpacing: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onEnter:     () => curtain.classList.add('is-unveiled'),
+        onEnterBack: () => curtain.classList.add('is-unveiled'),
+      });
 
-      // Fase 2: telón sube desde abajo cubriendo todo
-      tl.fromTo(curtain,
-        { yPercent: 100 },
-        { yPercent: 0, ease: 'none', duration: 1 },
-        1
-      );
+      // Handler imperativo: la rueda sobre la lista se queda dentro mientras
+      // haya contenido por consumir; cuando la lista topa, el evento pasa y
+      // el documento avanza.
+      if (this.showcaseList) {
+        const list = this.showcaseList.nativeElement as HTMLElement;
+
+        const handler = (e: WheelEvent) => {
+          if (!curtain.classList.contains('is-unveiled')) return;
+          const dy = e.deltaY;
+          if (dy === 0) return;
+          const atTop    = list.scrollTop <= 0;
+          const atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
+          if ((dy > 0 && !atBottom) || (dy < 0 && !atTop)) {
+            e.preventDefault();
+            list.scrollTop += dy;
+          }
+        };
+
+        list.addEventListener('wheel', handler, { passive: false });
+        this.listWheelHandler = handler;
+      }
     } else if (this.projectsCurtain) {
       // En móvil o si faltan refs, mostrar el telón en su sitio sin animación
       gsap.set(this.projectsCurtain.nativeElement, { yPercent: 0, position: 'relative' });
@@ -356,6 +437,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   /** Resetea animaciones para que puedan reproducirse de nuevo (al volver a la intro). */
   resetAnimations(): void {
+    if (this.listWheelHandler && this.showcaseList) {
+      this.showcaseList.nativeElement.removeEventListener('wheel', this.listWheelHandler);
+      this.listWheelHandler = undefined;
+    }
     ScrollTrigger.getAll().forEach(t => t.kill(true));
     gsap.set('.section-header-cv, .about-card, .edu-card, .skill-category', {
       clearProps: 'all'
@@ -374,6 +459,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.skillsColLeft)   gsap.set(this.skillsColLeft.nativeElement,   { clearProps: 'all' });
     if (this.skillsColRight)  gsap.set(this.skillsColRight.nativeElement,  { clearProps: 'all' });
     if (this.projectsCurtain) gsap.set(this.projectsCurtain.nativeElement, { clearProps: 'all' });
+    if (this.showcaseList)    this.showcaseList.nativeElement.scrollTop = 0;
     this.theme.setProgress(0);
     if (isPlatformBrowser(this.platformId)) {
       document.documentElement.classList.remove('dark-scroll-active');

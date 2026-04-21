@@ -1,22 +1,13 @@
-/* Ajustes de color para las secciones posteriores cuando el fondo está oscuro */
+/* Ajustes de color para las secciones posteriores cuando el fondo está oscuro
+   (sólo afectan a headers de las secciones en flujo, no al footer — éste vive
+   dentro del telón de proyectos que ya tiene su propio tema claro). */
 :host-context(.dark-scroll-active) .education-section .section-header-cv h2,
-:host-context(.dark-scroll-active) .skills-showcase-section .sp-skills-layer .section-header-cv h2,
-:host-context(.dark-scroll-active) .portfolio-footer .footer-name,
-:host-context(.dark-scroll-active) .portfolio-footer .footer-role,
-:host-context(.dark-scroll-active) .portfolio-footer .footer-sep {
+:host-context(.dark-scroll-active) .skills-showcase-section .sp-skills-layer .section-header-cv h2 {
   color: #f1f5f4;
 }
 
-:host-context(.dark-scroll-active) .portfolio-footer {
-  border-top-color: rgba(255, 255, 255, 0.12);
-}
-
-.section-header-cv h2,
-.portfolio-footer .footer-name,
-.portfolio-footer .footer-role,
-.portfolio-footer .footer-sep,
-.portfolio-footer {
-  transition: color 0.35s ease, border-color 0.35s ease;
+.section-header-cv h2 {
+  transition: color 0.35s ease;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -580,7 +571,13 @@
    ═══════════════════════════════════════════════════════ */
 .skills-showcase-section {
   position: relative;
-  width: 100%;
+  /* Full-bleed en CSS (más fiable que el JS previo, que daba medidas
+     desfasadas bajo el pin de GSAP y hacía que el telón quedara hacia la
+     derecha). Rompe el padding-left/right de .main-content para ocupar
+     el 100% del viewport. */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
   overflow: hidden;
 }
 
@@ -657,17 +654,17 @@
   font-weight: 600;
 }
 
-/* ── Capa 2 — Telón de proyectos destacados ───────────── */
+/* ── Capa 2 — Telón de proyectos destacados (tema claro) ── */
 .sp-projects-curtain {
   position: absolute;
   inset: 0;
   z-index: 5;
   overflow: hidden;
   background:
-    radial-gradient(circle at 20% 15%, rgba(125, 226, 195, 0.10), transparent 45%),
-    radial-gradient(circle at 85% 90%, rgba(88, 170, 255, 0.08), transparent 50%),
-    linear-gradient(160deg, #0f1512 0%, #171e1b 55%, #0b100e 100%);
-  box-shadow: 0 -18px 60px rgba(0, 0, 0, 0.55);
+    var(--c-projects-glow-1),
+    var(--c-projects-glow-2),
+    var(--c-projects-bg);
+  box-shadow: var(--c-projects-curtain-shadow);
   will-change: transform;
 }
 
@@ -676,7 +673,7 @@
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(125, 226, 195, 0.55), transparent);
+  background: var(--c-projects-topline);
   opacity: 0.7;
 }
 
@@ -690,7 +687,7 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
-  color: #e9efec;
+  color: var(--c-text-body);
 }
 
 .showcase-header {
@@ -700,21 +697,10 @@
   flex-wrap: wrap;
 }
 
-.showcase-kicker {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 4px;
-  color: rgba(125, 226, 195, 0.85);
-  padding: 4px 12px;
-  border: 1px solid rgba(125, 226, 195, 0.35);
-  border-radius: 20px;
-  text-transform: uppercase;
-}
-
 .showcase-title {
   font-size: 2.4rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--c-text-heading);
   letter-spacing: -0.5px;
   margin: 0;
 }
@@ -722,19 +708,37 @@
 .showcase-sub {
   margin-left: auto;
   font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--c-text-muted);
   letter-spacing: 1.2px;
   text-transform: uppercase;
   font-weight: 600;
 }
 
+/* Lista de proyectos: flex column con scroll interno independiente.
+   - Mientras la cortina sube (fases 1-2): overflow:hidden → la rueda alimenta
+     al pin de la página (animación de revelado).
+   - Tras levantarse (.is-unveiled): overflow-y:auto + overscroll-behavior:
+     contain → la rueda sobre esta caja SÓLO desplaza los proyectos, sin
+     propagarse al documento ni afectar a nada más. */
 .showcase-list {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 0;
+  padding-right: 6px;
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
+
+.sp-projects-curtain.is-unveiled .showcase-list {
+  overflow-y: auto;
+}
+
+.showcase-list::-webkit-scrollbar        { width: 8px; }
+.showcase-list::-webkit-scrollbar-track  { background: var(--c-projects-scroll-track); }
+.showcase-list::-webkit-scrollbar-thumb  { background: var(--c-projects-scroll-thumb); border-radius: 4px; }
+.showcase-list::-webkit-scrollbar-thumb:hover { background: var(--c-projects-scroll-thumb-h); }
 
 .showcase-card {
   position: relative;
@@ -743,24 +747,25 @@
   gap: 20px;
   align-items: center;
   padding: 14px 20px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border-card);
   border-radius: 14px;
-  flex: 1 1 0;
+  flex-shrink: 0;
   min-height: 140px;
+  box-shadow: var(--c-projects-card-shadow);
   transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .showcase-card:hover {
-  border-color: rgba(125, 226, 195, 0.35);
+  border-color: var(--c-primary-light);
   transform: translateY(-2px);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--c-projects-card-shadow-h);
 }
 
 .showcase-num {
   font-size: 1.8rem;
   font-weight: 800;
-  color: rgba(125, 226, 195, 0.8);
+  color: var(--c-primary);
   font-family: 'Courier New', monospace;
   letter-spacing: -1px;
   line-height: 1;
@@ -776,8 +781,8 @@
   align-self: stretch;
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: #0a0d0c;
+  border: 1px solid var(--c-border-light);
+  background: var(--c-surface-alt);
 }
 
 .showcase-image {
@@ -796,7 +801,7 @@
 .showcase-image-sheen {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(15, 21, 18, 0) 40%, rgba(15, 21, 18, 0.55) 100%);
+  background: var(--c-projects-sheen);
   pointer-events: none;
 }
 
@@ -814,17 +819,17 @@
   font-size: 0.72rem;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--c-text-muted);
   font-weight: 700;
 }
 
-.showcase-dot { color: rgba(125, 226, 195, 0.7); }
-.showcase-id  { color: rgba(125, 226, 195, 0.8); font-family: 'Courier New', monospace; }
+.showcase-dot { color: var(--c-primary); }
+.showcase-id  { color: var(--c-primary); font-family: 'Courier New', monospace; }
 
 .showcase-card-title {
   font-size: 1.35rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--c-text-heading);
   line-height: 1.2;
   margin: 0;
   letter-spacing: -0.3px;
@@ -832,7 +837,7 @@
 
 .showcase-desc {
   font-size: 0.88rem;
-  color: rgba(233, 239, 236, 0.7);
+  color: var(--c-text-body);
   line-height: 1.55;
   margin: 0;
   display: -webkit-box;
@@ -849,9 +854,9 @@
 }
 
 .showcase-tag {
-  background: rgba(125, 226, 195, 0.08);
-  color: rgba(125, 226, 195, 0.95);
-  border: 1px solid rgba(125, 226, 195, 0.18);
+  background: var(--c-accent-bg);
+  color: var(--c-primary);
+  border: 1px solid var(--c-projects-tag-border);
   padding: 3px 10px;
   border-radius: 14px;
   font-size: 0.72rem;
@@ -877,25 +882,25 @@
 }
 
 .showcase-btn--ghost {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--c-border-input);
+  color: var(--c-text-heading);
   background: transparent;
 }
 
 .showcase-btn--ghost:hover {
-  border-color: rgba(125, 226, 195, 0.6);
-  color: #fff;
+  border-color: var(--c-primary);
+  color: var(--c-primary);
 }
 
 .showcase-btn--solid {
-  background: linear-gradient(135deg, #7de2c3, #4db8a8);
-  color: #0f1512;
-  border: 1px solid rgba(125, 226, 195, 0.8);
+  background: linear-gradient(135deg, var(--c-primary), var(--c-primary-hover));
+  color: #ffffff;
+  border: 1px solid var(--c-primary);
 }
 
 .showcase-btn--solid:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 6px 18px rgba(125, 226, 195, 0.3);
+  filter: brightness(1.08);
+  box-shadow: var(--c-shadow-primary);
 }
 
 .showcase-qr {
@@ -904,7 +909,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px;
-  border-left: 1px dashed rgba(255, 255, 255, 0.12);
+  border-left: 1px dashed var(--c-projects-divider);
   align-self: stretch;
   justify-content: center;
 }
@@ -916,7 +921,7 @@
   padding: 6px;
   background: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--c-projects-qr-shadow);
 }
 
 .showcase-qr-frame::before,
@@ -925,7 +930,7 @@
   position: absolute;
   width: 10px;
   height: 10px;
-  border: 2px solid rgba(125, 226, 195, 0.9);
+  border: 2px solid var(--c-primary);
 }
 .showcase-qr-frame::before { top: -4px;    left: -4px;    border-right: none; border-bottom: none; }
 .showcase-qr-frame::after  { bottom: -4px; right: -4px;   border-left: none;  border-top: none;    }
@@ -941,15 +946,27 @@
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 1.5px;
-  color: rgba(125, 226, 195, 0.75);
+  color: var(--c-primary);
   text-transform: uppercase;
 }
 
 .showcase-error,
 .showcase-empty {
   text-align: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--c-text-muted);
   padding: 40px 20px;
+}
+
+/* ── Footer integrado dentro del telón (tema claro) ─────── */
+.sp-projects-curtain .portfolio-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 14px 0 4px;
+  border-top: 1px solid var(--c-border-separator);
+}
+
+.sp-projects-curtain .portfolio-footer .footer-inner {
+  max-width: none;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1015,7 +1032,7 @@
   .sp-skills-layer { position: relative; padding: 60px 20px 40px; }
   .sp-projects-curtain { position: relative; transform: none !important; min-height: auto; }
   .showcase-inner { padding: 40px 20px; }
-  .showcase-list { overflow: visible; }
+  .showcase-list { overflow: visible; padding-right: 0; }
   .showcase-card {
     grid-template-columns: 1fr;
     gap: 14px;
@@ -1023,7 +1040,7 @@
   }
   .showcase-num { writing-mode: horizontal-tb; transform: none; }
   .showcase-image-wrap { min-height: 180px; aspect-ratio: 16 / 9; }
-  .showcase-qr { border-left: none; border-top: 1px dashed rgba(255, 255, 255, 0.12); padding-top: 10px; flex-direction: row; gap: 12px; }
+  .showcase-qr { border-left: none; border-top: 1px dashed var(--c-projects-divider); padding-top: 10px; flex-direction: row; gap: 12px; }
 
   .exp-scroll-section   { width: 100%; margin-left: 0; overflow: visible; background: transparent; }
   .exp-track-wrapper    { height: auto; overflow: visible; display: block; background: transparent; }
