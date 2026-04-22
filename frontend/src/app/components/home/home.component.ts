@@ -1,6 +1,7 @@
 import {
   Component, OnInit, OnDestroy, Inject, PLATFORM_ID,
-  ChangeDetectorRef, ElementRef, ViewChildren, ViewChild, QueryList
+  ChangeDetectorRef, ElementRef, ViewChildren, ViewChild, QueryList,
+  HostListener
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
@@ -10,6 +11,7 @@ import { ProjectService } from '../../services/project.service';
 import { ExperienceService } from '../../services/experience.service';
 import { TranslationService } from '../../services/translation.service';
 import { BackgroundThemeService } from '../../services/background-theme.service';
+import { ProfileService } from '../../services/profile.service';
 
 @Component({
   selector: 'app-home',
@@ -42,6 +44,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   // --- Datos de experiencia ---
   experiences: any[] = [];
 
+  // --- Typewriter del hero ---
+  // Cada entrada es el bloque de tags completo de un proyecto/experiencia
+  // (p.ej. "Angular · TypeScript · Node.js"), no tags sueltos.
+  private tagGroups: string[] = [];
+  typedRole = '';
+  private typewriterTimer: any = null;
+
+  // --- Selector de idioma del CV ---
+  cvMenuOpen = false;
+
   private animationsInitialized = false;
   private langSub!: Subscription;
   private listWheelHandler?: (e: WheelEvent) => void;
@@ -52,7 +64,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object,
     public i18n: TranslationService,
-    private theme: BackgroundThemeService
+    private theme: BackgroundThemeService,
+    public profile: ProfileService
   ) {
     if (isPlatformBrowser(this.platformId)) {
       gsap.registerPlugin(ScrollTrigger);
@@ -60,12 +73,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Forzar re-render al cambiar idioma para que los métodos getCompanyDisplay etc. se reevalúen
+    // Forzar re-render al cambiar idioma. El typewriter no depende del idioma
+    // (escribe tags técnicos), así que no hace falta reiniciarlo aquí.
     this.langSub = this.i18n.lang$.subscribe(() => this.cdr.detectChanges());
 
     this.projectService.getProjects().subscribe({
       next: (data) => {
         this.projects = data ?? [];
+        this.rebuildTagGroups();
         this.cdr.detectChanges();
         // Refrescar ScrollTrigger para que la fase 3 del telón
         // (scroll de la pista de proyectos) mida el alto real.
@@ -83,6 +98,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.experienceService.getExperience().subscribe({
       next: (data) => {
         this.experiences = data ?? [];
+        this.rebuildTagGroups();
         this.cdr.detectChanges();
         // Refrescar ScrollTrigger para recalcular el ancho del track de experiencia
         if (isPlatformBrowser(this.platformId)) {
@@ -94,6 +110,20 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
+
+    // Carga textos editables del perfil (sobrescribe traducciones) y versión
+    // de la foto para cache-busting. Silencioso si no hay backend.
+    this.profile.load().subscribe(() => this.cdr.detectChanges());
+  }
+
+  /** Cierra el menú del CV al hacer click fuera. El propio botón llama a
+   *  stopPropagation para evitar autocerrarse. */
+  @HostListener('document:click')
+  onDocClick(): void {
+    if (this.cvMenuOpen) {
+      this.cvMenuOpen = false;
+      this.cdr.detectChanges();
+    }
   }
 
   // ─── Helpers para la sección de experiencia ───────────────────────────────
@@ -160,6 +190,101 @@ export class HomeComponent implements OnInit, OnDestroy {
            (exp.contract_type_en ?? '').toLowerCase() === 'internship';
   }
 
+  // ─── Typewriter del hero ─────────────────────────────────────────────────
+
+  /** Recalcula los bloques de tags por proyecto/experiencia. Cada bloque
+   *  conserva todos los tags del item unidos por " · ". Dedupe a nivel de
+   *  bloque completo (no de tag individual). Reinicia el typewriter si el
+   *  conjunto cambia. */
+  private rebuildTagGroups(): void {
+    const seen = new Set<string>();
+    const groups: string[] = [];
+
+    const addGroup = (tags: any) => {
+      if (!tags || typeof tags !== 'string') return;
+      const parts = tags.split(',').map(t => t.trim()).filter(Boolean);
+      if (parts.length === 0) return;
+      const block = parts.join(' · ');
+      const key = block.toLowerCase();
+      if (seen.has(key)) return;
+      seen.add(key);
+      groups.push(block);
+    };
+
+    for (const p of this.projects)    addGroup(p?.tags);
+    for (const e of this.experiences) addGroup(e?.tags);
+
+    const changed =
+      groups.length !== this.tagGroups.length ||
+      groups.some((v, i) => v !== this.tagGroups[i]);
+
+    if (!changed) return;
+    this.tagGroups = groups;
+    this.restartTypewriter();
+  }
+
+  /** Tipa, espera y borra cada bloque de tags en bucle. Usa setTimeout
+   *  encadenado para poder cancelarse limpiamente. No arranca si está vacío. */
+  private startTypewriter(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.tagGroups.length === 0) return;
+
+    let idx = 0;
+    let charIdx = 0;
+    let deleting = false;
+
+    const TYPE_MS   = 55;
+    const DELETE_MS = 25;
+    const HOLD_MS   = 1800;
+    const PAUSE_MS  = 350;
+
+    const tick = () => {
+      // Si la lista cambia mid-bucle, el restart limpia este timer; aun así
+      // protegemos por si idx queda fuera de rango.
+      if (idx >= this.tagGroups.length) idx = 0;
+      const full = this.tagGroups[idx];
+
+      if (!deleting) {
+        charIdx++;
+        this.typedRole = full.slice(0, charIdx);
+        this.cdr.detectChanges();
+        if (charIdx === full.length) {
+          deleting = true;
+          this.typewriterTimer = setTimeout(tick, HOLD_MS);
+          return;
+        }
+        this.typewriterTimer = setTimeout(tick, TYPE_MS);
+      } else {
+        charIdx--;
+        this.typedRole = full.slice(0, charIdx);
+        this.cdr.detectChanges();
+        if (charIdx === 0) {
+          deleting = false;
+          idx = (idx + 1) % this.tagGroups.length;
+          this.typewriterTimer = setTimeout(tick, PAUSE_MS);
+          return;
+        }
+        this.typewriterTimer = setTimeout(tick, DELETE_MS);
+      }
+    };
+
+    tick();
+  }
+
+  private stopTypewriter(): void {
+    if (this.typewriterTimer) {
+      clearTimeout(this.typewriterTimer);
+      this.typewriterTimer = null;
+    }
+  }
+
+  private restartTypewriter(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.stopTypewriter();
+    this.typedRole = '';
+    this.startTypewriter();
+  }
+
   // ─── Helpers para la vitrina de proyectos ────────────────────────────────
 
   /** QR generado vía servicio público a partir de la URL más relevante del proyecto */
@@ -171,6 +296,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
+    this.stopTypewriter();
     // Handler de rueda sobre la lista de proyectos
     if (this.listWheelHandler && this.showcaseList) {
       this.showcaseList.nativeElement.removeEventListener('wheel', this.listWheelHandler);

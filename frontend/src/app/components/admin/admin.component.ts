@@ -2,11 +2,11 @@ import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angu
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AdminService, AdminUser } from '../../services/admin.service';
+import { AdminService, AdminUser, ProfileData } from '../../services/admin.service';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
 
-type Tab = 'dashboard' | 'users' | 'projects' | 'experience' | 'visitors' | 'logins' | 'messages' | 'chatbot';
+type Tab = 'dashboard' | 'users' | 'projects' | 'experience' | 'visitors' | 'logins' | 'messages' | 'chatbot' | 'profile';
 type SortDir = 'asc' | 'desc';
 type SortTable = 'users' | 'projects' | 'experiences' | 'visitors' | 'logins';
 interface SortState { col: string; dir: SortDir; }
@@ -29,7 +29,7 @@ export class AdminComponent implements OnInit {
   activeTab: Tab = 'dashboard';
   private tabScroll: Record<Tab, number> = {
     dashboard: 0, users: 0, projects: 0, experience: 0,
-    visitors: 0, logins: 0, messages: 0, chatbot: 0
+    visitors: 0, logins: 0, messages: 0, chatbot: 0, profile: 0
   };
   isAdmin = false;
   isEditor = false;
@@ -108,6 +108,34 @@ export class AdminComponent implements OnInit {
   editingExperience: any = null;
   editingUser: (AdminUser & { _original?: AdminUser }) | null = null;
 
+  // ─── Profile ───
+  readonly profileApiUrl = 'http://127.0.0.1:3000/api/profile/photo';
+  readonly profileFields: { key: string; labelKey: string; type: 'text' | 'textarea' }[] = [
+    { key: 'hero.tagline', labelKey: 'admin.profile.field.hero.tagline', type: 'text' },
+    { key: 'about.p1',     labelKey: 'admin.profile.field.about.p1',     type: 'textarea' },
+    { key: 'about.p2',     labelKey: 'admin.profile.field.about.p2',     type: 'textarea' },
+    { key: 'footer.role',  labelKey: 'admin.profile.field.footer.role',  type: 'text' }
+  ];
+  profileTexts: { es: Record<string, string>; en: Record<string, string> } = { es: {}, en: {} };
+  editingProfileTexts: { es: Record<string, string>; en: Record<string, string> } | null = null;
+  profilePhotoVersion = 0;
+  profilePhotoPreview: string | null = null;
+  profilePhotoDataUrl: string | null = null;
+  profilePhotoFileName = '';
+  profileSavingTexts = false;
+  profileUploadingPhoto = false;
+  profileTextsStatus: 'idle' | 'saved' | 'error' = 'idle';
+  profilePhotoStatus: 'idle' | 'saved' | 'error' = 'idle';
+  profilePhotoError = '';
+  profileTextsError = '';
+
+  // Prompt del chatbot
+  chatbotPrompt = '';
+  chatbotPromptDefault = '';
+  chatbotPromptSaving = false;
+  chatbotPromptStatus: 'idle' | 'saved' | 'error' = 'idle';
+  chatbotPromptError = '';
+
   confirmModal: {
     title: string;
     message: string;
@@ -147,7 +175,7 @@ export class AdminComponent implements OnInit {
 
   private loadAllData(): void {
     this.initialLoading = true;
-    let pending = 7;
+    let pending = 9;
     const done = () => {
       pending--;
       if (pending <= 0) {
@@ -189,6 +217,168 @@ export class AdminComponent implements OnInit {
       next: d => { this.chatbotMessages = d?.messages ?? []; this.chatbotClears = d?.clears ?? []; done(); },
       error: fail('chatbot')
     });
+    this.adminService.getProfile().subscribe({
+      next: d => { this.applyProfileData(d); done(); },
+      error: fail('profile')
+    });
+    this.adminService.getChatbotPrompt().subscribe({
+      next: d => {
+        this.chatbotPrompt = d?.prompt ?? '';
+        this.chatbotPromptDefault = d?.default_prompt ?? '';
+        done();
+      },
+      error: fail('chatbot-prompt')
+    });
+  }
+
+  private applyProfileData(data: ProfileData | null | undefined): void {
+    const es: Record<string, string> = {};
+    const en: Record<string, string> = {};
+    for (const f of this.profileFields) {
+      es[f.key] = data?.es?.[f.key] ?? '';
+      en[f.key] = data?.en?.[f.key] ?? '';
+    }
+    this.profileTexts = { es, en };
+    this.profilePhotoVersion = data?.photo_updated_at ?? 0;
+    this.i18n.applyOverrides(data?.es ?? {}, data?.en ?? {});
+  }
+
+  get profilePhotoUrl(): string {
+    return `${this.profileApiUrl}?v=${this.profilePhotoVersion}`;
+  }
+
+  onProfilePhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const okType = /^image\/(jpeg|jpg|png|webp)$/.test(file.type);
+    if (!okType || file.size > 5 * 1024 * 1024) {
+      this.profilePhotoStatus = 'error';
+      this.profilePhotoError = this.i18n.t('admin.profile.photo.invalid');
+      this.cdr.markForCheck();
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.profilePhotoDataUrl = String(reader.result || '');
+      this.profilePhotoPreview = this.profilePhotoDataUrl;
+      this.profilePhotoFileName = file.name;
+      this.profilePhotoStatus = 'idle';
+      this.profilePhotoError = '';
+      this.cdr.markForCheck();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearProfilePhotoSelection(): void {
+    this.profilePhotoPreview = null;
+    this.profilePhotoDataUrl = null;
+    this.profilePhotoFileName = '';
+    this.profilePhotoStatus = 'idle';
+    this.profilePhotoError = '';
+  }
+
+  uploadProfilePhoto(): void {
+    if (!this.profilePhotoDataUrl || this.profileUploadingPhoto) return;
+    this.profileUploadingPhoto = true;
+    this.profilePhotoStatus = 'idle';
+    this.adminService.uploadProfilePhoto(this.profilePhotoDataUrl).subscribe({
+      next: (res) => {
+        this.profilePhotoVersion = res?.photo_updated_at ?? Date.now();
+        this.profileUploadingPhoto = false;
+        this.profilePhotoStatus = 'saved';
+        this.clearProfilePhotoSelection();
+        this.profilePhotoStatus = 'saved';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.profileUploadingPhoto = false;
+        this.profilePhotoStatus = 'error';
+        this.profilePhotoError = err?.error?.message || this.i18n.t('admin.profile.photo.error');
+        console.error(err);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  startEditProfileTexts(): void {
+    this.editingProfileTexts = {
+      es: { ...this.profileTexts.es },
+      en: { ...this.profileTexts.en }
+    };
+    this.profileTextsStatus = 'idle';
+    this.profileTextsError = '';
+  }
+
+  cancelEditProfileTexts(): void {
+    if (this.profileSavingTexts) return;
+    this.editingProfileTexts = null;
+    this.profileTextsStatus = 'idle';
+    this.profileTextsError = '';
+  }
+
+  saveProfileTexts(): void {
+    if (this.profileSavingTexts || !this.editingProfileTexts) return;
+    const payload = this.editingProfileTexts;
+    this.profileSavingTexts = true;
+    this.profileTextsStatus = 'idle';
+    this.adminService.updateProfileTexts(payload).subscribe({
+      next: (res) => {
+        this.applyProfileData(res);
+        this.profileSavingTexts = false;
+        this.profileTextsStatus = 'saved';
+        this.editingProfileTexts = null;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.profileSavingTexts = false;
+        this.profileTextsStatus = 'error';
+        this.profileTextsError = err?.error?.message || this.i18n.t('admin.profile.texts.error');
+        console.error(err);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  saveChatbotPrompt(): void {
+    if (this.chatbotPromptSaving) return;
+    const trimmed = (this.chatbotPrompt || '').trim();
+    if (!trimmed) {
+      this.chatbotPromptStatus = 'error';
+      this.chatbotPromptError = this.i18n.t('admin.profile.chatbot.empty');
+      this.cdr.markForCheck();
+      return;
+    }
+    this.chatbotPromptSaving = true;
+    this.chatbotPromptStatus = 'idle';
+    this.adminService.updateChatbotPrompt(this.chatbotPrompt).subscribe({
+      next: (res) => {
+        this.chatbotPrompt = res?.prompt ?? this.chatbotPrompt;
+        this.chatbotPromptSaving = false;
+        this.chatbotPromptStatus = 'saved';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.chatbotPromptSaving = false;
+        this.chatbotPromptStatus = 'error';
+        this.chatbotPromptError = err?.error?.message || this.i18n.t('admin.profile.chatbot.error');
+        console.error(err);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  resetChatbotPrompt(): void {
+    if (!this.chatbotPromptDefault) return;
+    this.chatbotPrompt = this.chatbotPromptDefault;
+    this.chatbotPromptStatus = 'idle';
+    this.chatbotPromptError = '';
+    this.cdr.markForCheck();
+  }
+
+  get chatbotPromptLength(): number {
+    return (this.chatbotPrompt || '').length;
   }
 
   // ─── Stats ───
@@ -513,6 +703,7 @@ export class AdminComponent implements OnInit {
       case 'logins': return 'admin.tab.logins';
       case 'messages': return 'admin.tab.messages';
       case 'chatbot': return 'admin.tab.chatbot';
+      case 'profile': return 'admin.tab.profile';
     }
   }
 

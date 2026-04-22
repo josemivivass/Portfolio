@@ -10,6 +10,13 @@ export interface AdminUser {
   created_at: string;
 }
 
+export interface ProfileData {
+  es: Record<string, string>;
+  en: Record<string, string>;
+  photo_updated_at: number;
+  editable_keys: string[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private apiUrl = 'http://127.0.0.1:3000/api';
@@ -92,6 +99,34 @@ export class AdminService {
     return this.http.patch(
       `${this.apiUrl}/admin/contact-messages/${id}/answered`,
       { is_answered },
+      { headers: this.headers() }
+    );
+  }
+
+  // Profile
+  getProfile(): Observable<ProfileData> {
+    return this.http.get<ProfileData>(`${this.apiUrl}/profile/texts`);
+  }
+  updateProfileTexts(data: { es: Record<string, string>; en: Record<string, string> }): Observable<ProfileData> {
+    return this.http.put<ProfileData>(`${this.apiUrl}/profile/texts`, data, { headers: this.headers() });
+  }
+  uploadProfilePhoto(dataUrl: string): Observable<{ photo_updated_at: number }> {
+    return this.http.post<{ photo_updated_at: number }>(
+      `${this.apiUrl}/profile/photo`,
+      { dataUrl },
+      { headers: this.headers() }
+    );
+  }
+  getChatbotPrompt(): Observable<{ prompt: string; default_prompt: string }> {
+    return this.http.get<{ prompt: string; default_prompt: string }>(
+      `${this.apiUrl}/profile/chatbot-prompt`,
+      { headers: this.headers() }
+    );
+  }
+  updateChatbotPrompt(prompt: string): Observable<{ prompt: string }> {
+    return this.http.put<{ prompt: string }>(
+      `${this.apiUrl}/profile/chatbot-prompt`,
+      { prompt },
       { headers: this.headers() }
     );
   }

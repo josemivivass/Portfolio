@@ -35,6 +35,10 @@
       </button>
 
       <span class="sidebar-section">{{ i18n.t('admin.section.content') }}</span>
+      <button [class.active]="activeTab === 'profile'" (click)="setTab('profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        {{ i18n.t('admin.tab.profile') }}
+      </button>
       <button [class.active]="activeTab === 'projects'" (click)="setTab('projects')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         {{ i18n.t('admin.tab.projects') }}
@@ -346,6 +350,136 @@
                       class="tooltip-value">{{ formatTokens(thd.tokens) }} tokens</text>
               </g>
             </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── PROFILE ─── -->
+      <section *ngIf="activeTab === 'profile'" class="page profile-page">
+        <header class="page-head">
+          <div>
+            <h1>{{ i18n.t('admin.profile.title') }}</h1>
+            <p class="page-sub">{{ i18n.t('admin.profile.sub') }}</p>
+          </div>
+        </header>
+
+        <div class="profile-grid">
+          <!-- Photo card -->
+          <div class="card profile-card">
+            <div class="profile-card-head">
+              <h3>{{ i18n.t('admin.profile.photo.title') }}</h3>
+              <p>{{ i18n.t('admin.profile.photo.sub') }}</p>
+            </div>
+
+            <div class="profile-photo-row">
+              <figure class="profile-photo-frame">
+                <img [src]="profilePhotoUrl" alt="" />
+                <figcaption>{{ i18n.t('admin.profile.photo.current') }}</figcaption>
+              </figure>
+              <figure class="profile-photo-frame profile-photo-frame--preview" *ngIf="profilePhotoPreview">
+                <img [src]="profilePhotoPreview" alt="" />
+                <figcaption>{{ i18n.t('admin.profile.photo.preview') }}</figcaption>
+              </figure>
+            </div>
+
+            <div class="profile-photo-actions">
+              <label class="btn-ghost profile-file-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>{{ profilePhotoPreview ? i18n.t('admin.profile.photo.change') : i18n.t('admin.profile.photo.select') }}</span>
+                <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onProfilePhotoSelected($event)" hidden />
+              </label>
+              <button type="button"
+                      class="btn-primary"
+                      [disabled]="!profilePhotoDataUrl || profileUploadingPhoto"
+                      (click)="uploadProfilePhoto()">
+                {{ profileUploadingPhoto ? i18n.t('admin.profile.photo.saving') : i18n.t('admin.profile.photo.upload') }}
+              </button>
+              <span class="profile-file-name" *ngIf="profilePhotoFileName">{{ profilePhotoFileName }}</span>
+            </div>
+
+            <p class="profile-status profile-status--ok" *ngIf="profilePhotoStatus === 'saved'">
+              ✓ {{ i18n.t('admin.profile.photo.saved') }}
+            </p>
+            <p class="profile-status profile-status--err" *ngIf="profilePhotoStatus === 'error'">
+              ✗ {{ profilePhotoError }}
+            </p>
+          </div>
+
+          <!-- Texts card -->
+          <div class="card profile-card">
+            <div class="profile-card-head">
+              <h3>{{ i18n.t('admin.profile.texts.title') }}</h3>
+              <p>{{ i18n.t('admin.profile.texts.sub') }}</p>
+              <span class="profile-lang-pill">
+                {{ i18n.lang === 'es' ? i18n.t('admin.profile.lang.es') : i18n.t('admin.profile.lang.en') }}
+              </span>
+            </div>
+
+            <div class="profile-texts-display">
+              <div class="profile-text-row" *ngFor="let f of profileFields">
+                <span class="profile-text-label">{{ i18n.t(f.labelKey) }}</span>
+                <p class="profile-text-value" [innerHTML]="profileTexts[i18n.lang][f.key] || '—'"></p>
+              </div>
+            </div>
+
+            <div class="profile-texts-footer">
+              <button type="button"
+                      class="btn-primary"
+                      (click)="startEditProfileTexts()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                {{ i18n.t('admin.profile.texts.edit') }}
+              </button>
+              <span class="profile-status profile-status--ok" *ngIf="profileTextsStatus === 'saved'">
+                ✓ {{ i18n.t('admin.profile.texts.saved') }}
+              </span>
+              <span class="profile-status profile-status--err" *ngIf="profileTextsStatus === 'error'">
+                ✗ {{ profileTextsError }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Chatbot prompt card -->
+          <div class="card profile-card profile-card--wide">
+            <div class="profile-card-head">
+              <h3>{{ i18n.t('admin.profile.chatbot.title') }}</h3>
+              <p>{{ i18n.t('admin.profile.chatbot.sub') }}</p>
+            </div>
+
+            <div class="profile-prompt">
+              <textarea class="profile-prompt-input"
+                        rows="16"
+                        [(ngModel)]="chatbotPrompt"
+                        name="chatbot_prompt"
+                        [attr.aria-label]="i18n.t('admin.profile.chatbot.title')"
+                        [placeholder]="i18n.t('admin.profile.chatbot.placeholder')"></textarea>
+              <div class="profile-prompt-meta">
+                <span class="profile-prompt-count" [class.profile-prompt-count--warn]="chatbotPromptLength > 18000">
+                  {{ chatbotPromptLength }} / 20000
+                </span>
+              </div>
+            </div>
+
+            <div class="profile-texts-footer">
+              <button type="button"
+                      class="btn-primary"
+                      [disabled]="chatbotPromptSaving"
+                      (click)="saveChatbotPrompt()">
+                {{ chatbotPromptSaving ? i18n.t('admin.profile.chatbot.saving') : i18n.t('admin.profile.chatbot.save') }}
+              </button>
+              <button type="button"
+                      class="btn-ghost profile-file-btn"
+                      [disabled]="!chatbotPromptDefault || chatbotPromptSaving"
+                      (click)="resetChatbotPrompt()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                <span>{{ i18n.t('admin.profile.chatbot.reset') }}</span>
+              </button>
+              <span class="profile-status profile-status--ok" *ngIf="chatbotPromptStatus === 'saved'">
+                ✓ {{ i18n.t('admin.profile.chatbot.saved') }}
+              </span>
+              <span class="profile-status profile-status--err" *ngIf="chatbotPromptStatus === 'error'">
+                ✗ {{ chatbotPromptError }}
+              </span>
+            </div>
           </div>
         </div>
       </section>
@@ -1060,6 +1194,58 @@
       <div class="edit-modal-footer">
         <button type="button" class="btn-secondary" (click)="cancelUserEdit()">{{ i18n.t('admin.action.cancel') }}</button>
         <button type="submit" class="btn-primary">{{ i18n.t('admin.action.save') }}</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ─── Profile texts edit modal ─── -->
+  <div class="edit-modal-backdrop" *ngIf="editingProfileTexts" (click)="cancelEditProfileTexts()">
+    <form class="card edit-modal edit-modal--wide" (click)="$event.stopPropagation()" (ngSubmit)="saveProfileTexts()">
+      <div class="edit-modal-header">
+        <h3>{{ i18n.t('admin.profile.texts.edit.title') }}</h3>
+        <button type="button" class="edit-modal-close" (click)="cancelEditProfileTexts()" [attr.aria-label]="i18n.t('admin.action.close')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="edit-modal-body">
+        <div class="profile-modal-fields">
+          <div class="profile-modal-field" *ngFor="let f of profileFields">
+            <span class="profile-text-label">{{ i18n.t(f.labelKey) }}</span>
+            <div class="profile-text-cols">
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
+                <input *ngIf="f.type === 'text'"
+                       type="text"
+                       [(ngModel)]="editingProfileTexts.es[f.key]"
+                       [name]="'edit_es_' + f.key" />
+                <textarea *ngIf="f.type === 'textarea'"
+                          rows="4"
+                          [(ngModel)]="editingProfileTexts.es[f.key]"
+                          [name]="'edit_es_' + f.key"></textarea>
+              </div>
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
+                <input *ngIf="f.type === 'text'"
+                       type="text"
+                       [(ngModel)]="editingProfileTexts.en[f.key]"
+                       [name]="'edit_en_' + f.key" />
+                <textarea *ngIf="f.type === 'textarea'"
+                          rows="4"
+                          [(ngModel)]="editingProfileTexts.en[f.key]"
+                          [name]="'edit_en_' + f.key"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="edit-modal-footer">
+        <span class="profile-status profile-status--err" *ngIf="profileTextsStatus === 'error'">
+          ✗ {{ profileTextsError }}
+        </span>
+        <button type="button" class="btn-secondary" (click)="cancelEditProfileTexts()" [disabled]="profileSavingTexts">{{ i18n.t('admin.action.cancel') }}</button>
+        <button type="submit" class="btn-primary" [disabled]="profileSavingTexts">
+          {{ profileSavingTexts ? i18n.t('admin.profile.texts.saving') : i18n.t('admin.action.save') }}
+        </button>
       </div>
     </form>
   </div>

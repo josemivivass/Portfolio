@@ -8,6 +8,9 @@ export type Lang = 'es' | 'en';
 export class TranslationService {
   private langSubject!: BehaviorSubject<Lang>;
   lang$!: ReturnType<BehaviorSubject<Lang>['asObservable']>;
+  private overrides: Record<Lang, Record<string, string>> = { es: {}, en: {} };
+  private overridesSubject = new BehaviorSubject<number>(0);
+  overrides$ = this.overridesSubject.asObservable();
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     const saved = isPlatformBrowser(this.platformId)
@@ -27,9 +30,15 @@ export class TranslationService {
     }
   }
 
+  applyOverrides(es: Record<string, string> = {}, en: Record<string, string> = {}): void {
+    this.overrides = { es: { ...es }, en: { ...en } };
+    this.overridesSubject.next(this.overridesSubject.value + 1);
+  }
+
   t(key: string, params?: Record<string, string | number>): string {
-    const dict = this.lang === 'es' ? ES : EN;
-    let value = (dict as any)[key] ?? key;
+    const override = this.overrides[this.lang]?.[key];
+    const base = this.lang === 'es' ? ES : EN;
+    let value = override ?? (base as any)[key] ?? key;
     if (params) {
       for (const k of Object.keys(params)) {
         value = value.replace(new RegExp(`\\{${k}\\}`, 'g'), String(params[k]));
@@ -58,13 +67,13 @@ const ES: Record<string, string> = {
   'nav.lang': 'EN',
 
   // --- Hero ---
-  'hero.badge': 'Disponible para trabajar',
-  'hero.title': 'Desarrollador Web · IA & Big Data',
-  'hero.subtitle': 'Especialista en Inteligencia Artificial y Big Data con trayectoria en QA.',
-  'hero.subtitle2': 'Combino la disciplina de pruebas con modelos predictivos y gestión de datos.',
+  'hero.tagline': 'DESARROLLADOR FULL-STACK ESPECIALIZADO EN IA Y BIGDATA',
   'hero.email': 'Email',
   'hero.phone': '+34 645 31 63 09',
-  'hero.location': 'Cáceres, Extremadura, España · Presencial · Híbrido · Remoto',
+  'hero.github': 'GitHub',
+  'hero.cv': 'Descargar CV',
+  'hero.cv.es': 'CV en español',
+  'hero.cv.en': 'CV in English',
 
   // --- About ---
   'about.title': 'Sobre Mí',
@@ -81,22 +90,6 @@ const ES: Record<string, string> = {
   'exp.badge.current': 'Actual',
   'exp.badge.internship': 'Prácticas',
   'exp.growing': 'En crecimiento continuo',
-  'exp.1.role': 'Desarrollador Full Stack',
-  'exp.1.date': 'Mar 2026 - Actualidad',
-  'exp.1.company': 'Fundación COMPUTAEX · Contrato de prácticas · Cáceres',
-  'exp.1.desc': 'Actualización y modernización de una aplicación web full-stack. Desarrollo y mantenimiento del backend con Python. Actualización y desarrollo del frontend con React en entorno Node.js.',
-  'exp.2.role': 'Quality Engineering',
-  'exp.2.date': 'Jul 2024 - Jul 2025',
-  'exp.2.company': 'Viewnext · Jornada completa · Cáceres',
-  'exp.2.desc': 'Pruebas para la app y API de bancos en el proyecto RSI. Ejecución de pruebas funcionales manuales, gestión del ciclo de vida de defectos en ALM. Validación de APIs REST y SOAP con SoapUI y Postman. Pruebas de carga con LoadRunner, JMeter, InfluxDB y Grafana.',
-  'exp.3.role': 'Quality Engineering',
-  'exp.3.date': 'Mar 2024 - Jun 2024',
-  'exp.3.company': 'Viewnext · Contrato de prácticas · Cáceres',
-  'exp.3.desc': 'Realización de pruebas de rendimiento para webs.',
-  'exp.4.role': 'Camp Counselor',
-  'exp.4.date': 'Jun 2022 - Ago 2022',
-  'exp.4.company': 'Camp Hilltop · Hancock, Nueva York, EE.UU.',
-  'exp.4.desc': 'Organización y supervisión de actividades para niños de 6 a 16 años, como equitación, senderismo y dinámicas grupales.',
 
   // --- Education ---
   'edu.title': 'Educación',
@@ -120,7 +113,6 @@ const ES: Record<string, string> = {
   'projects.none': 'No hay proyectos disponibles en este momento.',
   'projects.code': 'Código',
   'projects.demo': 'Demo',
-  'projects.kicker': 'PORTFOLIO',
   'projects.scan': 'Escanéame',
   'projects.featured_label': 'Selección destacada',
 
@@ -202,6 +194,45 @@ const ES: Record<string, string> = {
   'admin.tab.logins': 'Inicios de sesión',
   'admin.tab.messages': 'Mensajes',
   'admin.tab.users': 'Usuarios',
+  'admin.tab.profile': 'Perfil',
+
+  // Profile
+  'admin.profile.title': 'Perfil',
+  'admin.profile.sub': 'Actualiza la foto y los textos que aparecen en la página principal.',
+  'admin.profile.photo.title': 'Foto de perfil',
+  'admin.profile.photo.sub': 'Sube una imagen cuadrada. JPG, PNG o WEBP, máximo 5 MB.',
+  'admin.profile.photo.current': 'Actual',
+  'admin.profile.photo.preview': 'Nueva',
+  'admin.profile.photo.select': 'Elegir imagen',
+  'admin.profile.photo.change': 'Cambiar imagen',
+  'admin.profile.photo.upload': 'Subir foto',
+  'admin.profile.photo.saving': 'Subiendo…',
+  'admin.profile.photo.saved': 'Foto actualizada',
+  'admin.profile.photo.error': 'No se pudo subir la foto',
+  'admin.profile.photo.invalid': 'Selecciona una imagen JPG, PNG o WEBP menor de 5 MB.',
+  'admin.profile.texts.title': 'Textos de la página',
+  'admin.profile.texts.sub': 'Textos de la página principal en el idioma activo. Usa Editar para modificarlos en ambos idiomas.',
+  'admin.profile.texts.edit': 'Editar textos',
+  'admin.profile.texts.edit.title': 'Editar textos de la página',
+  'admin.profile.texts.save': 'Guardar textos',
+  'admin.profile.texts.saving': 'Guardando…',
+  'admin.profile.texts.saved': 'Textos actualizados',
+  'admin.profile.texts.error': 'No se pudieron guardar los textos',
+  'admin.profile.lang.es': 'Español',
+  'admin.profile.lang.en': 'Inglés',
+  'admin.profile.field.hero.tagline': 'Titular del hero',
+  'admin.profile.field.about.p1': 'Sobre mí — primer párrafo',
+  'admin.profile.field.about.p2': 'Sobre mí — segundo párrafo',
+  'admin.profile.field.footer.role': 'Rol mostrado en el footer',
+  'admin.profile.chatbot.title': 'Prompt del chatbot',
+  'admin.profile.chatbot.sub': 'Instrucciones que recibe Nanas antes de cada conversación. Define su tono, su conocimiento sobre el perfil y cómo debe responder.',
+  'admin.profile.chatbot.placeholder': 'Escribe las instrucciones para el chatbot…',
+  'admin.profile.chatbot.save': 'Guardar prompt',
+  'admin.profile.chatbot.saving': 'Guardando…',
+  'admin.profile.chatbot.saved': 'Prompt actualizado',
+  'admin.profile.chatbot.error': 'No se pudo guardar el prompt',
+  'admin.profile.chatbot.empty': 'El prompt no puede estar vacío',
+  'admin.profile.chatbot.reset': 'Restaurar por defecto',
 
   // Dashboard
   'admin.dashboard.title': 'Dashboard',
@@ -218,10 +249,6 @@ const ES: Record<string, string> = {
   'admin.stat.projects.foot': 'publicados',
   'admin.stat.chatbot': 'Chatbot',
   'admin.stat.chatbot.foot': '{n} conversaciones',
-  'admin.chart.visits.title': 'Visitas — últimos 14 días',
-  'admin.chart.visits.pill': '{n} totales',
-  'admin.chart.logins.title': 'Inicios de sesión — últimos 14 días',
-  'admin.chart.logins.pill': '{n} totales',
   'admin.chart.activity.title': 'Actividad — últimos 14 días',
   'admin.chart.logins14.title': 'Logins — últimos 14 días',
   'admin.chart.tokens.title': 'Tokens gastados — histórico',
@@ -406,13 +433,13 @@ const EN: Record<string, string> = {
   'nav.lang': 'ES',
 
   // --- Hero ---
-  'hero.badge': 'Open to work',
-  'hero.title': 'Web Developer · AI & Big Data',
-  'hero.subtitle': 'AI and Big Data specialist with a background in QA.',
-  'hero.subtitle2': 'I combine testing discipline with predictive models and data management.',
+  'hero.tagline': 'FULL-STACK DEVELOPER SPECIALIZED IN AI AND BIG DATA',
   'hero.email': 'Email',
   'hero.phone': '+34 645 31 63 09',
-  'hero.location': 'Cáceres, Extremadura, Spain · On-site · Hybrid · Remote',
+  'hero.github': 'GitHub',
+  'hero.cv': 'Download CV',
+  'hero.cv.es': 'CV en español',
+  'hero.cv.en': 'CV in English',
 
   // --- About ---
   'about.title': 'About Me',
@@ -429,22 +456,6 @@ const EN: Record<string, string> = {
   'exp.badge.current': 'Current',
   'exp.badge.internship': 'Internship',
   'exp.growing': 'Continuously growing',
-  'exp.1.role': 'Full Stack Developer',
-  'exp.1.date': 'Mar 2026 - Present',
-  'exp.1.company': 'Fundación COMPUTAEX · Internship · Cáceres',
-  'exp.1.desc': 'Updating and modernizing a full-stack web application. Backend development and maintenance with Python. Frontend development with React in a Node.js environment.',
-  'exp.2.role': 'Quality Engineering',
-  'exp.2.date': 'Jul 2024 - Jul 2025',
-  'exp.2.company': 'Viewnext · Full-time · Cáceres',
-  'exp.2.desc': 'Testing banking apps and APIs in the RSI project. Manual functional testing, defect lifecycle management in ALM. REST and SOAP API validation with SoapUI and Postman. Load testing with LoadRunner, JMeter, InfluxDB and Grafana.',
-  'exp.3.role': 'Quality Engineering',
-  'exp.3.date': 'Mar 2024 - Jun 2024',
-  'exp.3.company': 'Viewnext · Internship · Cáceres',
-  'exp.3.desc': 'Performance testing for web applications.',
-  'exp.4.role': 'Camp Counselor',
-  'exp.4.date': 'Jun 2022 - Aug 2022',
-  'exp.4.company': 'Camp Hilltop · Hancock, New York, USA',
-  'exp.4.desc': 'Organizing and supervising activities for children aged 6-16, including horseback riding, hiking, and group dynamics.',
 
   // --- Education ---
   'edu.title': 'Education',
@@ -468,7 +479,6 @@ const EN: Record<string, string> = {
   'projects.none': 'No projects available at this time.',
   'projects.code': 'Code',
   'projects.demo': 'Demo',
-  'projects.kicker': 'PORTFOLIO',
   'projects.scan': 'Scan me',
   'projects.featured_label': 'Featured selection',
 
@@ -550,6 +560,45 @@ const EN: Record<string, string> = {
   'admin.tab.logins': 'Logins',
   'admin.tab.messages': 'Messages',
   'admin.tab.users': 'Users',
+  'admin.tab.profile': 'Profile',
+
+  // Profile
+  'admin.profile.title': 'Profile',
+  'admin.profile.sub': 'Update the photo and texts shown on the main page.',
+  'admin.profile.photo.title': 'Profile photo',
+  'admin.profile.photo.sub': 'Upload a square image. JPG, PNG or WEBP, max 5 MB.',
+  'admin.profile.photo.current': 'Current',
+  'admin.profile.photo.preview': 'New',
+  'admin.profile.photo.select': 'Choose image',
+  'admin.profile.photo.change': 'Change image',
+  'admin.profile.photo.upload': 'Upload photo',
+  'admin.profile.photo.saving': 'Uploading…',
+  'admin.profile.photo.saved': 'Photo updated',
+  'admin.profile.photo.error': 'Could not upload the photo',
+  'admin.profile.photo.invalid': 'Pick a JPG, PNG or WEBP image under 5 MB.',
+  'admin.profile.texts.title': 'Page texts',
+  'admin.profile.texts.sub': 'Main page texts in the active language. Use Edit to update both languages.',
+  'admin.profile.texts.edit': 'Edit texts',
+  'admin.profile.texts.edit.title': 'Edit page texts',
+  'admin.profile.texts.save': 'Save texts',
+  'admin.profile.texts.saving': 'Saving…',
+  'admin.profile.texts.saved': 'Texts updated',
+  'admin.profile.texts.error': 'Could not save the texts',
+  'admin.profile.lang.es': 'Spanish',
+  'admin.profile.lang.en': 'English',
+  'admin.profile.field.hero.tagline': 'Hero headline',
+  'admin.profile.field.about.p1': 'About me — first paragraph',
+  'admin.profile.field.about.p2': 'About me — second paragraph',
+  'admin.profile.field.footer.role': 'Footer role',
+  'admin.profile.chatbot.title': 'Chatbot prompt',
+  'admin.profile.chatbot.sub': 'Instructions Nanas receives before every conversation. Defines its tone, profile knowledge, and reply style.',
+  'admin.profile.chatbot.placeholder': 'Write the instructions for the chatbot…',
+  'admin.profile.chatbot.save': 'Save prompt',
+  'admin.profile.chatbot.saving': 'Saving…',
+  'admin.profile.chatbot.saved': 'Prompt updated',
+  'admin.profile.chatbot.error': 'Could not save the prompt',
+  'admin.profile.chatbot.empty': 'The prompt cannot be empty',
+  'admin.profile.chatbot.reset': 'Reset to default',
 
   // Dashboard
   'admin.dashboard.title': 'Dashboard',
@@ -566,10 +615,6 @@ const EN: Record<string, string> = {
   'admin.stat.projects.foot': 'published',
   'admin.stat.chatbot': 'Chatbot',
   'admin.stat.chatbot.foot': '{n} conversations',
-  'admin.chart.visits.title': 'Visits — last 14 days',
-  'admin.chart.visits.pill': '{n} total',
-  'admin.chart.logins.title': 'Logins — last 14 days',
-  'admin.chart.logins.pill': '{n} total',
   'admin.chart.activity.title': 'Activity — last 14 days',
   'admin.chart.logins14.title': 'Logins — last 14 days',
   'admin.chart.tokens.title': 'Tokens spent — history',

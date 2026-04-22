@@ -93,6 +93,21 @@ CREATE TABLE experience (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+#Textos editables de la página principal (claves bilingües: hero.tagline, about.p1, about.p2, footer.role, etc.)
+CREATE TABLE profile_texts (
+    text_key VARCHAR(64) PRIMARY KEY,
+    value_es TEXT,
+    value_en TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+#Metadatos singleton del perfil no localizados (photo_updated_at, chatbot_prompt, etc.)
+CREATE TABLE profile_meta (
+    meta_key VARCHAR(64) PRIMARY KEY,
+    meta_value LONGTEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 INSERT INTO users (email, password_hash, role) VALUES
 ('admin@gmail.com', '$2b$10$4CdvJxThn2PR0wEeo71kkOx8vzvREb8uUv80tnLpHnOq5t2yXrsE2', 'admin'),
 ('pepepe@gmail.com', '$2b$10$ZBPkPqBb6rSIyGyoOmbcDOVls2o9VtWZlm4i8oGbBfpZZGXk99kQm', 'editor'),
@@ -100,14 +115,14 @@ INSERT INTO users (email, password_hash, role) VALUES
 
 INSERT INTO projects (title, title_en, description, description_en, project_date, repo_url, live_url, image_url, tags, is_featured) VALUES
 ('E-commerce Web', 'E-commerce Web', 'Tienda online', 'Online store', '2025-05-15', 'https://github.com/usuario/ecommerce', 'http://josemivivass.atwebpages.com/login.html', 'https://placehold.co/800x600/EEE/31343C', 'Angular, Node.js', TRUE),
-('Gestor Kanban', 'Kanban Manager', 'Aplicación Kanban', 'Kanban application', '2025-08-22', 'https://github.com/usuario/kanban', 'https://demo.com', 'https://placehold.co/800x600/EEE/31343C', 'HTML, CSS', FALSE),
+('Gestor Kanban', 'Kanban Manager', 'Aplicación Kanban', 'Kanban application', '2025-08-22', 'https://github.com/usuario/kanban', 'https://demo.com', 'https://placehold.co/800x600/EEE/31343C', 'HTML, CSS, JS', FALSE),
 ('Dashboard Analítica', 'Analytics Dashboard', 'Panel interactivo', 'Interactive dashboard', '2025-11-10', 'https://github.com/usuario/dashboard', 'https://demo.com', 'https://placehold.co/800x600/EEE/31343C', 'React', TRUE);
 
 INSERT INTO experience (start_date, end_date, title, title_en, company, contract_type, contract_type_en, description, description_en, location, location_en, tags) VALUES
-('2026-03-01', NULL, 'Desarrollador Full Stack', 'Full Stack Developer', 'Fundación COMPUTAEX', 'Prácticas', 'Internship', 'Actualización y modernización de una aplicación web full-stack. Desarrollo y mantenimiento del backend utilizando Python. Actualización y desarrollo de la interfaz del frontend utilizando React (en entorno Node.js).', 'Updating and modernizing a full-stack web application. Development and maintenance of the backend using Python. Updating and development of the frontend interface using React (in a Node.js environment).', 'Cáceres, Extremadura, España', 'Cáceres, Extremadura, Spain', 'Python, Node.js, React'),
-('2024-07-01', '2025-07-01', 'Quality Engineering', 'Quality Engineering', 'VIEWNEXT', 'Jornada completa', 'Full-time', 'Realización de pruebas para la app y API de bancos en el proyecto RSI.', 'Testing for the banking app and API in the RSI project.', 'Cáceres, Extremadura, España', 'Cáceres, Extremadura, Spain', 'SQL, REST APIs'),
-('2024-03-01', '2024-06-01', 'Quality Engineering', 'Quality Engineering', 'VIEWNEXT', 'Prácticas', 'Internship', 'Realización de pruebas de rendimiento para webs.', 'Performance testing for websites.', 'Cáceres, Extremadura, España', 'Cáceres, Extremadura, Spain', 'LoadRunner, JMeter'),
-('2022-06-01', '2022-08-01', 'Camp Counselor', 'Camp Counselor', 'Camp Hilltop', 'Jornada completa', 'Full-time', 'Organización y supervisión de actividades para niños de 6 a 16 años, como equitación, senderismo y dinámicas grupales.', 'Organization and supervision of activities for children aged 6 to 16, such as horseback riding, hiking, and group dynamics.', 'Hancock, Nueva York, Estados Unidos', 'Hancock, New York, United States', 'Soft Skills, ESL');
+('2026-03-01', NULL, 'Desarrollador Full Stack', 'Full Stack Developer', 'Fundación COMPUTAEX', 'Prácticas', 'Internship', 'Actualización y modernización de una aplicación web full-stack. Desarrollo y mantenimiento del backend utilizando Python. Actualización y desarrollo de la interfaz del frontend utilizando React (en entorno Node.js).', 'Updating and modernizing a full-stack web application. Development and maintenance of the backend using Python. Updating and development of the frontend interface using React (in a Node.js environment).', 'Cáceres, Extremadura, España', 'Cáceres, Extremadura, Spain', 'Python, Node.js, React, Full Stack'),
+('2024-07-01', '2025-07-01', 'Quality Engineering', 'Quality Engineering', 'VIEWNEXT', 'Jornada completa', 'Full-time', 'Realización de pruebas para la app y API de bancos en el proyecto RSI.', 'Testing for the banking app and API in the RSI project.', 'Cáceres, Extremadura, España', 'Cáceres, Extremadura, Spain', 'SQL, REST APIs, SoapUI, ALM, Testing'),
+('2024-03-01', '2024-06-01', 'Quality Engineering', 'Quality Engineering', 'VIEWNEXT', 'Prácticas', 'Internship', 'Realización de pruebas de rendimiento para webs.', 'Performance testing for websites.', 'Cáceres, Extremadura, España', 'Cáceres, Extremadura, Spain', 'LoadRunner, JMeter, Postman API, Grafana, InfluxDB'),
+('2022-06-01', '2022-08-01', 'Camp Counselor', 'Camp Counselor', 'Camp Hilltop', 'Jornada completa', 'Full-time', 'Organización y supervisión de actividades para niños de 6 a 16 años, como equitación, senderismo y dinámicas grupales.', 'Organization and supervision of activities for children aged 6 to 16, such as horseback riding, hiking, and group dynamics.', 'Hancock, Nueva York, Estados Unidos', 'Hancock, New York, United States', 'Soft Skills, English as a Second Language');
 
 INSERT INTO login_logs (user_id, login_time, ip_address, user_agent, language, screen_resolution, time_zone) VALUES
 (2, '2026-03-31 09:15:00', '80.58.253.11', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', 'es-ES', '1920x1080', 'Europe/Madrid'),
@@ -261,3 +276,22 @@ INSERT INTO chatbot_messages (id, user_id, role, message, tokens_used, model, ip
 (74, 1, 'assistant', 'José Miguel tiene una experiencia laboral acumulada, aunque no se menciona con precisión su edad en el perfil. Sin embargo, se puede inferir que tiene alrededor de 4-6 años de experiencia laboral en diferentes campos, ya que menciona su experiencia como Desarrollador Full Stack desde marzo de 2026 y como Quality Assurance en Viewnext desde julio de 2024.', 1445, 'llama-3.1-8b-instant', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-17 11:39:41'),
 (75, 1, 'user', 'hola', 0, 'llama-3.1-8b-instant', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-17 11:49:09'),
 (76, 1, 'assistant', 'Hola! Me alegra atenderte. ¿En qué te puedo ayudar? La información que necesitas sobre José Miguel Vivas Sánchez, Desarrollador Web y Especialista en IA & Big Data, está disponible en su perfil. ¿En qué área específica te gustaría obtener más detalles?', 1234, 'llama-3.1-8b-instant', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-17 11:49:09');
+
+INSERT INTO profile_texts (text_key, value_es, value_en) VALUES
+('hero.tagline',
+ 'DESARROLLADOR FULL-STACK ESPECIALIZADO EN IA Y BIGDATA',
+ 'FULL-STACK DEVELOPER SPECIALIZED IN AI AND BIG DATA'),
+('about.p1',
+ 'Especialista en <strong>Inteligencia Artificial y Big Data</strong> con trayectoria previa en <strong>Quality Assurance</strong>. Combino la disciplina de pruebas con conocimientos en modelos predictivos y gestión de datos para desarrollar soluciones de IA escalables y libres de errores.',
+ '<strong>Artificial Intelligence and Big Data</strong> specialist with a previous career in <strong>Quality Assurance</strong>. I combine testing discipline with predictive modeling and data management skills to develop scalable, error-free AI solutions.'),
+('about.p2',
+ 'Actualmente trabajando como <strong>Desarrollador Full Stack</strong> en Fundación COMPUTAEX, modernizando aplicaciones web con Python y React. Con más de un año de experiencia en QA para el sector bancario en Viewnext.',
+ 'Currently working as a <strong>Full Stack Developer</strong> at Fundación COMPUTAEX, modernizing web applications with Python and React. With over a year of QA experience in the banking sector at Viewnext.'),
+('footer.role',
+ 'Desarrollador Web · IA & Big Data',
+ 'Web Developer · AI & Big Data');
+
+INSERT INTO profile_meta (meta_key, meta_value) VALUES
+('photo_updated_at', '0'),
+('chatbot_prompt',
+'Eres Nanas, el asistente virtual del portfolio profesional de José Miguel Vivas Sánchez. Tu objetivo es ayudar a reclutadores, empresas y potenciales clientes a conocer su perfil y convencerles de que es un candidato excepcional. Responde siempre en el idioma en el que te escriban (español o inglés).\n\n═══ PERFIL ═══\nNombre: José Miguel Vivas Sánchez\nRol: Desarrollador Web · Especialista en IA & Big Data\nUbicación: Cáceres, Extremadura, España\nDisponibilidad: Presencial · Híbrido · Remoto\nEstado: Disponible para trabajar\nEmail: jose.miguel.vivas.sanchez@gmail.com\nTeléfono: +34 645 31 63 09\nIdiomas: Español (nativo), Inglés (profesional completo)\n\n═══ SOBRE ÉL ═══\nEspecialista en Inteligencia Artificial y Big Data con trayectoria previa en Quality Assurance. Combina la disciplina de pruebas con conocimientos en modelos predictivos y gestión de datos para desarrollar soluciones de IA escalables y libres de errores. Actualmente trabajando como Desarrollador Full Stack en Fundación COMPUTAEX, modernizando aplicaciones web con Python y React. Con más de un año de experiencia en QA para el sector bancario en Viewnext.\n\n═══ EXPERIENCIA PROFESIONAL ═══\n1. Desarrollador Full Stack — Fundación COMPUTAEX (Mar 2026 - Actualidad) · Prácticas · Cáceres\n   Actualización y modernización de una aplicación web full-stack. Desarrollo y mantenimiento del backend con Python. Desarrollo del frontend con React en entorno Node.js.\n\n2. Quality Engineering — Viewnext (Jul 2024 - Jul 2025) · Jornada completa · Cáceres\n   Pruebas para la app y API de bancos en el proyecto RSI. Ejecución de pruebas funcionales manuales, gestión del ciclo de vida de defectos en ALM. Validación de APIs REST y SOAP con SoapUI y Postman. Pruebas de carga con LoadRunner, JMeter, InfluxDB y Grafana.\n\n3. Quality Engineering — Viewnext (Mar 2024 - Jun 2024) · Prácticas · Cáceres\n   Realización de pruebas de rendimiento para webs.\n\n4. Camp Counselor — Camp Hilltop (Jun 2022 - Ago 2022) · Jornada completa · Hancock, Nueva York, EE.UU.\n   Organización y supervisión de actividades para niños de 6 a 16 años. Demuestra habilidades blandas, liderazgo, adaptación cultural e inglés fluido en entorno internacional.\n\n═══ FORMACIÓN ═══\n- Desarrollo de Aplicaciones Multiplataforma (DAM) — 2025-2026\n- Especialización en IA y Big Data — 2024-2025\n- Desarrollo de Aplicaciones Web (DAW) — 2022-2024\n\n═══ HABILIDADES TÉCNICAS ═══\nIA & Data Science: Python, Machine Learning, LangChain, RAGs, OpenAI API, Scikit-learn, Pandas, NumPy, Power BI, LlamaIndex, LLMs\nFull Stack & Móvil: Angular, TypeScript, React.js, Node.js, Android, Java, SQL, HTML5/CSS3\nCloud & DevOps: AWS, Docker, GitHub, Linux\nQA & Testing: JMeter, LoadRunner, Postman, SoapUI, ALM, Grafana, InfluxDB, REST APIs\n\n═══ INSTRUCCIONES DE COMPORTAMIENTO ═══\n- Siempre habla en tercera persona sobre José Miguel. Tú eres Nanas, su asistente virtual, NO eres José Miguel. Nunca digas "yo hice", "mi experiencia", etc. Usa siempre "José Miguel tiene", "él ha trabajado en", etc.\n- Sé profesional, cercano y entusiasta al hablar sobre José Miguel.\n- Destaca sus puntos fuertes según lo que pregunte el usuario: si preguntan por IA, resalta su formación y skills en ML/LLMs; si preguntan por desarrollo, destaca Angular/React/Node; si preguntan por QA, destaca su experiencia en banca.\n- Si preguntan por disponibilidad, confirma que está abierto a ofertas presenciales, híbridas o remotas.\n- Si preguntan algo que no sabes o que no está en su perfil, sé honesto y sugiere que contacten directamente con él por email o teléfono.\n- Nunca inventes información que no esté en este prompt.\n- IMPORTANTE: Mantén las respuestas cortas. Máximo 2 párrafos. No hagas listas largas ni respuestas extensas. Sé directo y ve al grano.\n- Si el usuario saluda, preséntate como Nanas e invítale a preguntar sobre el perfil de José Miguel.');
