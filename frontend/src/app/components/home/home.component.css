@@ -277,21 +277,38 @@
 
 .about-card {
   background: var(--c-surface);
-  border-radius: 12px;
-  padding: 36px 40px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  padding: 22px 26px;
+  box-shadow: 0 1px 3px rgba(17, 24, 39, 0.06), 0 1px 2px rgba(17, 24, 39, 0.04);
   border: 1px solid var(--c-border-card);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.about-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--c-primary);
+  box-shadow: 0 0 10px rgba(45, 106, 79, 0.4);
+}
+
+.about-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(17, 24, 39, 0.08), 0 4px 10px rgba(17, 24, 39, 0.04);
+  border-color: rgba(45, 106, 79, 0.25);
 }
 
 .about-text p {
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   color: var(--c-text-body);
-  line-height: 1.75;
-  margin-bottom: 16px;
-}
-
-.about-text p:last-child {
-  margin-bottom: 0;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
 }
 
 .about-text strong {
@@ -300,32 +317,40 @@
 
 .about-languages {
   display: flex;
-  gap: 16px;
-  margin-top: 24px;
-  padding-top: 24px;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid var(--c-border-card);
 }
 
 .lang-item {
   display: flex;
   flex-direction: column;
-  background: var(--c-surface-warm);
-  padding: 14px 22px;
+  background: var(--c-surface);
+  padding: 12px 18px;
   border-radius: 10px;
+  border: 1px solid var(--c-border-card);
   border-left: 3px solid var(--c-primary);
   flex: 1;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.lang-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.06);
 }
 
 .lang-name {
-  font-weight: 700;
+  font-weight: 800;
   color: var(--c-text-heading);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .lang-level {
   color: var(--c-text-muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   margin-top: 2px;
+  font-weight: 500;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1175,7 +1200,8 @@
   .hero-scroll-arrow { bottom: 10px; }
   .edu-grid { grid-template-columns: 1fr; }
   .skills-two-col { grid-template-columns: 1fr; }
-  .about-languages { flex-direction: column; gap: 12px; }
+  .about-languages { flex-direction: column; gap: 10px; }
+  .about-card { padding: 16px 18px; }
 
   /* En móvil desactivamos el pin y dejamos contenido en flujo normal */
   .sp-pin { height: auto; overflow: visible; }

@@ -14,4 +14,8 @@ export class ProjectService {
   getProjects(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
   }
+
+  getFeaturedProjects(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/featured`);
+  }
 }

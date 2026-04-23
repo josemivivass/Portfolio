@@ -426,7 +426,6 @@
               <button type="button"
                       class="btn-primary"
                       (click)="startEditProfileTexts()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
                 {{ i18n.t('admin.profile.texts.edit') }}
               </button>
               <span class="profile-status profile-status--ok" *ngIf="profileTextsStatus === 'saved'">
@@ -1112,10 +1111,32 @@
       </div>
       <div class="edit-modal-body">
         <div class="grid-2">
-          <label>{{ i18n.t('admin.projects.field.title.es') }}<input [(ngModel)]="editingProject.title" name="title" required></label>
-          <label>{{ i18n.t('admin.projects.field.title.en') }}<input [(ngModel)]="editingProject.title_en" name="title_en"></label>
-          <label class="full">{{ i18n.t('admin.projects.field.desc.es') }}<textarea [(ngModel)]="editingProject.description" name="description"></textarea></label>
-          <label class="full">{{ i18n.t('admin.projects.field.desc.en') }}<textarea [(ngModel)]="editingProject.description_en" name="description_en"></textarea></label>
+          <div class="modal-bilingual-field full">
+            <span class="profile-text-label">{{ i18n.t('admin.projects.field.title') }}</span>
+            <div class="profile-text-cols">
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
+                <input [(ngModel)]="editingProject.title" name="title" required />
+              </div>
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
+                <input [(ngModel)]="editingProject.title_en" name="title_en" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-bilingual-field full">
+            <span class="profile-text-label">{{ i18n.t('admin.projects.field.desc') }}</span>
+            <div class="profile-text-cols">
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
+                <textarea [(ngModel)]="editingProject.description" name="description"></textarea>
+              </div>
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
+                <textarea [(ngModel)]="editingProject.description_en" name="description_en"></textarea>
+              </div>
+            </div>
+          </div>
           <label>{{ i18n.t('admin.projects.field.date') }}<input type="date" [(ngModel)]="editingProject.project_date" name="project_date"></label>
           <label>{{ i18n.t('admin.projects.field.tags') }}<input [(ngModel)]="editingProject.tags" name="tags"></label>
           <label>{{ i18n.t('admin.projects.field.repo') }}<input [(ngModel)]="editingProject.repo_url" name="repo_url"></label>
@@ -1147,17 +1168,61 @@
 
           <label class="full">{{ i18n.t('admin.experience.field.company') }}<input [(ngModel)]="editingExperience.company" name="company" required></label>
 
-          <label>{{ i18n.t('admin.experience.field.role.es') }}<input [(ngModel)]="editingExperience.title" name="title" required></label>
-          <label>{{ i18n.t('admin.experience.field.role.en') }}<input [(ngModel)]="editingExperience.title_en" name="title_en"></label>
+          <div class="modal-bilingual-field full">
+            <span class="profile-text-label">{{ i18n.t('admin.experience.field.role') }}</span>
+            <div class="profile-text-cols">
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
+                <input [(ngModel)]="editingExperience.title" name="title" required />
+              </div>
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
+                <input [(ngModel)]="editingExperience.title_en" name="title_en" />
+              </div>
+            </div>
+          </div>
 
-          <label>{{ i18n.t('admin.experience.field.contract.es') }}<input [(ngModel)]="editingExperience.contract_type" name="contract_type"></label>
-          <label>{{ i18n.t('admin.experience.field.contract.en') }}<input [(ngModel)]="editingExperience.contract_type_en" name="contract_type_en"></label>
+          <div class="modal-bilingual-field full">
+            <span class="profile-text-label">{{ i18n.t('admin.experience.field.contract') }}</span>
+            <div class="profile-text-cols">
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
+                <input [(ngModel)]="editingExperience.contract_type" name="contract_type" />
+              </div>
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
+                <input [(ngModel)]="editingExperience.contract_type_en" name="contract_type_en" />
+              </div>
+            </div>
+          </div>
 
-          <label>{{ i18n.t('admin.experience.field.location.es') }}<input [(ngModel)]="editingExperience.location" name="location"></label>
-          <label>{{ i18n.t('admin.experience.field.location.en') }}<input [(ngModel)]="editingExperience.location_en" name="location_en"></label>
+          <div class="modal-bilingual-field full">
+            <span class="profile-text-label">{{ i18n.t('admin.experience.field.location') }}</span>
+            <div class="profile-text-cols">
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
+                <input [(ngModel)]="editingExperience.location" name="location" />
+              </div>
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
+                <input [(ngModel)]="editingExperience.location_en" name="location_en" />
+              </div>
+            </div>
+          </div>
 
-          <label>{{ i18n.t('admin.experience.field.desc.es') }}<textarea [(ngModel)]="editingExperience.description" name="description"></textarea></label>
-          <label>{{ i18n.t('admin.experience.field.desc.en') }}<textarea [(ngModel)]="editingExperience.description_en" name="description_en"></textarea></label>
+          <div class="modal-bilingual-field full">
+            <span class="profile-text-label">{{ i18n.t('admin.experience.field.desc') }}</span>
+            <div class="profile-text-cols">
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
+                <textarea [(ngModel)]="editingExperience.description" name="description"></textarea>
+              </div>
+              <div class="profile-text-col">
+                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
+                <textarea [(ngModel)]="editingExperience.description_en" name="description_en"></textarea>
+              </div>
+            </div>
+          </div>
 
           <label class="full">{{ i18n.t('admin.experience.field.tags') }}<input [(ngModel)]="editingExperience.tags" name="tags"></label>
         </div>

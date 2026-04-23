@@ -93,12 +93,17 @@ CREATE TABLE experience (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-#Textos editables de la página principal (claves bilingües: hero.tagline, about.p1, about.p2, footer.role, etc.)
+#Textos editables de la página principal — una fila singleton con un campo por apartado
 CREATE TABLE profile_texts (
-    text_key VARCHAR(64) PRIMARY KEY,
-    value_es TEXT,
-    value_en TEXT,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    id INT PRIMARY KEY DEFAULT 1,
+    hero_tagline_es TEXT,
+    hero_tagline_en TEXT,
+    about_es TEXT,
+    about_en TEXT,
+    footer_role_es TEXT,
+    footer_role_en TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CHECK (id = 1)
 );
 
 #Metadatos singleton del perfil no localizados (photo_updated_at, chatbot_prompt, etc.)
@@ -277,17 +282,12 @@ INSERT INTO chatbot_messages (id, user_id, role, message, tokens_used, model, ip
 (75, 1, 'user', 'hola', 0, 'llama-3.1-8b-instant', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-17 11:49:09'),
 (76, 1, 'assistant', 'Hola! Me alegra atenderte. ¿En qué te puedo ayudar? La información que necesitas sobre José Miguel Vivas Sánchez, Desarrollador Web y Especialista en IA & Big Data, está disponible en su perfil. ¿En qué área específica te gustaría obtener más detalles?', 1234, 'llama-3.1-8b-instant', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-17 11:49:09');
 
-INSERT INTO profile_texts (text_key, value_es, value_en) VALUES
-('hero.tagline',
+INSERT INTO profile_texts (id, hero_tagline_es, hero_tagline_en, about_es, about_en, footer_role_es, footer_role_en) VALUES
+(1,
  'DESARROLLADOR FULL-STACK ESPECIALIZADO EN IA Y BIGDATA',
- 'FULL-STACK DEVELOPER SPECIALIZED IN AI AND BIG DATA'),
-('about.p1',
- 'Especialista en <strong>Inteligencia Artificial y Big Data</strong> con trayectoria previa en <strong>Quality Assurance</strong>. Combino la disciplina de pruebas con conocimientos en modelos predictivos y gestión de datos para desarrollar soluciones de IA escalables y libres de errores.',
- '<strong>Artificial Intelligence and Big Data</strong> specialist with a previous career in <strong>Quality Assurance</strong>. I combine testing discipline with predictive modeling and data management skills to develop scalable, error-free AI solutions.'),
-('about.p2',
- 'Actualmente trabajando como <strong>Desarrollador Full Stack</strong> en Fundación COMPUTAEX, modernizando aplicaciones web con Python y React. Con más de un año de experiencia en QA para el sector bancario en Viewnext.',
- 'Currently working as a <strong>Full Stack Developer</strong> at Fundación COMPUTAEX, modernizing web applications with Python and React. With over a year of QA experience in the banking sector at Viewnext.'),
-('footer.role',
+ 'FULL-STACK DEVELOPER SPECIALIZED IN AI AND BIG DATA',
+ 'Especialista en <strong>Inteligencia Artificial y Big Data</strong> con trayectoria previa en <strong>Quality Assurance</strong>. Combino la disciplina de pruebas con conocimientos en modelos predictivos y gestión de datos para desarrollar soluciones de IA escalables y libres de errores. Actualmente trabajando como <strong>Desarrollador Full Stack</strong> en Fundación COMPUTAEX, modernizando aplicaciones web con Python y React. Con más de un año de experiencia en QA para el sector bancario en Viewnext.',
+ '<strong>Artificial Intelligence and Big Data</strong> specialist with a previous career in <strong>Quality Assurance</strong>. I combine testing discipline with predictive modeling and data management skills to develop scalable, error-free AI solutions. Currently working as a <strong>Full Stack Developer</strong> at Fundación COMPUTAEX, modernizing web applications with Python and React. With over a year of QA experience in the banking sector at Viewnext.',
  'Desarrollador Web · IA & Big Data',
  'Web Developer · AI & Big Data');
 

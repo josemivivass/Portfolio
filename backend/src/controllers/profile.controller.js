@@ -8,20 +8,23 @@ const DEFAULT_PHOTO = path.join(
   __dirname, '..', '..', '..', 'frontend', 'public', 'images', 'perfil.jpg'
 );
 
-const EDITABLE_KEYS = ['hero.tagline', 'about.p1', 'about.p2', 'footer.role'];
+const EDITABLE_KEYS = ['hero.tagline', 'about', 'footer.role'];
+
+// Mapeo clave lógica → columnas de la tabla profile_texts
+const KEY_TO_COLS = {
+  'hero.tagline': { es: 'hero_tagline_es', en: 'hero_tagline_en' },
+  'about':        { es: 'about_es',        en: 'about_en' },
+  'footer.role':  { es: 'footer_role_es',  en: 'footer_role_en' }
+};
 
 const TEXT_DEFAULTS = {
   'hero.tagline': {
     es: 'DESARROLLADOR FULL-STACK ESPECIALIZADO EN IA Y BIGDATA',
     en: 'FULL-STACK DEVELOPER SPECIALIZED IN AI AND BIG DATA'
   },
-  'about.p1': {
-    es: 'Especialista en <strong>Inteligencia Artificial y Big Data</strong> con trayectoria previa en <strong>Quality Assurance</strong>. Combino la disciplina de pruebas con conocimientos en modelos predictivos y gestión de datos para desarrollar soluciones de IA escalables y libres de errores.',
-    en: '<strong>Artificial Intelligence and Big Data</strong> specialist with a previous career in <strong>Quality Assurance</strong>. I combine testing discipline with predictive modeling and data management skills to develop scalable, error-free AI solutions.'
-  },
-  'about.p2': {
-    es: 'Actualmente trabajando como <strong>Desarrollador Full Stack</strong> en Fundación COMPUTAEX, modernizando aplicaciones web con Python y React. Con más de un año de experiencia en QA para el sector bancario en Viewnext.',
-    en: 'Currently working as a <strong>Full Stack Developer</strong> at Fundación COMPUTAEX, modernizing web applications with Python and React. With over a year of QA experience in the banking sector at Viewnext.'
+  'about': {
+    es: 'Especialista en <strong>Inteligencia Artificial y Big Data</strong> con trayectoria previa en <strong>Quality Assurance</strong>. Combino la disciplina de pruebas con conocimientos en modelos predictivos y gestión de datos para desarrollar soluciones de IA escalables y libres de errores. Actualmente trabajando como <strong>Desarrollador Full Stack</strong> en Fundación COMPUTAEX, modernizando aplicaciones web con Python y React. Con más de un año de experiencia en QA para el sector bancario en Viewnext.',
+    en: '<strong>Artificial Intelligence and Big Data</strong> specialist with a previous career in <strong>Quality Assurance</strong>. I combine testing discipline with predictive modeling and data management skills to develop scalable, error-free AI solutions. Currently working as a <strong>Full Stack Developer</strong> at Fundación COMPUTAEX, modernizing web applications with Python and React. With over a year of QA experience in the banking sector at Viewnext.'
   },
   'footer.role': {
     es: 'Desarrollador Web · IA & Big Data',
@@ -86,14 +89,15 @@ function ensureDir() {
 
 async function fetchTexts() {
   const [rows] = await pool.query(
-    'SELECT text_key, value_es, value_en FROM profile_texts'
+    'SELECT * FROM profile_texts WHERE id = 1 LIMIT 1'
   );
-  const byKey = Object.fromEntries(rows.map(r => [r.text_key, r]));
+  const row = rows[0] || {};
   const es = {};
   const en = {};
   for (const k of Object.keys(TEXT_DEFAULTS)) {
-    es[k] = byKey[k]?.value_es ?? TEXT_DEFAULTS[k].es;
-    en[k] = byKey[k]?.value_en ?? TEXT_DEFAULTS[k].en;
+    const cols = KEY_TO_COLS[k];
+    es[k] = row[cols.es] ?? TEXT_DEFAULTS[k].es;
+    en[k] = row[cols.en] ?? TEXT_DEFAULTS[k].en;
   }
   return { es, en };
 }
@@ -108,11 +112,13 @@ async function fetchMeta(key, fallback) {
 }
 
 async function upsertText(key, es, en) {
+  const cols = KEY_TO_COLS[key];
+  if (!cols) return;
   await pool.query(
-    `INSERT INTO profile_texts (text_key, value_es, value_en)
-     VALUES (?, ?, ?)
-     ON DUPLICATE KEY UPDATE value_es = VALUES(value_es), value_en = VALUES(value_en)`,
-    [key, es, en]
+    `INSERT INTO profile_texts (id, ${cols.es}, ${cols.en})
+     VALUES (1, ?, ?)
+     ON DUPLICATE KEY UPDATE ${cols.es} = VALUES(${cols.es}), ${cols.en} = VALUES(${cols.en})`,
+    [es, en]
   );
 }
 

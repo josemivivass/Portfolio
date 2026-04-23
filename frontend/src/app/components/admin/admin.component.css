@@ -359,11 +359,11 @@
   margin-bottom: 28px;
 }
 .chart-card,
-.admin-shell .chart-card {
+.admin-shell .card.chart-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 24px 26px;
+  padding: 34px;
   box-shadow: var(--shadow);
 }
 .chart-head {
@@ -423,9 +423,10 @@
 }
 
 /* ─── Line chart (dashboard) ──────────────────────── */
-.line-chart-card {
+.line-chart-card,
+.admin-shell .line-chart-card {
   margin-bottom: 32px;
-  padding: 26px 28px 22px;
+  padding: 34px;
 }
 .line-chart-card .chart-head {
   align-items: flex-start;
@@ -974,6 +975,14 @@ select:focus {
 .grid-2 textarea::placeholder {
   color: var(--c-text-placeholder);
 }
+
+/* Bilingual field groups inside modals */
+.modal-bilingual-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modal-bilingual-field.full { grid-column: 1 / -1; }
 
 .form-actions {
   display: flex;
@@ -1687,7 +1696,7 @@ select:focus {
   }
 
   /* Charts */
-  .chart-card { padding: 18px 14px 14px; border-radius: 14px; }
+  .chart-card { padding: 22px; border-radius: 14px; }
   .chart-head {
     flex-direction: column;
     align-items: flex-start;
@@ -1701,8 +1710,8 @@ select:focus {
     gap: 12px;
     font-size: 0.75rem;
   }
-  .line-chart-card { padding: 16px 6px 10px; }
-  .line-chart-card .chart-head { padding: 0 10px; margin-bottom: 10px; }
+  .line-chart-card { padding: 22px; }
+  .line-chart-card .chart-head { padding: 0; margin-bottom: 10px; }
   .line-chart-card .line-chart-wrap { margin: 0; }
   .line-chart-svg {
     width: 100%;
@@ -2039,8 +2048,8 @@ select:focus {
   gap: 22px;
   align-items: start;
 }
-.profile-card {
-  padding: 22px 24px 24px;
+.admin-shell .card.profile-card {
+  padding: 34px;
   display: flex;
   flex-direction: column;
 }
@@ -2048,22 +2057,23 @@ select:focus {
   grid-column: 1 / -1;
 }
 .profile-card-head h3 {
-  margin: 0 0 4px;
-  font-size: 1rem;
+  margin: 0 0 6px;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text);
 }
 .profile-card-head p {
-  margin: 0 0 18px;
+  margin: 0;
   color: var(--text-label);
   font-size: 0.84rem;
   line-height: 1.45;
 }
 .profile-photo-row {
   display: flex;
-  gap: 16px;
+  gap: 24px;
   flex-wrap: wrap;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
+  justify-content: center;
 }
 .profile-photo-frame {
   flex: 1 1 140px;
@@ -2078,8 +2088,8 @@ select:focus {
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  border-radius: 14px;
-  border: 1px solid var(--border);
+  border-radius: 50%;
+  border: 2px solid var(--border);
   background: var(--surface-alt);
 }
 .profile-photo-frame--preview img {
@@ -2098,17 +2108,31 @@ select:focus {
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+  justify-content: center;
+}
+.profile-photo-actions .btn-primary {
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 7px 14px;
+  font-size: 0.76rem;
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+.profile-photo-actions .btn-primary:hover {
+  background: rgba(45, 106, 79, 0.18);
+  transform: none;
+  box-shadow: none;
 }
 .profile-file-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
+  padding: 7px 14px;
   border-radius: 10px;
   border: 1.5px solid var(--border-strong);
   background: transparent;
   color: var(--text-label);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.18s, border-color 0.18s, color 0.18s;
@@ -2119,7 +2143,7 @@ select:focus {
   border-color: var(--text-muted);
   color: var(--text);
 }
-.profile-file-btn svg { width: 16px; height: 16px; }
+.profile-file-btn svg { width: 14px; height: 14px; }
 .profile-file-name {
   font-size: 0.78rem;
   color: var(--text-muted);
@@ -2129,6 +2153,7 @@ select:focus {
   margin: 14px 0 0;
   font-size: 0.8rem;
   font-weight: 600;
+  text-align: center;
 }
 .profile-status--ok  { color: var(--accent); }
 .profile-status--err { color: var(--danger); }
@@ -2156,6 +2181,7 @@ select:focus {
 .profile-card-head {
   position: relative;
   padding-right: 90px;
+  margin-bottom: 24px;
 }
 .profile-lang-pill {
   position: absolute;
@@ -2174,13 +2200,13 @@ select:focus {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 .profile-text-row {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface-alt);
@@ -2255,8 +2281,29 @@ select:focus {
 .profile-texts-footer {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 10px;
   align-items: center;
+}
+.profile-texts-footer .btn-primary {
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 7px 14px;
+  font-size: 0.76rem;
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+.profile-texts-footer .btn-primary:hover {
+  background: rgba(45, 106, 79, 0.18);
+  transform: none;
+  box-shadow: none;
+}
+.profile-texts-footer .btn-primary svg {
+  width: 13px;
+  height: 13px;
+}
+.profile-texts-footer .btn-ghost {
+  padding: 7px 14px;
+  font-size: 0.76rem;
 }
 
 /* Prompt del chatbot */
@@ -2264,7 +2311,7 @@ select:focus {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
 }
 .profile-prompt-input {
   width: 100%;
@@ -2309,6 +2356,6 @@ select:focus {
 }
 @media (max-width: 640px) {
   .profile-text-cols { grid-template-columns: 1fr; }
-  .profile-card { padding: 18px 16px 20px; }
+  .admin-shell .card.profile-card { padding: 22px; }
   .profile-prompt-input { min-height: 240px; font-size: 0.8rem; }
 }

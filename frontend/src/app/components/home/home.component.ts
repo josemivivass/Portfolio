@@ -77,7 +77,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // (escribe tags técnicos), así que no hace falta reiniciarlo aquí.
     this.langSub = this.i18n.lang$.subscribe(() => this.cdr.detectChanges());
 
-    this.projectService.getProjects().subscribe({
+    this.projectService.getFeaturedProjects().subscribe({
       next: (data) => {
         this.projects = data ?? [];
         this.rebuildTagGroups();

@@ -112,8 +112,7 @@ export class AdminComponent implements OnInit {
   readonly profileApiUrl = 'http://127.0.0.1:3000/api/profile/photo';
   readonly profileFields: { key: string; labelKey: string; type: 'text' | 'textarea' }[] = [
     { key: 'hero.tagline', labelKey: 'admin.profile.field.hero.tagline', type: 'text' },
-    { key: 'about.p1',     labelKey: 'admin.profile.field.about.p1',     type: 'textarea' },
-    { key: 'about.p2',     labelKey: 'admin.profile.field.about.p2',     type: 'textarea' },
+    { key: 'about',        labelKey: 'admin.profile.field.about',        type: 'textarea' },
     { key: 'footer.role',  labelKey: 'admin.profile.field.footer.role',  type: 'text' }
   ];
   profileTexts: { es: Record<string, string>; en: Record<string, string> } = { es: {}, en: {} };
