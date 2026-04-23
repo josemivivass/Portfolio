@@ -43,26 +43,27 @@
 
 <div class="main-app-container"
      [class.is-intro-active]="showIntro"
-     [class.is-admin-route]="isAdminRoute"
+     [class.is-standalone-route]="!isHomeRoute"
      [style.transform]="showIntro ? 'translateY(' + mainTranslateY + 'vh)' : 'none'">
 
-  <a *ngIf="isAdminRoute" href="javascript:void(0)" (click)="exitAdmin()" class="admin-back-arrow" aria-label="Volver al inicio">
+  <a *ngIf="!isHomeRoute" href="javascript:void(0)" (click)="returnToHome()" class="page-back-arrow" aria-label="Volver al inicio">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="19" y1="12" x2="5" y2="12"></line>
       <polyline points="12 19 5 12 12 5"></polyline>
     </svg>
+    <span>{{ i18n.t('login.back') }}</span>
   </a>
 
-  <nav *ngIf="!isAdminRoute" class="side-menu left-menu"
+  <nav *ngIf="isHomeRoute" class="side-menu left-menu"
        [style.transform]="isHomeRoute ? 'translateY(calc(-50% + ' + menuTranslateY + 'px))' : 'translateY(-50%)'">
     <span class="menu-label">{{ i18n.t('nav.pages') }}</span>
     <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">{{ i18n.t('nav.cv') }}</a>
-    <a routerLink="/proyectos" routerLinkActive="active" class="nav-link">{{ i18n.t('nav.projects') }}</a>
+    <a (click)="scrollToProjects($event)" class="nav-link" style="cursor: pointer;">{{ i18n.t('nav.projects') }}</a>
     <a routerLink="/contacto" routerLinkActive="active" class="nav-link">{{ i18n.t('nav.contact') }}</a>
     <a *ngIf="canAccessAdmin" href="javascript:void(0)" (click)="enterAdmin()" class="nav-link admin-link">{{ i18n.t('nav.admin') }}</a>
   </nav>
 
-  <nav *ngIf="!isAdminRoute" class="side-menu right-menu"
+  <nav *ngIf="isHomeRoute" class="side-menu right-menu"
        [style.transform]="isHomeRoute ? 'translateY(calc(-50% + ' + menuTranslateY + 'px))' : 'translateY(-50%)'">
     <span class="menu-label">{{ i18n.t('nav.account') }}</span>
     <ng-container *ngIf="isLoggedIn; else loggedOut">

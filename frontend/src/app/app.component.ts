@@ -166,6 +166,30 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const scrollProjFlag = sessionStorage.getItem('scrollToProjects');
+    if (scrollProjFlag) {
+      sessionStorage.removeItem('scrollToProjects');
+      this.showPreloader = false;
+      this.showIntro = false;
+      this.mainTranslateY = 0;
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        this.homeComponent?.initAnimations();
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          ScrollTrigger.refresh();
+          this.scrollMode = 'main';
+          const showcaseSection = document.querySelector('.skills-showcase-section') as HTMLElement;
+          const targetY = showcaseSection ? showcaseSection.getBoundingClientRect().top + window.scrollY + (window.innerHeight * 0.5) : Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+          this.currentScrollY = targetY;
+          this.targetScrollY = targetY;
+          window.scrollTo(0, targetY);
+          this.startVirtualScroll(true);
+        }, 100);
+      }, 100);
+      return;
+    }
+
     const returnFlag = sessionStorage.getItem('authReturn');
     if (returnFlag) {
       sessionStorage.removeItem('authReturn');
@@ -362,6 +386,14 @@ export class AppComponent implements OnInit, OnDestroy {
     // so we do NOT process raw scroll events here
   }
 
+  @HostListener('window:scrollToTop')
+  onScrollToTop(): void {
+    if (this.isHomeRoute && !this.showIntro) {
+      this.targetScrollY = 0;
+      if (!this.virtualScrollEnabled) this.startVirtualScroll();
+    }
+  }
+
   onWheel(event: WheelEvent): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
 
@@ -554,6 +586,69 @@ export class AppComponent implements OnInit, OnDestroy {
     // Start virtual scroll immediately — caller seeds targetScrollY right
     // after this returns, so the reverse animation begins on the next tick.
     this.startVirtualScroll(false);
+  }
+
+  scrollToProjects(event: Event): void {
+    event.preventDefault();
+    if (!this.isHomeRoute) {
+      sessionStorage.setItem('scrollToProjects', '1');
+      this.router.navigateByUrl('/');
+      return;
+    }
+    this.doScrollToProjects();
+  }
+
+  private doScrollToProjects(): void {
+    const getTargetY = () => {
+      const showcaseSection = document.querySelector('.skills-showcase-section') as HTMLElement;
+      if (showcaseSection) {
+        // Sumamos 0.5vh para sobrepasar la animación de Skills y que el telón esté totalmente desplegado
+        return showcaseSection.getBoundingClientRect().top + window.scrollY + (window.innerHeight * 0.5);
+      }
+      return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    };
+
+    if (this.showIntro) {
+      this.stopVirtualScroll();
+      this.isTransitioning = true;
+      this.showIntro = false;
+      this.mainTranslateY = 0;
+      this.menuTranslateY = 0;
+      this.cdr.detectChanges();
+      window.scrollTo(0, 0);
+
+      setTimeout(() => {
+        ScrollTrigger.refresh();
+        window.dispatchEvent(new Event('resize'));
+        this.homeComponent?.initAnimations();
+        setTimeout(() => {
+          this.isTransitioning = false;
+          this.scrollMode = 'main';
+          const target = getTargetY();
+          this.currentScrollY = target;
+          this.targetScrollY = target;
+          window.scrollTo(0, target);
+          this.startVirtualScroll(true);
+        }, 600);
+      }, 100);
+    } else {
+      this.scrollMode = 'main';
+      const target = getTargetY();
+      this.currentScrollY = target;
+      this.targetScrollY = target;
+      window.scrollTo(0, target);
+      if (!this.virtualScrollEnabled) this.startVirtualScroll();
+    }
+  }
+
+  returnToHome(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.isAdminRoute) {
+      this.exitAdmin();
+      return;
+    }
+    sessionStorage.setItem('authReturn', '1');
+    this.router.navigateByUrl('/');
   }
 
   enterAdmin(): void {

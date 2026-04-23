@@ -44,6 +44,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   // --- Datos de experiencia ---
   experiences: any[] = [];
 
+  // --- Perfil ---
+  photoUrl = '';
+
   // --- Typewriter del hero ---
   // Cada entrada es el bloque de tags completo de un proyecto/experiencia
   // (p.ej. "Angular · TypeScript · Node.js"), no tags sueltos.
@@ -111,9 +114,15 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.photoUrl = this.profile.photoUrl;
     // Carga textos editables del perfil (sobrescribe traducciones) y versión
     // de la foto para cache-busting. Silencioso si no hay backend.
-    this.profile.load().subscribe(() => this.cdr.detectChanges());
+    this.profile.load().subscribe(() => {
+      setTimeout(() => {
+        this.photoUrl = this.profile.photoUrl;
+        this.cdr.detectChanges();
+      }, 0);
+    });
   }
 
   /** Cierra el menú del CV al hacer click fuera. El propio botón llama a
@@ -124,6 +133,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.cvMenuOpen = false;
       this.cdr.detectChanges();
     }
+  }
+
+  scrollToTop(event: Event): void {
+    event.preventDefault();
+    window.dispatchEvent(new CustomEvent('scrollToTop'));
   }
 
   // ─── Helpers para la sección de experiencia ───────────────────────────────
@@ -268,7 +282,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       }
     };
 
-    tick();
+    // Iniciamos el bucle de forma asíncrona para evitar colisiones con el ciclo de detección de cambios de Angular (NG0100)
+    this.typewriterTimer = setTimeout(tick, 50);
   }
 
   private stopTypewriter(): void {

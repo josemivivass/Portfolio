@@ -3,7 +3,7 @@
   <div class="hero-content">
 
     <div class="hero-avatar">
-      <img [src]="profile.photoUrl" alt="Jose Miguel Vivas Sanchez" />
+      <img [src]="photoUrl" alt="Jose Miguel Vivas Sanchez" />
     </div>
 
     <!-- Tagline + typewriter -->
@@ -241,6 +241,15 @@
     <!-- Capa telón: proyectos destacados -->
     <div class="sp-projects-curtain" #projectsCurtain>
       <div class="showcase-inner">
+
+        <a href="javascript:void(0)" (click)="scrollToTop($event)" class="projects-back-arrow" aria-label="Volver al inicio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>{{ i18n.t('login.back') }}</span>
+        </a>
+
         <header class="showcase-header">
           <h2 class="showcase-title">{{ i18n.t('projects.title') }}</h2>
           <span class="showcase-sub">{{ i18n.t('projects.featured_label') }}</span>

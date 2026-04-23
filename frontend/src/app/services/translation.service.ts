@@ -31,8 +31,12 @@ export class TranslationService {
   }
 
   applyOverrides(es: Record<string, string> = {}, en: Record<string, string> = {}): void {
-    this.overrides = { es: { ...es }, en: { ...en } };
-    this.overridesSubject.next(this.overridesSubject.value + 1);
+    // Usamos setTimeout para aplicar los textos del backend en el siguiente fotograma,
+    // evitando colisiones con el ciclo de detección de cambios de Angular (NG0100).
+    setTimeout(() => {
+      this.overrides = { es: { ...es }, en: { ...en } };
+      this.overridesSubject.next(this.overridesSubject.value + 1);
+    }, 0);
   }
 
   t(key: string, params?: Record<string, string | number>): string {
@@ -129,7 +133,9 @@ const ES: Record<string, string> = {
   'contact.email.required': 'El email es requerido.',
   'contact.email.invalid': 'Formato de email inválido.',
   'contact.message.required': 'El mensaje es requerido.',
-  'contact.message.min': 'Mínimo 10 caracteres.',
+  'contact.message.min': 'El mensaje debe tener al menos 20 caracteres.',
+  'contact.name.max': 'El nombre no puede exceder los 100 caracteres.',
+  'contact.empty': 'Todos los campos son obligatorios.',
   'contact.send': 'Enviar Mensaje',
   'contact.success': 'Mensaje enviado correctamente. Me pondré en contacto contigo pronto.',
   'contact.error': 'Hubo un error al enviar el mensaje. Inténtalo de nuevo más tarde.',
@@ -219,7 +225,7 @@ const ES: Record<string, string> = {
   'admin.profile.texts.error': 'No se pudieron guardar los textos',
   'admin.profile.lang.es': 'Español',
   'admin.profile.lang.en': 'Inglés',
-  'admin.profile.field.hero.tagline': 'Titular del hero',
+  'admin.profile.field.hero.tagline': 'Titular principal',
   'admin.profile.field.about': 'Sobre mí',
   'admin.profile.field.footer.role': 'Rol mostrado en el footer',
   'admin.profile.chatbot.title': 'Prompt del chatbot',
@@ -487,7 +493,9 @@ const EN: Record<string, string> = {
   'contact.email.required': 'Email is required.',
   'contact.email.invalid': 'Invalid email format.',
   'contact.message.required': 'Message is required.',
-  'contact.message.min': 'Minimum 10 characters.',
+  'contact.message.min': 'Message must be at least 20 characters long.',
+  'contact.name.max': 'Name cannot exceed 100 characters.',
+  'contact.empty': 'All fields are required.',
   'contact.send': 'Send Message',
   'contact.success': 'Message sent successfully. I will contact you soon.',
   'contact.error': 'There was an error sending the message. Please try again later.',
@@ -577,7 +585,7 @@ const EN: Record<string, string> = {
   'admin.profile.texts.error': 'Could not save the texts',
   'admin.profile.lang.es': 'Spanish',
   'admin.profile.lang.en': 'English',
-  'admin.profile.field.hero.tagline': 'Hero headline',
+  'admin.profile.field.hero.tagline': 'Principal headline',
   'admin.profile.field.about': 'About me',
   'admin.profile.field.footer.role': 'Footer role',
   'admin.profile.chatbot.title': 'Chatbot prompt',
