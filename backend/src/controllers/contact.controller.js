@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { sendContactNotification } = require('../services/email.service');
 
 exports.sendMessage = async (req, res) => {
   const { name, email, message } = req.body;
@@ -12,6 +13,10 @@ exports.sendMessage = async (req, res) => {
       'INSERT INTO contact_messages (name, email, message) VALUES (?, ?, ?)',
       [name, email, message]
     );
+
+    // Enviamos el correo de notificación sin esperar a que termine (fire-and-forget)
+    sendContactNotification({ name, email, message });
+
     res.status(201).json({ message: 'Mensaje guardado correctamente.' });
   } catch (error) {
     console.error('Error al guardar el mensaje de contacto:', error);
