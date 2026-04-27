@@ -237,6 +237,15 @@ const ES: Record<string, string> = {
   'admin.profile.chatbot.error': 'No se pudo guardar el prompt',
   'admin.profile.chatbot.empty': 'El prompt no puede estar vacío',
   'admin.profile.chatbot.reset': 'Restaurar por defecto',
+  'admin.profile.chatbot.edit': 'Editar prompt',
+  'admin.profile.chatbot.edit.title': 'Editar prompt del chatbot',
+  'admin.profile.chatbot.model.title': 'Modelo del chatbot',
+  'admin.profile.chatbot.model.sub': 'Modelo de IA que usa Nanas para generar las respuestas.',
+  'admin.profile.chatbot.model.label': 'Selecciona un modelo',
+  'admin.profile.chatbot.model.current': 'Modelo activo:',
+  'admin.profile.chatbot.model.saving': 'Guardando…',
+  'admin.profile.chatbot.model.saved': 'Modelo actualizado',
+  'admin.profile.chatbot.model.error': 'No se pudo guardar el modelo',
 
   // Dashboard
   'admin.dashboard.title': 'Dashboard',
@@ -597,6 +606,15 @@ const EN: Record<string, string> = {
   'admin.profile.chatbot.error': 'Could not save the prompt',
   'admin.profile.chatbot.empty': 'The prompt cannot be empty',
   'admin.profile.chatbot.reset': 'Reset to default',
+  'admin.profile.chatbot.edit': 'Edit prompt',
+  'admin.profile.chatbot.edit.title': 'Edit chatbot prompt',
+  'admin.profile.chatbot.model.title': 'Chatbot model',
+  'admin.profile.chatbot.model.sub': 'AI model Nanas uses to generate replies.',
+  'admin.profile.chatbot.model.label': 'Select a model',
+  'admin.profile.chatbot.model.current': 'Active model:',
+  'admin.profile.chatbot.model.saving': 'Saving…',
+  'admin.profile.chatbot.model.saved': 'Model updated',
+  'admin.profile.chatbot.model.error': 'Could not save the model',
 
   // Dashboard
   'admin.dashboard.title': 'Dashboard',

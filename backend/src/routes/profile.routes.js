@@ -8,9 +8,11 @@ const editorOrAdmin = [verifyToken, requireRole('admin', 'editor')];
 router.get('/texts', profile.getTexts);
 router.get('/photo', profile.getPhoto);
 router.get('/chatbot-prompt', editorOrAdmin, profile.getChatbotPrompt);
+router.get('/chatbot-model', editorOrAdmin, profile.getChatbotModel);
 
 router.put('/texts', editorOrAdmin, profile.updateTexts);
 router.put('/chatbot-prompt', editorOrAdmin, profile.updateChatbotPrompt);
+router.put('/chatbot-model', editorOrAdmin, profile.updateChatbotModel);
 router.post('/photo', editorOrAdmin, profile.uploadPhoto);
 
 module.exports = router;

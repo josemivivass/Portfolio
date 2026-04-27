@@ -335,6 +335,12 @@
     top: 20px;
     left: 20px;
   }
+  .main-app-container:has(.admin-shell) .page-back-arrow {
+    display: none;
+  }
+  .main-app-container:has(.admin-shell.menu-open) .page-back-arrow {
+    display: inline-flex;
+  }
 }
 
 .main-app-container.is-standalone-route .main-content {

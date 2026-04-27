@@ -2,7 +2,7 @@ const pool = require('../config/db');
 const Groq = require('groq-sdk');
 const fs = require('fs');
 const path = require('path');
-const { loadSystemPrompt } = require('./profile.controller');
+const { loadSystemPrompt, loadChatbotModel } = require('./profile.controller');
 
 // Load API key from ai.env
 const envPath = path.join(__dirname, '../../ai.env');
@@ -13,7 +13,6 @@ const groq = new Groq({ apiKey });
 
 const USER_TOKEN_LIMIT = 400000;
 const GLOBAL_TOKEN_LIMIT = 500000;
-const MODEL = 'llama-3.1-8b-instant';
 
 // El prompt por defecto vive en profile.controller.js (DEFAULT_CHATBOT_PROMPT).
 // En cada petición leemos el valor actual (editable desde el panel admin)
@@ -77,6 +76,7 @@ exports.sendMessage = async (req, res) => {
 
     // Build messages array for Groq (OpenAI-compatible format)
     const systemPrompt = await loadSystemPrompt();
+    const model = await loadChatbotModel();
     const messages = [
       { role: 'system', content: systemPrompt }
     ];
@@ -90,7 +90,7 @@ exports.sendMessage = async (req, res) => {
 
     // Single API call to Groq
     const result = await groq.chat.completions.create({
-      model: MODEL,
+      model,
       messages,
       max_tokens: 1024
     });
@@ -102,14 +102,14 @@ exports.sendMessage = async (req, res) => {
     await pool.query(
       `INSERT INTO chatbot_messages (user_id, role, message, tokens_used, model, ip_address, user_agent)
        VALUES (?, 'user', ?, 0, ?, ?, ?)`,
-      [userId, message, MODEL, ip, userAgent]
+      [userId, message, model, ip, userAgent]
     );
 
     // Save assistant reply
     await pool.query(
       `INSERT INTO chatbot_messages (user_id, role, message, tokens_used, model, ip_address, user_agent)
        VALUES (?, 'assistant', ?, ?, ?, ?, ?)`,
-      [userId, reply, tokensUsed, MODEL, ip, userAgent]
+      [userId, reply, tokensUsed, model, ip, userAgent]
     );
 
     res.json({ reply });

@@ -81,6 +81,15 @@ QA & Testing: JMeter, LoadRunner, Postman, SoapUI, ALM, Grafana, InfluxDB, REST 
 - IMPORTANTE: Mantén las respuestas cortas. Máximo 2 párrafos. No hagas listas largas ni respuestas extensas. Sé directo y ve al grano.
 - Si el usuario saluda, preséntate como Nanas e invítale a preguntar sobre el perfil de José Miguel.`;
 
+const DEFAULT_CHATBOT_MODEL = 'llama-3.1-8b-instant';
+
+const AVAILABLE_CHATBOT_MODELS = [
+  'llama-3.1-8b-instant',
+  'llama-3.3-70b-versatile',
+  'openai/gpt-oss-120b',
+  'openai/gpt-oss-20b'
+];
+
 function ensureDir() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 }
@@ -140,6 +149,21 @@ exports.loadSystemPrompt = async function () {
   } catch (err) {
     console.error('[profile] loadSystemPrompt failed', err);
     return DEFAULT_CHATBOT_PROMPT;
+  }
+};
+
+// Lee el modelo configurado desde la base de datos. Si no existe o no está en
+// la lista permitida, devuelve el default.
+exports.loadChatbotModel = async function () {
+  try {
+    const value = await fetchMeta('chatbot_model', null);
+    if (value && AVAILABLE_CHATBOT_MODELS.includes(String(value))) {
+      return String(value);
+    }
+    return DEFAULT_CHATBOT_MODEL;
+  } catch (err) {
+    console.error('[profile] loadChatbotModel failed', err);
+    return DEFAULT_CHATBOT_MODEL;
   }
 };
 
@@ -218,6 +242,34 @@ exports.updateChatbotPrompt = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error al guardar el prompt' });
+  }
+};
+
+exports.getChatbotModel = async (req, res) => {
+  try {
+    const model = await exports.loadChatbotModel();
+    res.status(200).json({
+      model,
+      default_model: DEFAULT_CHATBOT_MODEL,
+      available_models: AVAILABLE_CHATBOT_MODELS
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al leer el modelo' });
+  }
+};
+
+exports.updateChatbotModel = async (req, res) => {
+  const { model } = req.body || {};
+  if (typeof model !== 'string' || !AVAILABLE_CHATBOT_MODELS.includes(model)) {
+    return res.status(400).json({ message: 'Modelo no válido' });
+  }
+  try {
+    await upsertMeta('chatbot_model', model);
+    res.status(200).json({ model });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al guardar el modelo' });
   }
 };
 

@@ -16,6 +16,14 @@ html, body {
   background-color: var(--c-bg);
 }
 
+/* Escalado global en móvil: reducir la base de rem para encoger texto y espacios */
+@media (max-width: 768px) {
+  html { font-size: 15px; }
+}
+@media (max-width: 480px) {
+  html { font-size: 14px; }
+}
+
 * {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;

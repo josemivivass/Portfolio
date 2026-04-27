@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -60,7 +60,7 @@ export class AdminComponent implements OnInit {
   loginChartMax = 0;
 
   // ─── Dashboard line chart geometry ───
-  readonly lineChart = {
+  lineChart = {
     w: 880,
     h: 280,
     padL: 52,
@@ -80,7 +80,7 @@ export class AdminComponent implements OnInit {
   hoverIndex: number | null = null;
 
   // ─── Tokens line chart ───
-  readonly tokensChart = {
+  tokensChart = {
     w: 880, h: 280, padL: 62, padR: 28, padT: 24, padB: 46
   };
   tokensChartMax = 1;
@@ -134,6 +134,15 @@ export class AdminComponent implements OnInit {
   chatbotPromptSaving = false;
   chatbotPromptStatus: 'idle' | 'saved' | 'error' = 'idle';
   chatbotPromptError = '';
+  editingChatbotPrompt: string | null = null;
+
+  // Modelo del chatbot
+  chatbotModel = '';
+  chatbotModelDefault = '';
+  chatbotModelOptions: string[] = [];
+  chatbotModelSaving = false;
+  chatbotModelStatus: 'idle' | 'saved' | 'error' = 'idle';
+  chatbotModelError = '';
 
   confirmModal: {
     title: string;
@@ -169,12 +178,38 @@ export class AdminComponent implements OnInit {
       } catch {}
     }
 
+    this.updateChartDimensions();
     this.loadAllData();
+  }
+
+  private chartIsMobile = false;
+
+  private updateChartDimensions(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile === this.chartIsMobile) return false;
+    this.chartIsMobile = isMobile;
+    if (isMobile) {
+      this.lineChart   = { w: 460, h: 320, padL: 38, padR: 14, padT: 18, padB: 36 };
+      this.tokensChart = { w: 460, h: 320, padL: 50, padR: 14, padT: 18, padB: 36 };
+    } else {
+      this.lineChart   = { w: 880, h: 280, padL: 52, padR: 28, padT: 24, padB: 46 };
+      this.tokensChart = { w: 880, h: 280, padL: 62, padR: 28, padT: 24, padB: 46 };
+    }
+    return true;
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (this.updateChartDimensions()) {
+      this.buildCharts();
+      this.cdr.markForCheck();
+    }
   }
 
   private loadAllData(): void {
     this.initialLoading = true;
-    let pending = 9;
+    let pending = 10;
     const done = () => {
       pending--;
       if (pending <= 0) {
@@ -227,6 +262,15 @@ export class AdminComponent implements OnInit {
         done();
       },
       error: fail('chatbot-prompt')
+    });
+    this.adminService.getChatbotModel().subscribe({
+      next: d => {
+        this.chatbotModelOptions = d?.available_models ?? [];
+        this.chatbotModelDefault = d?.default_model ?? '';
+        this.chatbotModel = d?.model ?? this.chatbotModelDefault;
+        done();
+      },
+      error: fail('chatbot-model')
     });
   }
 
@@ -340,9 +384,31 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  saveChatbotPrompt(): void {
+  startEditChatbotPrompt(): void {
+    this.editingChatbotPrompt = this.chatbotPrompt || '';
+    this.chatbotPromptStatus = 'idle';
+    this.chatbotPromptError = '';
+  }
+
+  cancelEditChatbotPrompt(): void {
     if (this.chatbotPromptSaving) return;
-    const trimmed = (this.chatbotPrompt || '').trim();
+    this.editingChatbotPrompt = null;
+    this.chatbotPromptStatus = 'idle';
+    this.chatbotPromptError = '';
+  }
+
+  resetEditingChatbotPrompt(): void {
+    if (!this.chatbotPromptDefault || this.editingChatbotPrompt === null) return;
+    this.editingChatbotPrompt = this.chatbotPromptDefault;
+    this.chatbotPromptStatus = 'idle';
+    this.chatbotPromptError = '';
+    this.cdr.markForCheck();
+  }
+
+  saveChatbotPrompt(): void {
+    if (this.chatbotPromptSaving || this.editingChatbotPrompt === null) return;
+    const value = this.editingChatbotPrompt;
+    const trimmed = (value || '').trim();
     if (!trimmed) {
       this.chatbotPromptStatus = 'error';
       this.chatbotPromptError = this.i18n.t('admin.profile.chatbot.empty');
@@ -351,11 +417,12 @@ export class AdminComponent implements OnInit {
     }
     this.chatbotPromptSaving = true;
     this.chatbotPromptStatus = 'idle';
-    this.adminService.updateChatbotPrompt(this.chatbotPrompt).subscribe({
+    this.adminService.updateChatbotPrompt(value).subscribe({
       next: (res) => {
-        this.chatbotPrompt = res?.prompt ?? this.chatbotPrompt;
+        this.chatbotPrompt = res?.prompt ?? value;
         this.chatbotPromptSaving = false;
         this.chatbotPromptStatus = 'saved';
+        this.editingChatbotPrompt = null;
         this.cdr.markForCheck();
       },
       error: (err) => {
@@ -368,16 +435,35 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  resetChatbotPrompt(): void {
-    if (!this.chatbotPromptDefault) return;
-    this.chatbotPrompt = this.chatbotPromptDefault;
-    this.chatbotPromptStatus = 'idle';
-    this.chatbotPromptError = '';
-    this.cdr.markForCheck();
+  get editingChatbotPromptLength(): number {
+    return (this.editingChatbotPrompt || '').length;
   }
 
-  get chatbotPromptLength(): number {
-    return (this.chatbotPrompt || '').length;
+  onChatbotModelChange(model: string): void {
+    if (this.chatbotModelSaving) return;
+    if (!model || model === this.chatbotModel) return;
+    if (!this.chatbotModelOptions.includes(model)) return;
+    const previous = this.chatbotModel;
+    this.chatbotModel = model;
+    this.chatbotModelSaving = true;
+    this.chatbotModelStatus = 'idle';
+    this.chatbotModelError = '';
+    this.adminService.updateChatbotModel(model).subscribe({
+      next: (res) => {
+        this.chatbotModel = res?.model ?? model;
+        this.chatbotModelSaving = false;
+        this.chatbotModelStatus = 'saved';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.chatbotModel = previous;
+        this.chatbotModelSaving = false;
+        this.chatbotModelStatus = 'error';
+        this.chatbotModelError = err?.error?.message || this.i18n.t('admin.profile.chatbot.model.error');
+        console.error(err);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   // ─── Stats ───
@@ -547,12 +633,19 @@ export class AdminComponent implements OnInit {
     this.tokensHoverIndex = i;
   }
 
-  get tokensHoverData(): { x: number; date: string; tokens: number; tooltipX: number } | null {
+  get tokensHoverData(): { x: number; date: string; tokens: number; tooltipX: number; tooltipW: number } | null {
     if (this.tokensHoverIndex === null) return null;
     const p = this.tokensPoints[this.tokensHoverIndex];
     if (!p) return null;
-    const tooltipX = p.x > this.tokensChart.w / 2 ? p.x - 120 : p.x + 12;
-    return { x: p.x, date: p.date, tokens: p.value, tooltipX };
+    const valueFontPx = this.chartIsMobile ? 17 : 11;
+    const dateFontPx = this.chartIsMobile ? 15 : 10;
+    const valueText = `${this.formatTokens(p.value)} tokens`;
+    const tooltipW = this.computeTooltipWidth([
+      { text: p.date, fontPx: dateFontPx, leftPad: 10, rightPad: 12 },
+      { text: valueText, fontPx: valueFontPx, leftPad: 20, rightPad: 12 }
+    ]);
+    const tooltipX = p.x > this.tokensChart.w / 2 ? p.x - (tooltipW + 12) : p.x + 12;
+    return { x: p.x, date: p.date, tokens: p.value, tooltipX, tooltipW };
   }
 
   get totalTokensUsed(): number {
@@ -615,19 +708,42 @@ export class AdminComponent implements OnInit {
     visitors: number;
     logins: number;
     tooltipX: number;
+    tooltipW: number;
   } | null {
     if (this.hoverIndex === null) return null;
     const v = this.visitorPoints[this.hoverIndex];
     const l = this.loginPoints[this.hoverIndex];
     if (!v) return null;
-    const tooltipX = v.x > this.lineChart.w / 2 ? v.x - 132 : v.x + 12;
+    const valueFontPx = this.chartIsMobile ? 17 : 11;
+    const dateFontPx = this.chartIsMobile ? 15 : 10;
+    const visText = `${this.i18n.t('admin.tab.visitors')}: ${v.value}`;
+    const logText = `${this.i18n.t('admin.tab.logins')}: ${l?.value ?? 0}`;
+    const tooltipW = this.computeTooltipWidth([
+      { text: v.date,    fontPx: dateFontPx,  leftPad: 10, rightPad: 12 },
+      { text: visText,   fontPx: valueFontPx, leftPad: 20, rightPad: 12 },
+      { text: logText,   fontPx: valueFontPx, leftPad: 20, rightPad: 12 }
+    ]);
+    const tooltipX = v.x > this.lineChart.w / 2 ? v.x - (tooltipW + 12) : v.x + 12;
     return {
       x: v.x,
       date: v.date,
       visitors: v.value,
       logins: l?.value ?? 0,
-      tooltipX
+      tooltipX,
+      tooltipW
     };
+  }
+
+  // Estima el ancho del tooltip basándose en el texto más largo. Usa la
+  // razón ancho/em típica de la fuente Inter (≈0.58) más los paddings.
+  private computeTooltipWidth(lines: { text: string; fontPx: number; leftPad: number; rightPad: number }[]): number {
+    const charRatio = 0.58;
+    let max = 0;
+    for (const ln of lines) {
+      const w = ln.leftPad + ln.text.length * ln.fontPx * charRatio + ln.rightPad;
+      if (w > max) max = w;
+    }
+    return Math.ceil(max);
   }
 
   private buildDailyChart(rows: any[], dateField: string): ChartBar[] {

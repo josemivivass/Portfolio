@@ -130,4 +130,17 @@ export class AdminService {
       { headers: this.headers() }
     );
   }
+  getChatbotModel(): Observable<{ model: string; default_model: string; available_models: string[] }> {
+    return this.http.get<{ model: string; default_model: string; available_models: string[] }>(
+      `${this.apiUrl}/profile/chatbot-model`,
+      { headers: this.headers() }
+    );
+  }
+  updateChatbotModel(model: string): Observable<{ model: string }> {
+    return this.http.put<{ model: string }>(
+      `${this.apiUrl}/profile/chatbot-model`,
+      { model },
+      { headers: this.headers() }
+    );
+  }
 }
