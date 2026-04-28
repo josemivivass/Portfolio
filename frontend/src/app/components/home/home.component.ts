@@ -7,7 +7,9 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ProjectService } from '../../services/project.service';
+import { ProjectService, resolveApiAssetUrl } from '../../services/project.service';
+
+type ProjectFilterId = 'all' | 'web' | 'android' | 'ai' | 'other';
 import { ExperienceService } from '../../services/experience.service';
 import { TranslationService } from '../../services/translation.service';
 import { BackgroundThemeService } from '../../services/background-theme.service';
@@ -41,6 +43,30 @@ export class HomeComponent implements OnInit, OnDestroy {
   projects: any[] = [];
   errorMessage = '';
 
+  // --- Filtro por tipo de proyecto ---
+  // El id 'all' incluye todos. Los demás coinciden con la columna `project_type`
+  // del backend. Si en el futuro añades un nuevo tipo, basta con añadir aquí
+  // su entrada y la traducción correspondiente; el resto del flujo es genérico.
+  projectFilters: { id: ProjectFilterId; labelKey: string }[] = [
+    { id: 'all',     labelKey: 'projects.filter.all' },
+    { id: 'web',     labelKey: 'projects.filter.web' },
+    { id: 'android', labelKey: 'projects.filter.android' },
+    { id: 'ai',      labelKey: 'projects.filter.ai' },
+    { id: 'other',   labelKey: 'projects.filter.other' },
+  ];
+  activeFilter: ProjectFilterId = 'all';
+
+  // QR popover y modal de caso de estudio. Solo uno abierto a la vez por card.
+  openQrId: number | null = null;
+  caseProject: any = null;
+  lightboxOpen = false;
+
+  // Índice activo del carrusel por proyecto. Mapa por id de proyecto. El modal
+  // de caso completo usa una clave separada (-1) para no compartir índice con
+  // la card de la lista. */
+  carouselIndex: Record<number, number> = {};
+  private static readonly CASE_KEY = -1;
+
   // --- Datos de experiencia ---
   experiences: any[] = [];
 
@@ -59,7 +85,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private animationsInitialized = false;
   private langSub!: Subscription;
-  private listWheelHandler?: (e: WheelEvent) => void;
 
   constructor(
     private projectService: ProjectService,
@@ -125,14 +150,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Cierra el menú del CV al hacer click fuera. El propio botón llama a
-   *  stopPropagation para evitar autocerrarse. */
+  /** Cierra el menú del CV y el popover QR al hacer click fuera. Los
+   *  triggers internos llaman a stopPropagation para evitar autocerrarse. */
   @HostListener('document:click')
   onDocClick(): void {
-    if (this.cvMenuOpen) {
-      this.cvMenuOpen = false;
-      this.cdr.detectChanges();
-    }
+    let changed = false;
+    if (this.cvMenuOpen) { this.cvMenuOpen = false; changed = true; }
+    if (this.openQrId !== null) { this.openQrId = null; changed = true; }
+    if (changed) this.cdr.detectChanges();
   }
 
   scrollToTop(event: Event): void {
@@ -309,14 +334,204 @@ export class HomeComponent implements OnInit, OnDestroy {
     return `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=6&data=${encodeURIComponent(target)}`;
   }
 
+  /** Tipo de proyecto normalizado. Sin valor cae a 'web' para que la card
+   *  siempre tenga un mockup que dibujar. */
+  getType(project: any): ProjectFilterId {
+    const t = (project?.project_type || '').toLowerCase();
+    if (t === 'android' || t === 'ai' || t === 'other' || t === 'web') return t;
+    return 'web';
+  }
+
+  /** Lista visible según el filtro activo. */
+  get filteredProjects(): any[] {
+    if (this.activeFilter === 'all') return this.projects;
+    return this.projects.filter(p => this.getType(p) === this.activeFilter);
+  }
+
+  setFilter(id: ProjectFilterId): void {
+    if (this.activeFilter === id) return;
+    this.activeFilter = id;
+    this.openQrId = null;
+    if (isPlatformBrowser(this.platformId)) {
+      // Reposiciona ScrollTrigger porque el alto del listado puede cambiar
+      // y el pin de la cortina necesita volver a medir.
+      setTimeout(() => ScrollTrigger.refresh(), 0);
+    }
+  }
+
+  countByFilter(id: ProjectFilterId): number {
+    if (id === 'all') return this.projects.length;
+    return this.projects.filter(p => this.getType(p) === id).length;
+  }
+
+  /** Acorta una URL para mostrarla en la barra del mockup de navegador
+   *  (sin protocolo y truncada). Vacía si no hay URL. */
+  shortUrl(url?: string): string {
+    if (!url) return 'localhost';
+    try {
+      const u = new URL(url);
+      const host = u.host.replace(/^www\./, '');
+      const path = u.pathname.length > 1 ? u.pathname : '';
+      const full = `${host}${path}`;
+      return full.length > 38 ? full.slice(0, 35) + '…' : full;
+    } catch {
+      return url.length > 38 ? url.slice(0, 35) + '…' : url;
+    }
+  }
+
+  /** Mapeo manual del nombre del tag al slug de simple-icons. Usar mapa explícito
+   *  evita peticiones rotas a iconos inexistentes (los slugs no siempre coinciden
+   *  con el nombre del tag). Devuelve URL del CDN o '' si no hay icono. */
+  techIcon(rawTag: string): string {
+    if (!rawTag) return '';
+    const tag = rawTag.trim().toLowerCase();
+    const slug = TECH_ICON_MAP[tag];
+    if (!slug) return '';
+    // Color de Simple Icons (sin #) — azul corporativo del portfolio
+    // (--c-primary: #007bff) para coherencia con el resto de la página.
+    return `https://cdn.simpleicons.org/${slug}/007bff`;
+  }
+
+  // ─── Carrusel de capturas ───────────────────────────────────────────────
+
+  /** Lista de capturas para un proyecto. Si el array `images` viene vacío
+   *  o no existe, devolvemos []: el espacio del mockup queda en blanco. */
+  imagesFor(project: any): { url: string }[] {
+    if (!project) return [];
+    const arr = Array.isArray(project.images) ? project.images : [];
+    // Las URLs subidas vienen como `/api/projects/images/…` (relativas al
+    // backend). En dev hay que prefijarlas con el host del API o el navegador
+    // las pediría al servidor de Angular y devolvería 404.
+    return arr
+      .filter((img: any) => img && typeof img.url === 'string' && img.url.length > 0)
+      .map((img: any) => ({ url: resolveApiAssetUrl(img.url) }));
+  }
+
+  /** Índice activo (0 si no se ha tocado el carrusel). `key` opcional para
+   *  diferenciar el carrusel del modal del de la card. */
+  activeImageIndex(project: any, key?: number): number {
+    const k = (key !== undefined) ? key : (project?.id ?? 0);
+    return this.carouselIndex[k] ?? 0;
+  }
+
+  prevImage(project: any, event?: Event, key?: number): void {
+    if (event) { event.stopPropagation(); }
+    const total = this.imagesFor(project).length;
+    if (total <= 1) return;
+    const k = (key !== undefined) ? key : (project?.id ?? 0);
+    const cur = this.carouselIndex[k] ?? 0;
+    this.carouselIndex[k] = (cur - 1 + total) % total;
+  }
+
+  nextImage(project: any, event?: Event, key?: number): void {
+    if (event) { event.stopPropagation(); }
+    const total = this.imagesFor(project).length;
+    if (total <= 1) return;
+    const k = (key !== undefined) ? key : (project?.id ?? 0);
+    const cur = this.carouselIndex[k] ?? 0;
+    this.carouselIndex[k] = (cur + 1) % total;
+  }
+
+  goToImage(project: any, idx: number, event?: Event, key?: number): void {
+    if (event) { event.stopPropagation(); }
+    const total = this.imagesFor(project).length;
+    if (idx < 0 || idx >= total) return;
+    const k = (key !== undefined) ? key : (project?.id ?? 0);
+    this.carouselIndex[k] = idx;
+  }
+
+  /** trackBy estable para *ngFor de imágenes — evita que Angular destruya y
+   *  recree los <img> en cada ciclo de change detection (imagesFor() crea un
+   *  array nuevo cada llamada y, sin trackBy, el clic sobre una miniatura
+   *  registra sobre un nodo que se está reemplazando). */
+  trackByImageIdx(index: number): number {
+    return index;
+  }
+
+  /** URL de la imagen actualmente activa en el lightbox (o null si el
+   *  carrusel no tiene imágenes). Se usa con `*ngIf="lightboxImage() as lbImg"`
+   *  para renderizar UN solo <img> dimensionado por su contenido natural,
+   *  de modo que clicks fuera del rectángulo visible caigan en el backdrop. */
+  lightboxImage(): string | null {
+    if (!this.caseProject) return null;
+    const imgs = this.imagesFor(this.caseProject);
+    if (imgs.length === 0) return null;
+    const idx = this.activeImageIndex(this.caseProject, HomeComponent.CASE_KEY);
+    return imgs[Math.min(Math.max(0, idx), imgs.length - 1)]?.url ?? null;
+  }
+
+  // ─── Acciones de la card ────────────────────────────────────────────────
+
+  /** Toggle del popover QR sobre la card. Cierra cualquier otro abierto. */
+  toggleQr(project: any, event: Event): void {
+    event.stopPropagation();
+    this.openQrId = this.openQrId === project.id ? null : project.id;
+  }
+
+  /** Cierra el QR si se hace click en cualquier sitio fuera (gracias al
+   *  HostListener existente en onDocClick). */
+  openCase(project: any): void {
+    this.caseProject = project;
+    this.openQrId = null;
+    // Reset del carrusel del modal a la primera imagen para no abrir el modal
+    // mostrando una captura intermedia heredada de una sesión anterior.
+    this.carouselIndex[HomeComponent.CASE_KEY] = 0;
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  closeCase(): void {
+    this.caseProject = null;
+    this.lightboxOpen = false;
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = '';
+    }
+  }
+
+  openLightbox(event?: Event): void {
+    if (event) { event.stopPropagation(); }
+    if (!this.caseProject) return;
+    if (this.imagesFor(this.caseProject).length === 0) return;
+    this.lightboxOpen = true;
+  }
+
+  closeLightbox(event?: Event): void {
+    if (event) { event.stopPropagation(); }
+    this.lightboxOpen = false;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    // El lightbox se cierra primero: ESC dentro del lightbox no debe cerrar el
+    // modal completo, solo volver a la vista de detalle.
+    if (this.lightboxOpen) { this.lightboxOpen = false; this.cdr.detectChanges(); return; }
+    if (this.caseProject) this.closeCase();
+    if (this.openQrId !== null) {
+      this.openQrId = null;
+      this.cdr.detectChanges();
+    }
+  }
+
+  @HostListener('document:keydown.arrowleft', ['$event'])
+  onArrowLeft(event: Event): void {
+    if (this.lightboxOpen && this.caseProject) {
+      event.preventDefault();
+      this.prevImage(this.caseProject, undefined, HomeComponent.CASE_KEY);
+    }
+  }
+
+  @HostListener('document:keydown.arrowright', ['$event'])
+  onArrowRight(event: Event): void {
+    if (this.lightboxOpen && this.caseProject) {
+      event.preventDefault();
+      this.nextImage(this.caseProject, undefined, HomeComponent.CASE_KEY);
+    }
+  }
+
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
     this.stopTypewriter();
-    // Handler de rueda sobre la lista de proyectos
-    if (this.listWheelHandler && this.showcaseList) {
-      this.showcaseList.nativeElement.removeEventListener('wheel', this.listWheelHandler);
-      this.listWheelHandler = undefined;
-    }
     // revert: true restaura pin-spacers y estilos inline que GSAP inyecta
     // en body/html con pin:true. Sin esto, al navegar a /admin el scroll
     // queda bloqueado y aparece una animación de rebote.
@@ -524,20 +739,24 @@ export class HomeComponent implements OnInit, OnDestroy {
           // is-unveiled cuando la cortina está esencialmente arriba
           const unveiled = pB >= 0.95;
           curtain.classList.toggle('is-unveiled', unveiled);
-          if (!unveiled && this.showcaseList) {
-            const list = this.showcaseList.nativeElement as HTMLElement;
-            if (list.scrollTop !== 0) list.scrollTop = 0;
-          }
         },
       });
 
-      // ── ST2: Pin + buffer para explorar la lista ───────────────────────
-      // ST1 termina 0.5vh después de "top top"; el pin debe cubrir esa cola
-      // además del buffer de 3vh para navegar la lista.
+      // ── ST2: Pin mientras dura la lectura de la lista ──────────────────
+      // El end se calcula a partir del scroll real de la lista: con menos
+      // proyectos el pin dura menos; con más, dura más. Sumamos un buffer
+      // mínimo (1vh) para cubrir la cola de ST1 cuando el listado cabe en
+      // pantalla. La rueda dentro de la lista se queda contenida gracias al
+      // `overscroll-behavior: contain` de .showcase-list — cuando el usuario
+      // toca el final, propaga al documento y ST2 progresa.
       ScrollTrigger.create({
         trigger: section,
         start: 'top top',
-        end: () => `+=${window.innerHeight * 3.5}`,
+        end: () => {
+          const list = this.showcaseList?.nativeElement as HTMLElement | undefined;
+          const overflow = list ? Math.max(0, list.scrollHeight - list.clientHeight) : 0;
+          return `+=${overflow + window.innerHeight}`;
+        },
         pin: pin,
         pinType: 'fixed',
         pinSpacing: true,
@@ -546,28 +765,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         onEnter:     () => curtain.classList.add('is-unveiled'),
         onEnterBack: () => curtain.classList.add('is-unveiled'),
       });
-
-      // Handler imperativo: la rueda sobre la lista se queda dentro mientras
-      // haya contenido por consumir; cuando la lista topa, el evento pasa y
-      // el documento avanza.
-      if (this.showcaseList) {
-        const list = this.showcaseList.nativeElement as HTMLElement;
-
-        const handler = (e: WheelEvent) => {
-          if (!curtain.classList.contains('is-unveiled')) return;
-          const dy = e.deltaY;
-          if (dy === 0) return;
-          const atTop    = list.scrollTop <= 0;
-          const atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
-          if ((dy > 0 && !atBottom) || (dy < 0 && !atTop)) {
-            e.preventDefault();
-            list.scrollTop += dy;
-          }
-        };
-
-        list.addEventListener('wheel', handler, { passive: false });
-        this.listWheelHandler = handler;
-      }
     } else if (this.projectsCurtain) {
       // En móvil o si faltan refs, mostrar el telón en su sitio sin animación
       gsap.set(this.projectsCurtain.nativeElement, { yPercent: 0, position: 'relative' });
@@ -578,10 +775,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   /** Resetea animaciones para que puedan reproducirse de nuevo (al volver a la intro). */
   resetAnimations(): void {
-    if (this.listWheelHandler && this.showcaseList) {
-      this.showcaseList.nativeElement.removeEventListener('wheel', this.listWheelHandler);
-      this.listWheelHandler = undefined;
-    }
     ScrollTrigger.getAll().forEach(t => t.kill(true));
     gsap.set('.section-header-cv, .about-card, .edu-card, .skill-category', {
       clearProps: 'all'
@@ -608,3 +801,83 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.animationsInitialized = false;
   }
 }
+
+// Mapeo manual tag → slug de simple-icons (cdn.simpleicons.org). Las claves
+// están en minúsculas y se comparan así. Si un tag no aparece aquí, no se
+// dibuja icono — preferible a una petición rota. Añade entradas según vayas
+// usando nuevos tags en proyectos.
+const TECH_ICON_MAP: Record<string, string> = {
+  'angular': 'angular',
+  'typescript': 'typescript',
+  'javascript': 'javascript',
+  'js': 'javascript',
+  'node.js': 'nodedotjs',
+  'nodejs': 'nodedotjs',
+  'node': 'nodedotjs',
+  'react': 'react',
+  'react.js': 'react',
+  'vue': 'vuedotjs',
+  'next.js': 'nextdotjs',
+  'nextjs': 'nextdotjs',
+  'html': 'html5',
+  'html5': 'html5',
+  // simple-icons renombró el slug css3 → css en v13. Usamos el nuevo.
+  'css': 'css',
+  'css3': 'css',
+  'html5/css3': 'html5',
+  'sass': 'sass',
+  'tailwind': 'tailwindcss',
+  'tailwindcss': 'tailwindcss',
+  'bootstrap': 'bootstrap',
+  'python': 'python',
+  'java': 'openjdk',
+  'kotlin': 'kotlin',
+  'android': 'android',
+  'flutter': 'flutter',
+  'dart': 'dart',
+  'mysql': 'mysql',
+  'sql': 'mysql',
+  'postgres': 'postgresql',
+  'postgresql': 'postgresql',
+  'mongodb': 'mongodb',
+  'redis': 'redis',
+  'docker': 'docker',
+  'aws': 'amazonwebservices',
+  'gcp': 'googlecloud',
+  'azure': 'microsoftazure',
+  'firebase': 'firebase',
+  'github': 'github',
+  'git': 'git',
+  'gitlab': 'gitlab',
+  'linux': 'linux',
+  'express': 'express',
+  'express.js': 'express',
+  'django': 'django',
+  'flask': 'flask',
+  'fastapi': 'fastapi',
+  'spring': 'spring',
+  'laravel': 'laravel',
+  'php': 'php',
+  'tensorflow': 'tensorflow',
+  'pytorch': 'pytorch',
+  'scikit-learn': 'scikitlearn',
+  'pandas': 'pandas',
+  'numpy': 'numpy',
+  'openai': 'openai',
+  'openai api': 'openai',
+  'langchain': 'langchain',
+  'llms': 'openai',
+  'rags': 'openai',
+  'llamaindex': 'openai',
+  'machine learning': 'tensorflow',
+  'power bi': 'powerbi',
+  'jmeter': 'apachejmeter',
+  'postman': 'postman',
+  'soapui': 'soapui',
+  'grafana': 'grafana',
+  'influxdb': 'influxdb',
+  'rest apis': 'openapiinitiative',
+  'figma': 'figma',
+  'three.js': 'threedotjs',
+  'gsap': 'greensock',
+};

@@ -16,6 +16,7 @@ router.delete('/users/:id', adminOnly, admin.deleteUser);
 router.post('/projects', editorOrAdmin, admin.createProject);
 router.put('/projects/:id', editorOrAdmin, admin.updateProject);
 router.delete('/projects/:id', adminOnly, admin.deleteProject);
+router.post('/projects/upload-image', editorOrAdmin, admin.uploadProjectImage);
 
 // Experience
 router.post('/experience', editorOrAdmin, admin.createExperience);

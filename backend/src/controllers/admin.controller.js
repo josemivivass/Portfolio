@@ -1,4 +1,64 @@
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const pool = require('../config/db');
+
+const PROJECTS_DIR = path.join(__dirname, '..', 'data', 'projects');
+const PROJECT_IMG_URL_PREFIX = '/api/projects/images/';
+const PENDING_FOLDER = '_pending';
+
+function ensureProjectsDir() {
+  if (!fs.existsSync(PROJECTS_DIR)) fs.mkdirSync(PROJECTS_DIR, { recursive: true });
+}
+
+function resolveLocalImagePath(url) {
+  if (typeof url !== 'string' || !url.startsWith(PROJECT_IMG_URL_PREFIX)) return null;
+  const tail = url.slice(PROJECT_IMG_URL_PREFIX.length);
+  const parts = tail.split('/').filter(Boolean);
+  if (parts.length === 1) {
+    const safe = path.basename(parts[0]);
+    if (!safe) return null;
+    return path.join(PROJECTS_DIR, safe);
+  }
+  if (parts.length === 2) {
+    const folder = path.basename(parts[0]);
+    const filename = path.basename(parts[1]);
+    if (!folder || !filename) return null;
+    return path.join(PROJECTS_DIR, folder, filename);
+  }
+  return null;
+}
+
+function deleteLocalImageFile(url) {
+  const filePath = resolveLocalImagePath(url);
+  if (!filePath) return;
+  fs.promises.unlink(filePath).catch(() => { /* ignorar ENOENT, etc. */ });
+}
+
+async function promotePendingImages(images, projectId) {
+  if (!Array.isArray(images) || images.length === 0) return;
+  const pendingPrefix = `${PROJECT_IMG_URL_PREFIX}${PENDING_FOLDER}/`;
+  const targetDir = path.join(PROJECTS_DIR, String(projectId));
+  let dirReady = false;
+  for (const img of images) {
+    if (!img || typeof img.url !== 'string') continue;
+    if (!img.url.startsWith(pendingPrefix)) continue;
+    const filename = path.basename(img.url.slice(pendingPrefix.length));
+    if (!filename) continue;
+    if (!dirReady) {
+      await fs.promises.mkdir(targetDir, { recursive: true });
+      dirReady = true;
+    }
+    const oldPath = path.join(PROJECTS_DIR, PENDING_FOLDER, filename);
+    const newPath = path.join(targetDir, filename);
+    try {
+      await fs.promises.rename(oldPath, newPath);
+      img.url = `${PROJECT_IMG_URL_PREFIX}${projectId}/${filename}`;
+    } catch (e) {
+      console.warn('[admin] no se pudo mover imagen pending', oldPath, e?.message);
+    }
+  }
+}
 
 // ─── USERS ─────────────────────────────────────────────
 exports.listUsers = async (req, res) => {
@@ -112,26 +172,74 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-// ─── PROJECTS ──────────────────────────────────────────
+//Proyectos
+
+const ALLOWED_TYPES   = ['web', 'android', 'ai', 'other'];
+const ALLOWED_STATUS  = ['production', 'development', 'archived'];
+const normType   = (v) => ALLOWED_TYPES.includes(v) ? v : 'web';
+const normStatus = (v) => ALLOWED_STATUS.includes(v) ? v : null;
+
+async function replaceProjectImages(connection, projectId, images) {
+  const [prev] = await connection.query(
+    'SELECT image_url FROM project_images WHERE project_id = ?',
+    [projectId]
+  );
+  await connection.query('DELETE FROM project_images WHERE project_id = ?', [projectId]);
+  const newUrls = new Set();
+  if (Array.isArray(images) && images.length > 0) {
+    const rows = images
+      .filter(img => img && typeof img.url === 'string' && img.url.trim().length > 0)
+      .map((img, i) => {
+        const url = img.url.trim();
+        newUrls.add(url);
+        return [
+          projectId,
+          url,
+          Number.isFinite(img.position) ? img.position : i
+        ];
+      });
+    if (rows.length > 0) {
+      await connection.query(
+        `INSERT INTO project_images (project_id, image_url, position) VALUES ?`,
+        [rows]
+      );
+    }
+  }
+  return prev.map(r => r.image_url).filter(u => !newUrls.has(u));
+}
+
 exports.createProject = async (req, res) => {
   const {
     title, title_en, description, description_en, project_date,
-    repo_url, live_url, image_url, tags, is_featured
+    repo_url, live_url, tags, is_featured,
+    project_type, status,
+    images
   } = req.body;
 
+  const connection = await pool.getConnection();
   try {
-    const [result] = await pool.query(
+    await connection.beginTransaction();
+    const [result] = await connection.query(
       `INSERT INTO projects
         (title, title_en, description, description_en, project_date,
-         repo_url, live_url, image_url, tags, is_featured)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         repo_url, live_url, tags, is_featured,
+         project_type, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [title, title_en, description, description_en, project_date,
-       repo_url, live_url, image_url, tags, !!is_featured]
+       repo_url, live_url, tags, !!is_featured,
+       normType(project_type),
+       normStatus(status)]
     );
-    res.status(201).json({ id: result.insertId, message: 'Proyecto creado' });
+    await promotePendingImages(images, result.insertId);
+    await replaceProjectImages(connection, result.insertId, images);
+    await connection.commit();
+    res.status(201).json({ id: result.insertId, message: 'Proyecto creado', images });
   } catch (err) {
+    await connection.rollback();
     console.error(err);
     res.status(500).json({ message: 'Error al crear proyecto' });
+  } finally {
+    connection.release();
   }
 };
 
@@ -139,35 +247,62 @@ exports.updateProject = async (req, res) => {
   const { id } = req.params;
   const {
     title, title_en, description, description_en, project_date,
-    repo_url, live_url, image_url, tags, is_featured
+    repo_url, live_url, tags, is_featured,
+    project_type, status,
+    images
   } = req.body;
 
+  const connection = await pool.getConnection();
   try {
-    const [result] = await pool.query(
+    await connection.beginTransaction();
+    const [result] = await connection.query(
       `UPDATE projects SET
          title = ?, title_en = ?, description = ?, description_en = ?,
-         project_date = ?, repo_url = ?, live_url = ?, image_url = ?,
-         tags = ?, is_featured = ?
+         project_date = ?, repo_url = ?, live_url = ?,
+         tags = ?, is_featured = ?,
+         project_type = ?, status = ?
        WHERE id = ?`,
       [title, title_en, description, description_en, project_date,
-       repo_url, live_url, image_url, tags, !!is_featured, id]
+       repo_url, live_url, tags, !!is_featured,
+       normType(project_type),
+       normStatus(status), id]
     );
     if (result.affectedRows === 0) {
+      await connection.rollback();
       return res.status(404).json({ message: 'Proyecto no encontrado' });
     }
+    let orphanUrls = [];
+    if (Array.isArray(images)) {
+      orphanUrls = await replaceProjectImages(connection, id, images);
+    }
+    await connection.commit();
+    orphanUrls.forEach(deleteLocalImageFile);
     res.status(200).json({ message: 'Proyecto actualizado' });
   } catch (err) {
+    await connection.rollback();
     console.error(err);
     res.status(500).json({ message: 'Error al actualizar proyecto' });
+  } finally {
+    connection.release();
   }
 };
 
 exports.deleteProject = async (req, res) => {
   const { id } = req.params;
   try {
+    const [imgs] = await pool.query(
+      'SELECT image_url FROM project_images WHERE project_id = ?',
+      [id]
+    );
     const [result] = await pool.query('DELETE FROM projects WHERE id = ?', [id]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Proyecto no encontrado' });
+    }
+    imgs.forEach(r => deleteLocalImageFile(r.image_url));
+    const idNum = Number(id);
+    if (Number.isInteger(idNum) && idNum > 0) {
+      const folder = path.join(PROJECTS_DIR, String(idNum));
+      fs.promises.rm(folder, { recursive: true, force: true }).catch(() => {});
     }
     res.status(200).json({ message: 'Proyecto eliminado' });
   } catch (err) {
@@ -231,7 +366,8 @@ exports.updateExperience = async (req, res) => {
   }
 };
 
-// ─── LOGS / MESSAGES ───────────────────────────────────
+//Logs / mensajes
+
 exports.listVisitorLogs = async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -311,7 +447,7 @@ exports.deleteContactMessage = async (req, res) => {
   }
 };
 
-// ─── CHATBOT ──────────────────────────────────────────
+// Chatbot
 exports.listChatbotConversations = async (req, res) => {
   try {
     const [messages] = await pool.query(
@@ -379,5 +515,62 @@ exports.deleteExperience = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error al eliminar experiencia' });
+  }
+};
+
+// Subida de img de proyecto
+
+const ALLOWED_IMG_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MIME_TO_EXT = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif'
+};
+const MAX_PROJECT_IMG_BYTES = 5 * 1024 * 1024; // 5 MB
+
+exports.uploadProjectImage = async (req, res) => {
+  const { dataUrl, projectId } = req.body || {};
+  if (typeof dataUrl !== 'string') {
+    return res.status(400).json({ message: 'Archivo requerido' });
+  }
+  const match = /^data:(image\/(?:jpe?g|png|webp|gif));base64,(.+)$/i.exec(dataUrl);
+  if (!match) {
+    return res.status(400).json({ message: 'Formato no soportado (usa JPG, PNG, WEBP o GIF)' });
+  }
+  const mime = match[1].toLowerCase();
+  const normalizedMime = mime === 'image/jpg' ? 'image/jpeg' : mime;
+  if (!ALLOWED_IMG_MIME.includes(normalizedMime)) {
+    return res.status(400).json({ message: 'Formato no soportado' });
+  }
+  const buffer = Buffer.from(match[2], 'base64');
+  if (buffer.length > MAX_PROJECT_IMG_BYTES) {
+    return res.status(413).json({ message: 'La imagen supera el límite de 5MB' });
+  }
+
+  let folder;
+  if (projectId === undefined || projectId === null || projectId === '' || projectId === 'new') {
+    folder = PENDING_FOLDER;
+  } else {
+    const idNum = Number(projectId);
+    if (!Number.isInteger(idNum) || idNum <= 0) {
+      return res.status(400).json({ message: 'projectId inválido' });
+    }
+    folder = String(idNum);
+  }
+
+  try {
+    ensureProjectsDir();
+    const targetDir = path.join(PROJECTS_DIR, folder);
+    await fs.promises.mkdir(targetDir, { recursive: true });
+    const ext = MIME_TO_EXT[normalizedMime];
+    const filename = `${Date.now()}_${crypto.randomBytes(6).toString('hex')}.${ext}`;
+    const filePath = path.join(targetDir, filename);
+    await fs.promises.writeFile(filePath, buffer);
+    const url = `${PROJECT_IMG_URL_PREFIX}${folder}/${filename}`;
+    res.status(201).json({ url, filename, folder, size: buffer.length, mime: normalizedMime });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al guardar la imagen' });
   }
 };

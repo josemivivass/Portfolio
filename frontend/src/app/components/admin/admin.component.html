@@ -1172,8 +1172,94 @@
           <label>{{ i18n.t('admin.projects.field.tags') }}<input [(ngModel)]="editingProject.tags" name="tags"></label>
           <label>{{ i18n.t('admin.projects.field.repo') }}<input [(ngModel)]="editingProject.repo_url" name="repo_url"></label>
           <label>{{ i18n.t('admin.projects.field.demo') }}<input [(ngModel)]="editingProject.live_url" name="live_url"></label>
-          <label class="full">{{ i18n.t('admin.projects.field.image') }}<input [(ngModel)]="editingProject.image_url" name="image_url"></label>
-          <label class="checkbox"><input type="checkbox" [(ngModel)]="editingProject.is_featured" name="is_featured"> {{ i18n.t('admin.projects.field.featured') }}</label>
+          <label>
+            {{ i18n.t('admin.projects.field.type') }}
+            <select [(ngModel)]="editingProject.project_type" name="project_type">
+              <option value="web">{{ i18n.t('admin.projects.type.web') }}</option>
+              <option value="android">{{ i18n.t('admin.projects.type.android') }}</option>
+              <option value="ai">{{ i18n.t('admin.projects.type.ai') }}</option>
+              <option value="other">{{ i18n.t('admin.projects.type.other') }}</option>
+            </select>
+          </label>
+          <label>
+            {{ i18n.t('admin.projects.field.status') }}
+            <select [(ngModel)]="editingProject.status" name="status">
+              <option value="">—</option>
+              <option value="production">{{ i18n.t('admin.projects.status.production') }}</option>
+              <option value="development">{{ i18n.t('admin.projects.status.development') }}</option>
+              <option value="archived">{{ i18n.t('admin.projects.status.archived') }}</option>
+            </select>
+          </label>
+          <!-- ─── Galería de capturas ─── -->
+          <div class="full project-gallery">
+            <div class="project-gallery-header">
+              <h4 class="project-gallery-title">{{ i18n.t('admin.projects.gallery.title') }}</h4>
+              <p class="project-gallery-sub">{{ i18n.t('admin.projects.gallery.sub') }}</p>
+            </div>
+
+            <!-- Zona de subida: clic o drag&drop de archivos. -->
+            <label class="project-gallery-dropzone"
+                   [class.is-over]="galleryDragOver"
+                   [class.is-uploading]="projectImagesUploading > 0"
+                   (dragover)="onProjectGalleryDragOver($event)"
+                   (dragleave)="onProjectGalleryDragLeave()"
+                   (drop)="onProjectGalleryDrop($event)">
+              <input type="file"
+                     accept="image/png,image/jpeg,image/webp,image/gif"
+                     multiple
+                     (change)="onProjectImagesSelected($event)"
+                     hidden />
+              <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <span class="dropzone-title">{{ i18n.t('admin.projects.gallery.dropzone') }}</span>
+              <span class="dropzone-sub">{{ i18n.t('admin.projects.gallery.dropzone.sub') }}</span>
+            </label>
+
+            <p class="project-gallery-status" *ngIf="projectImagesUploading > 0">
+              {{ i18n.t('admin.projects.gallery.uploading', { n: projectImagesUploading }) }}
+            </p>
+            <p class="project-gallery-error" *ngIf="projectImagesUploadError">
+              {{ projectImagesUploadError }}
+            </p>
+
+            <p class="project-gallery-empty" *ngIf="!editingProject.images || editingProject.images.length === 0">
+              {{ i18n.t('admin.projects.gallery.empty') }}
+            </p>
+
+            <!-- Rejilla de miniaturas — arrastra una sobre otra para reordenar. -->
+            <div class="project-gallery-grid" *ngIf="editingProject.images && editingProject.images.length > 0">
+              <div class="project-gallery-card"
+                   *ngFor="let img of editingProject.images; let i = index; trackBy: trackImageIndex"
+                   draggable="true"
+                   [class.is-dragging]="galleryDraggedIndex === i"
+                   [class.is-drop-target]="galleryDragOverIndex === i && galleryDraggedIndex !== null && galleryDraggedIndex !== i"
+                   (dragstart)="onImageDragStart(i, $event)"
+                   (dragover)="onImageDragOverCard(i, $event)"
+                   (drop)="onImageDropCard(i, $event)"
+                   (dragend)="onImageDragEnd()">
+                <span class="card-position">{{ i + 1 }}</span>
+                <button type="button"
+                        class="card-remove"
+                        (click)="removeProjectImage(i)"
+                        [attr.aria-label]="i18n.t('admin.projects.gallery.delete')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+                <div class="card-thumb">
+                  <img [src]="imagePreviewUrl(img.url)" [alt]="i18n.t('admin.projects.gallery.preview')" (error)="onImagePreviewError($event)" />
+                  <span class="card-thumb-placeholder">{{ i18n.t('admin.projects.gallery.preview') }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Destacado al final, ocupando todo el ancho debajo de la galería. -->
+          <label class="checkbox full">
+            <input type="checkbox" [(ngModel)]="editingProject.is_featured" name="is_featured">
+            {{ i18n.t('admin.projects.field.featured') }}
+          </label>
         </div>
       </div>
       <div class="edit-modal-footer">

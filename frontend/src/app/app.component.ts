@@ -388,10 +388,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @HostListener('window:scrollToTop')
   onScrollToTop(): void {
-    if (this.isHomeRoute && !this.showIntro) {
-      this.targetScrollY = 0;
-      if (!this.virtualScrollEnabled) this.startVirtualScroll();
-    }
+    if (!this.isHomeRoute || this.showIntro) return;
+    this.stopVirtualScroll();
+    this.targetScrollY = 0;
+    this.currentScrollY = 0;
+    window.scrollTo({ top: 0, behavior: 'auto' });
   }
 
   onWheel(event: WheelEvent): void {
@@ -456,6 +457,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Main page: intercept wheel and feed velocity-limited virtual scroll
     // so fast wheel bursts can't skip past sections.
+
+    // Excepción: si el cursor está sobre la lista de proyectos y aún tiene
+    // scroll por consumir en la dirección del wheel, lo absorbe ella en vez
+    // del doc. Así el usuario puede recorrer las cards sin que el documento
+    // avance ni un píxel hasta llegar al fin/inicio de la lista.
+    if (this.scrollableContainerAbsorbs(event.target as HTMLElement, event.deltaY)) {
+      event.preventDefault();
+      return;
+    }
+
     event.preventDefault();
     if (this.isTransitioning) return;
 
@@ -467,6 +478,21 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
     this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + event.deltaY, maxY));
+  }
+
+  /** Si el target está dentro de un contenedor con scroll interno (hoy:
+   *  `.showcase-list`) y todavía puede consumir delta en esa dirección,
+   *  scrollea ese contenedor y devuelve true. El caller debe entonces
+   *  preventDefault y NO tocar el virtual scroll del documento. */
+  private scrollableContainerAbsorbs(target: HTMLElement | null, deltaY: number): boolean {
+    if (!target || deltaY === 0) return false;
+    const list = target.closest('.showcase-list') as HTMLElement | null;
+    if (!list) return false;
+    const atTop = list.scrollTop <= 0;
+    const atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
+    if ((deltaY > 0 && atBottom) || (deltaY < 0 && atTop)) return false;
+    list.scrollTop += deltaY;
+    return true;
   }
 
   @HostListener('window:touchstart', ['$event'])
@@ -535,13 +561,24 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     // Main page: intercept touch and feed velocity-limited virtual scroll.
-    event.preventDefault();
-    if (this.isTransitioning || event.touches.length === 0) return;
+    if (this.isTransitioning || event.touches.length === 0) {
+      event.preventDefault();
+      return;
+    }
 
     const touchCurrentY = event.touches[0].clientY;
     const delta = this.touchStartY - touchCurrentY;
     this.touchStartY = touchCurrentY;
 
+    // Igual que con la rueda: si el dedo arrastra sobre la lista de
+    // proyectos y aún hay scroll por consumir en esa dirección, absórbelo
+    // ahí en vez del doc.
+    if (this.scrollableContainerAbsorbs(event.target as HTMLElement, delta * 2)) {
+      event.preventDefault();
+      return;
+    }
+
+    event.preventDefault();
     if (!this.virtualScrollEnabled || this.scrollMode !== 'main') {
       this.scrollMode = 'main';
       this.currentScrollY = window.scrollY;

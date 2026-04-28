@@ -56,6 +56,16 @@ export class AdminService {
   deleteProject(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/admin/projects/${id}`, { headers: this.headers() });
   }
+  uploadProjectImage(
+    dataUrl: string,
+    projectId: number | null
+  ): Observable<{ url: string; filename: string; folder: string; size: number; mime: string }> {
+    return this.http.post<{ url: string; filename: string; folder: string; size: number; mime: string }>(
+      `${this.apiUrl}/admin/projects/upload-image`,
+      { dataUrl, projectId },
+      { headers: this.headers() }
+    );
+  }
 
   // Experience
   listExperience(): Observable<any[]> {

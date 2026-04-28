@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AdminService, AdminUser, ProfileData } from '../../services/admin.service';
 import { AuthService } from '../../services/auth.service';
 import { TranslationService } from '../../services/translation.service';
+import { resolveApiAssetUrl } from '../../services/project.service';
 
 type Tab = 'dashboard' | 'users' | 'projects' | 'experience' | 'visitors' | 'logins' | 'messages' | 'chatbot' | 'profile';
 type SortDir = 'asc' | 'desc';
@@ -107,6 +108,16 @@ export class AdminComponent implements OnInit {
   editingProject: any = null;
   editingExperience: any = null;
   editingUser: (AdminUser & { _original?: AdminUser }) | null = null;
+
+  // Subida de capturas del proyecto (multi-archivo). Se procesan en serie
+  // para que el orden insertado en la galería coincida con el de selección.
+  projectImagesUploading = 0;
+  projectImagesUploadError = '';
+  galleryDragOver = false;       // hover de archivos sobre la zona de subida
+  galleryDraggedIndex: number | null = null; // índice de la miniatura que se está arrastrando
+  galleryDragOverIndex: number | null = null; // índice donde se va a soltar
+  private static readonly PROJECT_IMG_MAX_BYTES = 5 * 1024 * 1024;
+  private static readonly PROJECT_IMG_MIME_RE = /^image\/(jpe?g|png|webp|gif)$/i;
 
   // ─── Profile ───
   readonly profileApiUrl = 'http://127.0.0.1:3000/api/profile/photo';
@@ -904,13 +915,199 @@ export class AdminComponent implements OnInit {
     this.editingProject = {
       id: null,
       title: '', title_en: '', description: '', description_en: '',
-      project_date: '', repo_url: '', live_url: '', image_url: '',
-      tags: '', is_featured: false
+      project_date: '', repo_url: '', live_url: '',
+      tags: '', is_featured: false,
+      project_type: 'web', status: '',
+      images: []
     };
+    this.projectImagesUploading = 0;
+    this.projectImagesUploadError = '';
   }
 
   editProject(p: any): void {
-    this.editingProject = { ...p, project_date: p.project_date ? p.project_date.substring(0, 10) : '' };
+    // Clonamos el array de imágenes (los objetos también) para que las
+    // ediciones en el modal no muten la copia que tenemos en this.projects
+    // hasta que el usuario pulse Guardar.
+    const images = Array.isArray(p.images) ? p.images.map((img: any) => ({ ...img })) : [];
+    this.editingProject = {
+      ...p,
+      project_date: p.project_date ? p.project_date.substring(0, 10) : '',
+      images
+    };
+    this.projectImagesUploading = 0;
+    this.projectImagesUploadError = '';
+  }
+
+  // ─── Galería del proyecto en edición ───
+  /** Sube los archivos seleccionados desde el equipo. Cada archivo se valida
+   *  (formato y tamaño), se sube y se añade al final de la galería. El orden
+   *  visual coincide con el orden de selección porque procesamos uno a uno. */
+  onProjectImagesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files || files.length === 0) return;
+    const list = Array.from(files);
+    input.value = '';
+    this.processProjectImageFiles(list);
+  }
+
+  /** Drop de archivos sobre la zona de subida — comparte la cola de subida
+   *  con el selector. */
+  onProjectGalleryDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.galleryDragOver = false;
+    // Si lo que se está arrastrando es una miniatura interna (reorden), el
+    // navegador dispara también drop sobre la zona; lo ignoramos.
+    if (this.galleryDraggedIndex !== null) {
+      this.galleryDraggedIndex = null;
+      this.galleryDragOverIndex = null;
+      return;
+    }
+    const files = event.dataTransfer?.files;
+    if (!files || files.length === 0) return;
+    this.processProjectImageFiles(Array.from(files));
+  }
+
+  onProjectGalleryDragOver(event: DragEvent): void {
+    if (this.galleryDraggedIndex !== null) return; // reorden interno, no es drop de archivos
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+    this.galleryDragOver = true;
+  }
+
+  onProjectGalleryDragLeave(): void {
+    this.galleryDragOver = false;
+  }
+
+  // ─── Reordenar miniaturas con drag & drop nativo ───
+  onImageDragStart(i: number, event: DragEvent): void {
+    this.galleryDraggedIndex = i;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      // Algunos navegadores requieren setData para iniciar el drag.
+      event.dataTransfer.setData('text/plain', String(i));
+    }
+  }
+
+  onImageDragOverCard(i: number, event: DragEvent): void {
+    if (this.galleryDraggedIndex === null) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    if (this.galleryDragOverIndex !== i) {
+      this.galleryDragOverIndex = i;
+    }
+  }
+
+  onImageDropCard(targetIndex: number, event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const src = this.galleryDraggedIndex;
+    this.galleryDraggedIndex = null;
+    this.galleryDragOverIndex = null;
+    if (src === null || src === targetIndex) return;
+    const arr = this.editingProject?.images;
+    if (!Array.isArray(arr)) return;
+    const [item] = arr.splice(src, 1);
+    arr.splice(targetIndex, 0, item);
+    this.reindexImagePositions();
+    this.cdr.markForCheck();
+  }
+
+  onImageDragEnd(): void {
+    this.galleryDraggedIndex = null;
+    this.galleryDragOverIndex = null;
+  }
+
+  private processProjectImageFiles(files: File[]): void {
+    if (files.length === 0) return;
+    this.projectImagesUploadError = '';
+    const projectId = this.editingProject?.id ?? null;
+    this.uploadProjectImagesQueue(files, projectId);
+  }
+
+  private uploadProjectImagesQueue(queue: File[], projectId: number | null): void {
+    if (queue.length === 0) return;
+    const file = queue.shift()!;
+    if (!AdminComponent.PROJECT_IMG_MIME_RE.test(file.type)) {
+      this.projectImagesUploadError = this.i18n.t('admin.projects.gallery.upload.invalid');
+      this.cdr.markForCheck();
+      this.uploadProjectImagesQueue(queue, projectId);
+      return;
+    }
+    if (file.size > AdminComponent.PROJECT_IMG_MAX_BYTES) {
+      this.projectImagesUploadError = this.i18n.t('admin.projects.gallery.upload.toobig');
+      this.cdr.markForCheck();
+      this.uploadProjectImagesQueue(queue, projectId);
+      return;
+    }
+    this.projectImagesUploading++;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      this.adminService.uploadProjectImage(dataUrl, projectId).subscribe({
+        next: (res) => {
+          if (this.editingProject) {
+            if (!Array.isArray(this.editingProject.images)) this.editingProject.images = [];
+            this.editingProject.images.push({
+              url: res.url,
+              position: this.editingProject.images.length
+            });
+          }
+          this.projectImagesUploading--;
+          this.cdr.markForCheck();
+          this.uploadProjectImagesQueue(queue, projectId);
+        },
+        error: (err) => {
+          this.projectImagesUploading--;
+          this.projectImagesUploadError =
+            err?.error?.message || this.i18n.t('admin.projects.gallery.upload.error');
+          console.error(err);
+          this.cdr.markForCheck();
+          this.uploadProjectImagesQueue(queue, projectId);
+        }
+      });
+    };
+    reader.onerror = () => {
+      this.projectImagesUploading--;
+      this.projectImagesUploadError = this.i18n.t('admin.projects.gallery.upload.error');
+      this.cdr.markForCheck();
+      this.uploadProjectImagesQueue(queue, projectId);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeProjectImage(i: number): void {
+    if (!this.editingProject?.images) return;
+    this.editingProject.images.splice(i, 1);
+    this.reindexImagePositions();
+  }
+
+  /** Reasigna position 0..N-1 según orden actual. Llamado tras cualquier
+   *  cambio de orden o eliminación. */
+  private reindexImagePositions(): void {
+    const arr = this.editingProject?.images;
+    if (!Array.isArray(arr)) return;
+    arr.forEach((img: any, idx: number) => { img.position = idx; });
+  }
+
+  trackImageIndex(index: number): number { return index; }
+
+  /** Resuelve la URL relativa devuelta por el backend a una URL absoluta
+   *  que el navegador puede cargar desde el frontend (puertos distintos
+   *  en dev). Se usa solo en plantillas, no se persiste. */
+  imagePreviewUrl(url: string | null | undefined): string {
+    return resolveApiAssetUrl(url);
+  }
+
+  /** Si la imagen no carga (archivo borrado, URL antigua rota), añadimos una
+   *  clase a la tarjeta padre para mostrar el placeholder en vez del icono
+   *  roto del navegador. */
+  onImagePreviewError(event: Event): void {
+    const el = event.target as HTMLImageElement;
+    if (!el) return;
+    el.style.display = 'none';
+    el.closest('.project-gallery-card')?.classList.add('is-broken');
   }
 
   saveProject(): void {
@@ -946,7 +1143,11 @@ export class AdminComponent implements OnInit {
     } else {
       this.adminService.createProject(payload).subscribe({
         next: (res: any) => {
-          const created = { ...payload, id: res?.id };
+          // El backend mueve las imágenes de _pending a la carpeta del nuevo
+          // proyecto y devuelve el array con URLs ya rebautizadas — lo usamos
+          // si está disponible para que el listado quede coherente.
+          const promoted = Array.isArray(res?.images) ? res.images : payload.images;
+          const created = { ...payload, id: res?.id, images: promoted };
           this.projects = [created, ...this.projects];
           this.cdr.markForCheck();
         },

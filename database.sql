@@ -40,10 +40,21 @@ CREATE TABLE projects (
     project_date DATE,
     repo_url VARCHAR(255),
     live_url VARCHAR(255),
-    image_url VARCHAR(255),
     tags VARCHAR(255),
     is_featured BOOLEAN DEFAULT FALSE,
+    project_type ENUM('web','android','ai','other') DEFAULT 'web',
+    status ENUM('production','development','archived') DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE project_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    project_id INT NOT NULL,
+    image_url VARCHAR(500) NOT NULL,
+    position INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+    INDEX idx_project_position (project_id, position)
 );
 
 CREATE TABLE contact_messages (
@@ -121,10 +132,12 @@ INSERT INTO users (email, password_hash, role) VALUES
 ('pepepe@gmail.com', '$2b$10$ZBPkPqBb6rSIyGyoOmbcDOVls2o9VtWZlm4i8oGbBfpZZGXk99kQm', 'editor'),
 ('popopo@gmail.com', '$2b$10$a/LGkc845utqQOrHq5kV4O.NYFx/RBEnBteVAJ1cYPIwn1/SnqtG2', 'user');
 
-INSERT INTO projects (title, title_en, description, description_en, project_date, repo_url, live_url, image_url, tags, is_featured) VALUES
-('E-commerce Web', 'E-commerce Web', 'Tienda online', 'Online store', '2025-05-15', 'https://github.com/usuario/ecommerce', 'http://josemivivass.atwebpages.com/login.html', 'https://placehold.co/800x600/EEE/31343C', 'Angular, Node.js', TRUE),
-('Gestor Kanban', 'Kanban Manager', 'Aplicación Kanban', 'Kanban application', '2025-08-22', 'https://github.com/usuario/kanban', 'https://demo.com', 'https://placehold.co/800x600/EEE/31343C', 'HTML, CSS, JS', FALSE),
-('Dashboard Analítica', 'Analytics Dashboard', 'Panel interactivo', 'Interactive dashboard', '2025-11-10', 'https://github.com/usuario/dashboard', 'https://demo.com', 'https://placehold.co/800x600/EEE/31343C', 'React', TRUE);
+INSERT INTO projects (title, title_en, description, description_en, project_date, repo_url, live_url, tags, is_featured, project_type, status) VALUES
+('Tienda online MercadoHuerta', 'E-commerce MercadoHuerta', 'Tienda online', 'Online store', '2024-06-04', 'https://github.com/josemivivass/mercadohuerta', 'http://josemivivass.atwebpages.com/login.html', 'HTML, PHP, CSS, Bootstrap', TRUE, 'web', 'production'),
+('Generador de Expediente de Misión', 'Mision Dossier Generator', 'Generador/Visualizador PDF', 'PDF Generator/Viewer', '2026-02-28', 'https://github.com/josemivivass/generadorexpedientemision.git', 'https://generadorexpedientemision.vercel.app/', 'Angular, Typescript, HTML, CSS', TRUE, 'web', 'development'),
+('Dashboard Analítica', 'Analytics Dashboard', 'Panel interactivo', 'Interactive dashboard', '2026-03-13', 'https://github.com/josemivivass/dashboardinventario', 'https://dashboardinventario.vercel.app/', 'Angular, Typescript, HTML, CSS', TRUE, 'web', 'production'),
+('Porfolio CV', 'CV Portfolio', 'La pagina en la que estás', 'Tha page were you are', '2026-05-01', 'https://github.com/josemivivass/dashboardinventario', 'https://dashboardinventario.vercel.app/', 'Angular, Typescript, HTML, CSS, Node.js', TRUE, 'web', 'production'),
+('Aplicación web interna de COMPUTAEX', 'Internal Web App off COMPUTAEX', 'Actualización de una aplicación privada interna', 'Internal private application update', '2026-03-23', 'https://github.com/josemivivass/dashboardinventario', 'https://dashboardinventario.vercel.app/', 'React.js, Python, JS, HTML, CSS', TRUE, 'web', 'production');
 
 INSERT INTO experience (start_date, end_date, title, title_en, company, contract_type, contract_type_en, description, description_en, location, location_en, tags) VALUES
 ('2026-03-01', NULL, 'Desarrollador Full Stack', 'Full Stack Developer', 'Fundación COMPUTAEX', 'Prácticas', 'Internship', 'Actualización y modernización de una aplicación web full-stack. Desarrollo y mantenimiento del backend utilizando Python. Actualización y desarrollo de la interfaz del frontend utilizando React (en entorno Node.js).', 'Updating and modernizing a full-stack web application. Development and maintenance of the backend using Python. Updating and development of the frontend interface using React (in a Node.js environment).', 'Cáceres, Extremadura, España', 'Cáceres, Extremadura, Spain', 'Python, Node.js, React, Full Stack'),
