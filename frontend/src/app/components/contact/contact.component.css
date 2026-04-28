@@ -111,6 +111,12 @@
   box-shadow: none;
 }
 
+.recaptcha-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
 .alert-success {
   color: var(--c-success, #2ecc71);
   font-size: 0.85rem;
@@ -186,4 +192,36 @@
 
 @media (max-width: 600px) {
   .auth-card { padding: 30px 20px; }
+}
+
+/* Pantallas con poca altura (portátiles 768/800px): compactamos para que entre todo el formulario */
+@media (max-height: 850px) {
+  .auth-container { padding: 14px 20px 20px; }
+  .auth-card { padding: 14px 28px 16px; }
+  .auth-header { margin-bottom: 6px; }
+  .auth-header h2 { font-size: 1.4rem; margin-bottom: 4px; }
+  .auth-header p { font-size: 0.85rem; }
+  .auth-form { gap: 7px; }
+  .form-group label { font-size: 0.72rem; }
+  .form-group input,
+  .form-group textarea { padding: 9px 12px; font-size: 0.9rem; }
+  .form-group textarea { min-height: 70px; }
+  .recaptcha-wrapper { margin-top: 0; }
+  .btn-submit { padding: 10px; font-size: 0.95rem; }
+  .auth-divider { margin: 8px 0 6px; }
+  .social-link-btn { padding: 8px; font-size: 0.8rem; }
+  .contact-social-links { gap: 8px; }
+}
+
+@media (max-height: 720px) {
+  .auth-container { padding: 8px 20px 12px; }
+  .auth-card { padding: 10px 24px 12px; }
+  .auth-header h2 { font-size: 1.2rem; }
+  .auth-header p { font-size: 0.78rem; }
+  .auth-form { gap: 5px; }
+  .form-group input,
+  .form-group textarea { padding: 7px 10px; }
+  .form-group textarea { min-height: 56px; }
+  .auth-divider { margin: 5px 0 4px; }
+  .social-link-btn { padding: 6px; }
 }

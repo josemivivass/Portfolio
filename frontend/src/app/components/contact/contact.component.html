@@ -21,6 +21,10 @@
         <textarea rows="4" name="message" [(ngModel)]="formData.message" minlength="20" [placeholder]="i18n.t('contact.message')" required></textarea>
       </div>
       
+      <div class="recaptcha-wrapper">
+        <div #recaptcha class="g-recaptcha" [attr.data-sitekey]="siteKey"></div>
+      </div>
+
       <div *ngIf="successMsg" class="alert-success">{{ successMsg }}</div>
       <div *ngIf="errorMsg" class="alert-error">{{ errorMsg }}</div>
 
@@ -32,7 +36,7 @@
     </form>
 
     <div class="auth-divider">
-      <span>O mediante mis redes</span>
+      <span>{{ i18n.t('contact.divider') }}</span>
     </div>
 
     <div class="contact-social-links">

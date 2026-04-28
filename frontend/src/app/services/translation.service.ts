@@ -139,6 +139,10 @@ const ES: Record<string, string> = {
   'contact.send': 'Enviar Mensaje',
   'contact.success': 'Mensaje enviado correctamente. Me pondré en contacto contigo pronto.',
   'contact.error': 'Hubo un error al enviar el mensaje. Inténtalo de nuevo más tarde.',
+  'contact.captcha.required': 'Por favor, marca la casilla "No soy un robot" para continuar.',
+  'contact.captcha.failed': 'La verificación del captcha ha fallado. Recarga la página e inténtalo de nuevo.',
+  'contact.rate_limit': 'Has enviado demasiados mensajes. Inténtalo de nuevo dentro de una hora.',
+  'contact.divider': 'O mediante mis redes',
 
   // --- Login ---
   'login.back': 'Portfolio',
@@ -509,6 +513,10 @@ const EN: Record<string, string> = {
   'contact.send': 'Send Message',
   'contact.success': 'Message sent successfully. I will contact you soon.',
   'contact.error': 'There was an error sending the message. Please try again later.',
+  'contact.captcha.required': 'Please tick the "I\'m not a robot" checkbox to continue.',
+  'contact.captcha.failed': 'Captcha verification failed. Please reload the page and try again.',
+  'contact.rate_limit': 'You have sent too many messages. Please try again in an hour.',
+  'contact.divider': 'Or via my socials',
 
   // --- Login ---
   'login.back': 'Portfolio',

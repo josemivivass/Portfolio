@@ -13,6 +13,9 @@ const profileRoutes = require('./src/routes/profile.routes');
 
 const app = express();
 
+// Necesario para que express-rate-limit lea la IP real cuando hay un proxy delante (Nginx, Cloudflare, etc.)
+app.set('trust proxy', 1);
+
 app.use(cors());
 app.use(express.json({ limit: '7mb' }));
 

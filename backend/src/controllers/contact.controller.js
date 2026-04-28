@@ -1,11 +1,17 @@
 const pool = require('../config/db');
 const { sendContactNotification } = require('../services/email.service');
+const { verifyRecaptcha } = require('../services/recaptcha.service');
 
 exports.sendMessage = async (req, res) => {
-  const { name, email, message } = req.body;
+  const { name, email, message, recaptchaToken } = req.body;
 
   if (!name || !email || !message) {
     return res.status(400).json({ message: 'Todos los campos son requeridos.' });
+  }
+
+  const isHuman = await verifyRecaptcha(recaptchaToken, req.ip);
+  if (!isHuman) {
+    return res.status(400).json({ message: 'Verificación de captcha fallida. Recarga e inténtalo de nuevo.' });
   }
 
   try {
