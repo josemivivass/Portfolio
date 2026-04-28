@@ -16,7 +16,7 @@
 <div class="chatbot-panel" [class.open]="isOpen" (wheel)="onPanelWheel($event)" (touchmove)="$event.stopPropagation()">
   <div class="chatbot-header">
     <span class="chatbot-title">{{ i18n.t('chatbot.title') }}</span>
-    <button *ngIf="messages.length > 0" class="chatbot-clear" (click)="clearChat()"
+    <button *ngIf="isLoggedIn && messages.length > 0" class="chatbot-clear" (click)="clearChat()"
             [attr.aria-label]="i18n.t('chatbot.clear')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

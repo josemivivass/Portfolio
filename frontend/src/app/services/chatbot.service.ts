@@ -35,6 +35,10 @@ export class ChatbotService {
     return this.http.post<ChatResponse>(this.apiUrl, { message }, { headers: this.getHeaders() });
   }
 
+  sendAnonymousMessage(message: string, sessionId: string): Observable<ChatResponse> {
+    return this.http.post<ChatResponse>(`${this.apiUrl}/anonymous`, { message, session_id: sessionId });
+  }
+
   getHistory(): Observable<ChatHistory> {
     return this.http.get<ChatHistory>(`${this.apiUrl}/history`, { headers: this.getHeaders() });
   }

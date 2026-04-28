@@ -57,7 +57,8 @@ CREATE TABLE contact_messages (
 
 CREATE TABLE chatbot_messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NULL,
+    session_id VARCHAR(36) NULL,
     role ENUM('user', 'assistant') NOT NULL,
     message TEXT NOT NULL,
     tokens_used INT DEFAULT 0,
@@ -65,7 +66,9 @@ CREATE TABLE chatbot_messages (
     ip_address VARCHAR(45),
     user_agent TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_session_id (session_id),
+    INDEX idx_anon_ip_date (ip_address, created_at)
 );
 
 CREATE TABLE chatbot_clears (

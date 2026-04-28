@@ -12,7 +12,9 @@ const apiKey = envContent.match(/AI_API_KEY=(.+)/)?.[1]?.trim();
 const groq = new Groq({ apiKey });
 
 const USER_TOKEN_LIMIT = 400000;
+const ANON_IP_TOKEN_LIMIT = 400000;
 const GLOBAL_TOKEN_LIMIT = 500000;
+const SESSION_ID_REGEX = /^[0-9a-fA-F-]{8,64}$/;
 
 // El prompt por defecto vive en profile.controller.js (DEFAULT_CHATBOT_PROMPT).
 // En cada petición leemos el valor actual (editable desde el panel admin)
@@ -153,5 +155,88 @@ exports.clearChat = async (req, res) => {
   } catch (error) {
     console.error('Error al borrar chat:', error);
     res.status(500).json({ message: 'Error del servidor' });
+  }
+};
+
+exports.sendAnonymousMessage = async (req, res) => {
+  const { message, session_id: sessionId } = req.body || {};
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+  const userAgent = req.headers['user-agent'] || '';
+
+  if (!message || !message.trim()) {
+    return res.status(400).json({ message: 'El mensaje no puede estar vacío' });
+  }
+  if (!sessionId || typeof sessionId !== 'string' || !SESSION_ID_REGEX.test(sessionId)) {
+    return res.status(400).json({ message: 'Identificador de sesión inválido' });
+  }
+
+  try {
+    // Per-IP daily token limit for anonymous users
+    const [ipTokenRows] = await pool.query(
+      `SELECT COALESCE(SUM(tokens_used), 0) AS total_tokens FROM chatbot_messages
+       WHERE user_id IS NULL AND ip_address = ? AND DATE(created_at) = CURDATE()`,
+      [ip]
+    );
+    if (ipTokenRows[0].total_tokens >= ANON_IP_TOKEN_LIMIT) {
+      return res.status(429).json({
+        message: 'Has alcanzado el límite diario del asistente. Inténtalo mañana.'
+      });
+    }
+
+    // Global daily limit shared with logged-in users
+    const [globalTokenRows] = await pool.query(
+      `SELECT COALESCE(SUM(tokens_used), 0) AS total_tokens FROM chatbot_messages
+       WHERE DATE(created_at) = CURDATE()`
+    );
+    if (globalTokenRows[0].total_tokens >= GLOBAL_TOKEN_LIMIT) {
+      return res.status(429).json({
+        message: 'El asistente no está disponible temporalmente. Inténtalo mañana.'
+      });
+    }
+
+    // Session-scoped history (no clears for anon — session ends on reload)
+    const [history] = await pool.query(
+      `SELECT role, message FROM chatbot_messages
+       WHERE user_id IS NULL AND session_id = ?
+       ORDER BY created_at ASC`,
+      [sessionId]
+    );
+
+    const systemPrompt = await loadSystemPrompt();
+    const model = await loadChatbotModel();
+    const messages = [{ role: 'system', content: systemPrompt }];
+    for (const row of history) {
+      messages.push({
+        role: row.role === 'user' ? 'user' : 'assistant',
+        content: row.message
+      });
+    }
+    messages.push({ role: 'user', content: message });
+
+    const result = await groq.chat.completions.create({
+      model,
+      messages,
+      max_tokens: 1024
+    });
+
+    const reply = result.choices[0]?.message?.content || '';
+    const tokensUsed = result.usage?.total_tokens || 0;
+
+    await pool.query(
+      `INSERT INTO chatbot_messages (user_id, session_id, role, message, tokens_used, model, ip_address, user_agent)
+       VALUES (NULL, ?, 'user', ?, 0, ?, ?, ?)`,
+      [sessionId, message, model, ip, userAgent]
+    );
+
+    await pool.query(
+      `INSERT INTO chatbot_messages (user_id, session_id, role, message, tokens_used, model, ip_address, user_agent)
+       VALUES (NULL, ?, 'assistant', ?, ?, ?, ?, ?)`,
+      [sessionId, reply, tokensUsed, model, ip, userAgent]
+    );
+
+    res.json({ reply });
+  } catch (error) {
+    console.error('Error en chatbot anónimo:', error);
+    res.status(500).json({ message: 'Error del servidor al procesar el mensaje' });
   }
 };

@@ -315,7 +315,7 @@ exports.deleteContactMessage = async (req, res) => {
 exports.listChatbotConversations = async (req, res) => {
   try {
     const [messages] = await pool.query(
-      `SELECT m.id, m.user_id, u.email, m.role, m.message,
+      `SELECT m.id, m.user_id, m.session_id, u.email, m.role, m.message,
               m.tokens_used, m.model, m.ip_address, m.user_agent, m.created_at
        FROM chatbot_messages m
        LEFT JOIN users u ON u.id = m.user_id

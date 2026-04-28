@@ -832,8 +832,7 @@ export class AdminComponent implements OnInit {
   }
 
   editUser(u: AdminUser): void {
-    if (!this.isAdmin && !this.isEditor) return;
-    if (!this.isAdmin && u.role === 'admin') return;
+    if (!this.isAdmin) return;
     this.editingUser = { ...u, _original: u };
   }
 
@@ -1204,10 +1203,10 @@ export class AdminComponent implements OnInit {
   }
 
   // ─── Chatbot ───
-  get chatbotConversations(): { key: string; email: string; userId: number; date: string; messages: any[]; totalTokens: number; sessionIndex: number }[] {
+  get chatbotConversations(): { key: string; email: string; userId: number | null; date: string; messages: any[]; totalTokens: number; sessionIndex: number; isAnonymous: boolean }[] {
     const term = this.chatbotSearch.trim().toLowerCase();
 
-    // Build per-user clear timestamps sorted ascending
+    // Build per-user clear timestamps sorted ascending (logged-in users only)
     const userClears: Record<number, number[]> = {};
     for (const c of this.chatbotClears) {
       const uid = c.user_id;
@@ -1218,21 +1217,27 @@ export class AdminComponent implements OnInit {
       userClears[Number(uid)].sort((a, b) => a - b);
     }
 
-    // Assign each message a session index based on clear boundaries
+    // Group messages: logged-in by user_id + clear boundary, anonymous by session_id
     const grouped: Record<string, any[]> = {};
     for (const m of this.chatbotMessages) {
-      const uid = m.user_id;
-      const ts = new Date(m.created_at).getTime();
-      const clears = userClears[uid] || [];
-      // Session index = number of clears that happened before this message
+      let key: string;
       let session = 0;
-      for (let i = clears.length - 1; i >= 0; i--) {
-        if (ts > clears[i]) { session = i + 1; break; }
+      if (m.user_id == null) {
+        key = `anon_${m.session_id || 'none'}`;
+      } else {
+        const uid = m.user_id;
+        const ts = new Date(m.created_at).getTime();
+        const clears = userClears[uid] || [];
+        for (let i = clears.length - 1; i >= 0; i--) {
+          if (ts > clears[i]) { session = i + 1; break; }
+        }
+        key = `${uid}_s${session}`;
       }
-      const key = `${uid}_s${session}`;
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push({ ...m, _session: session });
     }
+
+    const anonLabel = this.i18n.t('admin.chatbot.anonymous');
 
     let convos = Object.entries(grouped).map(([key, msgs]) => {
       msgs.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
@@ -1241,14 +1246,16 @@ export class AdminComponent implements OnInit {
       const startDate = new Date(first.created_at).toISOString().substring(0, 10);
       const endDate = new Date(last.created_at).toISOString().substring(0, 10);
       const date = startDate === endDate ? startDate : `${startDate} → ${endDate}`;
+      const isAnonymous = first.user_id == null;
       return {
         key,
-        email: first.email || '—',
+        email: isAnonymous ? anonLabel : (first.email || '—'),
         userId: first.user_id,
         date,
         messages: msgs,
         totalTokens: msgs.reduce((sum: number, m: any) => sum + (m.tokens_used || 0), 0),
-        sessionIndex: first._session
+        sessionIndex: first._session,
+        isAnonymous
       };
     });
 
@@ -1261,9 +1268,9 @@ export class AdminComponent implements OnInit {
 
     const mult = this.chatbotSort === 'newest' ? -1 : 1;
     convos.sort((a, b) => {
-      const aFirst = new Date(a.messages[0].created_at).getTime();
-      const bFirst = new Date(b.messages[0].created_at).getTime();
-      return (aFirst - bFirst) * mult;
+      const aLast = new Date(a.messages[a.messages.length - 1].created_at).getTime();
+      const bLast = new Date(b.messages[b.messages.length - 1].created_at).getTime();
+      return (aLast - bLast) * mult;
     });
 
     return convos;

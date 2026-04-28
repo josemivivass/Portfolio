@@ -1,11 +1,13 @@
 import {
-  Component, OnInit, Inject, PLATFORM_ID,
+  Component, OnInit, OnDestroy, Inject, PLATFORM_ID,
   ElementRef, ViewChild, AfterViewChecked, ChangeDetectorRef, NgZone, ApplicationRef
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { ChatbotService, ChatMessage } from '../../services/chatbot.service';
 import { TranslationService } from '../../services/translation.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-chatbot',
@@ -14,7 +16,7 @@ import { TranslationService } from '../../services/translation.service';
   templateUrl: './chatbot.component.html',
   styleUrls: ['./chatbot.component.css']
 })
-export class ChatbotComponent implements OnInit, AfterViewChecked {
+export class ChatbotComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
   @ViewChild('chatInput') chatInput!: ElementRef<HTMLInputElement>;
 
@@ -23,12 +25,16 @@ export class ChatbotComponent implements OnInit, AfterViewChecked {
   inputMessage = '';
   isLoading = false;
   error = '';
+  isLoggedIn = false;
   private shouldScroll = false;
+  private anonSessionId: string | null = null;
+  private authSub?: Subscription;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private chatbot: ChatbotService,
     public i18n: TranslationService,
+    private auth: AuthService,
     private cdr: ChangeDetectorRef,
     private zone: NgZone,
     private appRef: ApplicationRef
@@ -36,7 +42,38 @@ export class ChatbotComponent implements OnInit, AfterViewChecked {
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    setTimeout(() => this.loadHistory());
+
+    this.authSub = this.auth.isLoggedIn().subscribe((logged) => {
+      const wasLoggedIn = this.isLoggedIn;
+      this.isLoggedIn = logged;
+      // Reset state when auth status flips so we don't mix sessions
+      if (wasLoggedIn !== logged) {
+        this.messages = [];
+        this.error = '';
+        this.anonSessionId = logged ? null : this.generateSessionId();
+      } else if (!logged && !this.anonSessionId) {
+        this.anonSessionId = this.generateSessionId();
+      }
+      if (logged) {
+        setTimeout(() => this.loadHistory());
+      }
+      this.cdr.detectChanges();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.authSub?.unsubscribe();
+  }
+
+  private generateSessionId(): string {
+    const c: any = (globalThis as any).crypto;
+    if (c?.randomUUID) return c.randomUUID();
+    // Fallback (non-crypto-safe) — only used if crypto.randomUUID is unavailable
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (ch) => {
+      const r = (Math.random() * 16) | 0;
+      const v = ch === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
   }
 
   ngAfterViewChecked(): void {
@@ -48,12 +85,13 @@ export class ChatbotComponent implements OnInit, AfterViewChecked {
 
   toggle(): void {
     this.isOpen = !this.isOpen;
-    if (this.isOpen && this.messages.length === 0) {
+    if (this.isOpen && this.isLoggedIn && this.messages.length === 0) {
       this.loadHistory();
     }
   }
 
   loadHistory(): void {
+    if (!this.isLoggedIn) return;
     this.chatbot.getHistory().subscribe({
       next: (data) => {
         this.messages = data.messages;
@@ -73,7 +111,11 @@ export class ChatbotComponent implements OnInit, AfterViewChecked {
     this.isLoading = true;
     this.shouldScroll = true;
 
-    this.chatbot.sendMessage(text).subscribe({
+    const request$ = this.isLoggedIn
+      ? this.chatbot.sendMessage(text)
+      : this.chatbot.sendAnonymousMessage(text, this.anonSessionId || (this.anonSessionId = this.generateSessionId()));
+
+    request$.subscribe({
       next: (data) => {
         this.zone.run(() => {
           this.messages.push({ role: 'assistant', message: data.reply });

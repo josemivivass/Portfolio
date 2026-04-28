@@ -9,7 +9,7 @@ const adminOnly = [verifyToken, requireRole('admin')];
 // Users
 router.get('/users', editorOrAdmin, admin.listUsers);
 router.patch('/users/:id/role', adminOnly, admin.updateUserRole);
-router.put('/users/:id', editorOrAdmin, admin.updateUser);
+router.put('/users/:id', adminOnly, admin.updateUser);
 router.delete('/users/:id', adminOnly, admin.deleteUser);
 
 // Projects
