@@ -1,86 +1,88 @@
-<div class="admin-shell" [class.menu-open]="mobileMenuOpen">
+<div class="admin-shell" [class.menu-open]="state.mobileMenuOpen()">
 
   <!-- ─── MOBILE TOPBAR ─── -->
   <header class="admin-topbar">
-    <button class="hamburger" (click)="toggleMobileMenu()" [class.is-open]="mobileMenuOpen" [attr.aria-label]="i18n.t('admin.action.menu')" [attr.aria-expanded]="mobileMenuOpen">
+    <button class="hamburger" (click)="state.toggleMobileMenu()" [class.is-open]="state.mobileMenuOpen()" [attr.aria-label]="state.i18n.t('admin.action.menu')" [attr.aria-expanded]="state.mobileMenuOpen()">
       <span></span><span></span><span></span>
     </button>
     <div class="topbar-brand">
       <div class="brand-mark">JM</div>
-      <div class="topbar-title">{{ i18n.t(activeTabLabelKey) }}</div>
+      <div class="topbar-title">{{ state.i18n.t(state.activeTabLabelKey()) }}</div>
     </div>
-    <div class="topbar-avatar" [attr.title]="currentUserEmail">{{ (currentUserEmail || '?').charAt(0).toUpperCase() }}</div>
+    <div class="topbar-avatar" [attr.title]="state.currentUserEmail()">{{ (state.currentUserEmail() || '?').charAt(0).toUpperCase() }}</div>
   </header>
 
   <!-- ─── MOBILE BACKDROP ─── -->
-  <div class="sidebar-backdrop" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()"></div>
+  @if (state.mobileMenuOpen()) {
+    <div class="sidebar-backdrop" (click)="state.closeMobileMenu()"></div>
+  }
 
   <!-- ─── SIDEBAR ─── -->
-  <aside class="admin-sidebar" [class.open]="mobileMenuOpen">
-    <button type="button" class="sidebar-close" (click)="closeMobileMenu()" [attr.aria-label]="i18n.t('admin.action.close')">
+  <aside class="admin-sidebar" [class.open]="state.mobileMenuOpen()">
+    <button type="button" class="sidebar-close" (click)="state.closeMobileMenu()" [attr.aria-label]="state.i18n.t('admin.action.close')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
     <div class="sidebar-brand">
       <div class="brand-mark">JM</div>
       <div class="brand-text">
-        <span class="brand-title">{{ i18n.t('admin.brand.title') }}</span>
-        <span class="brand-sub">{{ i18n.t('admin.brand.sub') }}</span>
+        <span class="brand-title">{{ state.i18n.t('admin.brand.title') }}</span>
+        <span class="brand-sub">{{ state.i18n.t('admin.brand.sub') }}</span>
       </div>
     </div>
 
     <nav class="sidebar-nav">
-      <button [class.active]="activeTab === 'dashboard'" (click)="setTab('dashboard')">
+      <a routerLink="dashboard" routerLinkActive="active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-        {{ i18n.t('admin.tab.dashboard') }}
-      </button>
+        {{ state.i18n.t('admin.tab.dashboard') }}
+      </a>
 
-      <span class="sidebar-section">{{ i18n.t('admin.section.content') }}</span>
-      <button [class.active]="activeTab === 'profile'" (click)="setTab('profile')">
+      <span class="sidebar-section">{{ state.i18n.t('admin.section.content') }}</span>
+      <a routerLink="profile" routerLinkActive="active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        {{ i18n.t('admin.tab.profile') }}
-      </button>
-      <button [class.active]="activeTab === 'projects'" (click)="setTab('projects')">
+        {{ state.i18n.t('admin.tab.profile') }}
+      </a>
+      <a routerLink="projects" routerLinkActive="active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        {{ i18n.t('admin.tab.projects') }}
-      </button>
-      <button [class.active]="activeTab === 'experience'" (click)="setTab('experience')">
+        {{ state.i18n.t('admin.tab.projects') }}
+      </a>
+      <a routerLink="experience" routerLinkActive="active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        {{ i18n.t('admin.tab.experience') }}
-      </button>
+        {{ state.i18n.t('admin.tab.experience') }}
+      </a>
 
-      <span class="sidebar-section">{{ i18n.t('admin.section.data') }}</span>
-      <button [class.active]="activeTab === 'visitors'" (click)="setTab('visitors')">
+      <span class="sidebar-section">{{ state.i18n.t('admin.section.data') }}</span>
+      <a routerLink="visitors" routerLinkActive="active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        {{ i18n.t('admin.tab.visitors') }}
-      </button>
-      <button [class.active]="activeTab === 'logins'" (click)="setTab('logins')">
+        {{ state.i18n.t('admin.tab.visitors') }}
+      </a>
+      <a routerLink="logins" routerLinkActive="active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-        {{ i18n.t('admin.tab.logins') }}
-      </button>
-      <button [class.active]="activeTab === 'messages'" (click)="setTab('messages')">
+        {{ state.i18n.t('admin.tab.logins') }}
+      </a>
+      <a routerLink="messages" routerLinkActive="active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        {{ i18n.t('admin.tab.messages') }}
-      </button>
-      <button [class.active]="activeTab === 'chatbot'" (click)="setTab('chatbot')">
+        {{ state.i18n.t('admin.tab.messages') }}
+      </a>
+      <a routerLink="chatbot" routerLinkActive="active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-        {{ i18n.t('admin.tab.chatbot') }}
-      </button>
+        {{ state.i18n.t('admin.tab.chatbot') }}
+      </a>
 
-      <ng-container *ngIf="isAdmin || isEditor">
-        <span class="sidebar-section">{{ i18n.t('admin.section.system') }}</span>
-        <button [class.active]="activeTab === 'users'" (click)="setTab('users')">
+      @if (state.isAdmin() || state.isEditor()) {
+        <span class="sidebar-section">{{ state.i18n.t('admin.section.system') }}</span>
+        <a routerLink="users" routerLinkActive="active">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          {{ i18n.t('admin.tab.users') }}
-        </button>
-      </ng-container>
+          {{ state.i18n.t('admin.tab.users') }}
+        </a>
+      }
     </nav>
 
     <div class="sidebar-user">
-      <div class="user-avatar">{{ (currentUserEmail || '?').charAt(0).toUpperCase() }}</div>
+      <div class="user-avatar">{{ (state.currentUserEmail() || '?').charAt(0).toUpperCase() }}</div>
       <div class="user-info">
-        <span class="user-email">{{ currentUserEmail || '—' }}</span>
-        <span class="user-role" [class.admin]="isAdmin" [class.editor]="!isAdmin && isEditor">
-          {{ isAdmin ? i18n.t('admin.role.administrator') : i18n.t('admin.role.editor') }}
+        <span class="user-email">{{ state.currentUserEmail() || '—' }}</span>
+        <span class="user-role" [class.admin]="state.isAdmin()" [class.editor]="!state.isAdmin() && state.isEditor()">
+          {{ state.isAdmin() ? state.i18n.t('admin.role.administrator') : state.i18n.t('admin.role.editor') }}
         </span>
       </div>
     </div>
@@ -89,1405 +91,410 @@
   <!-- ─── MAIN ─── -->
   <main class="admin-main">
 
-    <div *ngIf="initialLoading" class="loading-pill">
-      <div class="spinner spinner-sm"></div>
-      <span>{{ i18n.t('admin.loading') }}</span>
-    </div>
-
-    <div *ngIf="errorMessage" class="admin-error">{{ errorMessage }}</div>
-
-    <ng-container>
-
-      <!-- ─── DASHBOARD ─── -->
-      <section *ngIf="activeTab === 'dashboard'" class="page">
-        <header class="page-head">
-          <h1>{{ i18n.t('admin.dashboard.title') }}</h1>
-          <p class="page-sub">{{ i18n.t('admin.dashboard.sub') }}</p>
-        </header>
-
-        <div class="stats-grid">
-          <div class="stat-card">
-            <span class="stat-label">{{ i18n.t('admin.stat.visits') }}</span>
-            <span class="stat-value">{{ totalVisits }}</span>
-            <span class="stat-foot">{{ i18n.t('admin.stat.visits.foot', { n: uniqueVisitors }) }}</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">{{ i18n.t('admin.stat.logins') }}</span>
-            <span class="stat-value">{{ totalLogins }}</span>
-            <span class="stat-foot">{{ i18n.t('admin.stat.logins.foot') }}</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">{{ i18n.t('admin.stat.messages') }}</span>
-            <span class="stat-value">{{ totalMessages }}</span>
-            <span class="stat-foot">{{ i18n.t('admin.stat.messages.foot') }}</span>
-          </div>
-          <div class="stat-card" *ngIf="isAdmin">
-            <span class="stat-label">{{ i18n.t('admin.stat.users') }}</span>
-            <span class="stat-value">{{ totalUsers }}</span>
-            <span class="stat-foot">{{ i18n.t('admin.stat.users.foot') }}</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">{{ i18n.t('admin.stat.projects') }}</span>
-            <span class="stat-value">{{ totalProjects }}</span>
-            <span class="stat-foot">{{ i18n.t('admin.stat.projects.foot') }}</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-label">{{ i18n.t('admin.stat.chatbot') }}</span>
-            <span class="stat-value">{{ totalChatbotMessages }}</span>
-            <span class="stat-foot">{{ i18n.t('admin.stat.chatbot.foot', { n: totalChatbotConversations }) }}</span>
-          </div>
-        </div>
-
-        <div class="chart-card line-chart-card">
-          <div class="chart-head">
-            <div>
-              <h3>{{ i18n.t('admin.chart.activity.title') }}</h3>
-              <div class="chart-legend">
-                <span class="legend-item">
-                  <span class="legend-dot legend-dot-blue"></span>
-                  {{ i18n.t('admin.tab.visitors') }} <strong>{{ totalVisits }}</strong>
-                </span>
-                <span class="legend-item">
-                  <span class="legend-dot legend-dot-amber"></span>
-                  {{ i18n.t('admin.tab.logins') }} <strong>{{ totalLogins }}</strong>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="line-chart-wrap">
-            <svg class="line-chart-svg"
-                 [attr.viewBox]="'0 0 ' + lineChart.w + ' ' + lineChart.h"
-                 role="img">
-              <defs>
-                <linearGradient id="grad-blue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" class="grad-stop-blue" stop-opacity="0.35"/>
-                  <stop offset="100%" class="grad-stop-blue" stop-opacity="0"/>
-                </linearGradient>
-                <linearGradient id="grad-amber" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" class="grad-stop-amber" stop-opacity="0.28"/>
-                  <stop offset="100%" class="grad-stop-amber" stop-opacity="0"/>
-                </linearGradient>
-              </defs>
-
-              <!-- Horizontal gridlines + y labels -->
-              <g class="chart-grid-lines">
-                <line *ngFor="let tick of lineChartTicks"
-                      [attr.x1]="lineChart.padL"
-                      [attr.x2]="lineChart.w - lineChart.padR"
-                      [attr.y1]="tick.y"
-                      [attr.y2]="tick.y"
-                      class="grid-line"/>
-                <text *ngFor="let tick of lineChartTicks"
-                      [attr.x]="lineChart.padL - 12"
-                      [attr.y]="tick.y + 4"
-                      class="axis-label axis-label-y">{{ tick.value }}</text>
-              </g>
-
-              <!-- X axis labels -->
-              <g class="chart-axis-x">
-                <text *ngFor="let tk of lineChartXAxis"
-                      [attr.x]="tk.x"
-                      [attr.y]="lineChart.h - lineChart.padB + 22"
-                      class="axis-label axis-label-x">{{ tk.label }}</text>
-              </g>
-
-              <!-- Areas -->
-              <path *ngIf="visitorAreaPath" [attr.d]="visitorAreaPath" fill="url(#grad-blue)"/>
-              <path *ngIf="loginAreaPath" [attr.d]="loginAreaPath" fill="url(#grad-amber)"/>
-
-              <!-- Hover vertical guide -->
-              <line *ngIf="hoverData as hd"
-                    class="hover-guide"
-                    [attr.x1]="hd.x"
-                    [attr.x2]="hd.x"
-                    [attr.y1]="lineChart.padT"
-                    [attr.y2]="lineChart.h - lineChart.padB"/>
-
-              <!-- Lines -->
-              <path *ngIf="visitorLinePath" [attr.d]="visitorLinePath" class="line line-blue"/>
-              <path *ngIf="loginLinePath" [attr.d]="loginLinePath" class="line line-amber"/>
-
-              <!-- Points: logins -->
-              <g class="points">
-                <circle *ngFor="let p of loginPoints; let i = index"
-                        [attr.cx]="p.x"
-                        [attr.cy]="p.y"
-                        [attr.r]="hoverIndex === i ? 6 : 4"
-                        class="point point-amber"/>
-              </g>
-
-              <!-- Points: visitors -->
-              <g class="points">
-                <circle *ngFor="let p of visitorPoints; let i = index"
-                        [attr.cx]="p.x"
-                        [attr.cy]="p.y"
-                        [attr.r]="hoverIndex === i ? 6 : 4"
-                        class="point point-blue"/>
-              </g>
-
-              <!-- Invisible hover targets -->
-              <g class="hover-targets">
-                <rect *ngFor="let p of visitorPoints; let i = index"
-                      [attr.x]="p.x - 18"
-                      [attr.y]="lineChart.padT"
-                      width="36"
-                      [attr.height]="lineChart.h - lineChart.padT - lineChart.padB"
-                      fill="transparent"
-                      (mouseenter)="onChartHover(i)"
-                      (mouseleave)="onChartHover(null)"/>
-              </g>
-
-              <!-- Tooltip -->
-              <g *ngIf="hoverData as hd" class="tooltip-group">
-                <rect [attr.x]="hd.tooltipX"
-                      [attr.y]="lineChart.padT + 6"
-                      [attr.width]="hd.tooltipW" height="62" rx="8" class="tooltip-bg"/>
-                <text [attr.x]="hd.tooltipX + 10"
-                      [attr.y]="lineChart.padT + 25"
-                      class="tooltip-date">{{ hd.date }}</text>
-                <circle [attr.cx]="hd.tooltipX + 12"
-                        [attr.cy]="lineChart.padT + 40" r="3.5" class="tooltip-dot-blue"/>
-                <text [attr.x]="hd.tooltipX + 20"
-                      [attr.y]="lineChart.padT + 43"
-                      class="tooltip-value">{{ i18n.t('admin.tab.visitors') }}: {{ hd.visitors }}</text>
-                <circle [attr.cx]="hd.tooltipX + 12"
-                        [attr.cy]="lineChart.padT + 56" r="3.5" class="tooltip-dot-amber"/>
-                <text [attr.x]="hd.tooltipX + 20"
-                      [attr.y]="lineChart.padT + 59"
-                      class="tooltip-value">{{ i18n.t('admin.tab.logins') }}: {{ hd.logins }}</text>
-              </g>
-            </svg>
-          </div>
-        </div>
-        <div class="chart-card line-chart-card tokens-chart-card">
-          <div class="chart-head">
-            <div>
-              <h3>{{ i18n.t('admin.chart.tokens.title') }}</h3>
-              <div class="chart-legend">
-                <span class="legend-item">
-                  <span class="legend-dot legend-dot-green"></span>
-                  Tokens <strong>{{ formatTokens(totalTokensUsed) }}</strong>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="line-chart-wrap">
-            <svg class="line-chart-svg"
-                 [attr.viewBox]="'0 0 ' + tokensChart.w + ' ' + tokensChart.h"
-                 role="img">
-              <defs>
-                <linearGradient id="grad-green" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" class="grad-stop-green" stop-opacity="0.35"/>
-                  <stop offset="100%" class="grad-stop-green" stop-opacity="0"/>
-                </linearGradient>
-              </defs>
-
-              <g class="chart-grid-lines">
-                <line *ngFor="let tick of tokensChartTicks"
-                      [attr.x1]="tokensChart.padL"
-                      [attr.x2]="tokensChart.w - tokensChart.padR"
-                      [attr.y1]="tick.y"
-                      [attr.y2]="tick.y"
-                      class="grid-line"/>
-                <text *ngFor="let tick of tokensChartTicks"
-                      [attr.x]="tokensChart.padL - 12"
-                      [attr.y]="tick.y + 4"
-                      class="axis-label axis-label-y">{{ formatTokens(tick.value) }}</text>
-              </g>
-
-              <g class="chart-axis-x">
-                <text *ngFor="let tk of tokensChartXAxis"
-                      [attr.x]="tk.x"
-                      [attr.y]="tokensChart.h - tokensChart.padB + 22"
-                      class="axis-label axis-label-x">{{ tk.label }}</text>
-              </g>
-
-              <path *ngIf="tokensAreaPath" [attr.d]="tokensAreaPath" fill="url(#grad-green)"/>
-
-              <line *ngIf="tokensHoverData as thd"
-                    class="hover-guide"
-                    [attr.x1]="thd.x"
-                    [attr.x2]="thd.x"
-                    [attr.y1]="tokensChart.padT"
-                    [attr.y2]="tokensChart.h - tokensChart.padB"/>
-
-              <path *ngIf="tokensLinePath" [attr.d]="tokensLinePath" class="line line-green"/>
-
-              <g class="points">
-                <circle *ngFor="let p of tokensPoints; let i = index"
-                        [attr.cx]="p.x"
-                        [attr.cy]="p.y"
-                        [attr.r]="tokensHoverIndex === i ? 6 : 4"
-                        class="point point-green"/>
-              </g>
-
-              <g class="hover-targets">
-                <rect *ngFor="let p of tokensPoints; let i = index"
-                      [attr.x]="p.x - 18"
-                      [attr.y]="tokensChart.padT"
-                      width="36"
-                      [attr.height]="tokensChart.h - tokensChart.padT - tokensChart.padB"
-                      fill="transparent"
-                      (mouseenter)="onTokensChartHover(i)"
-                      (mouseleave)="onTokensChartHover(null)"/>
-              </g>
-
-              <g *ngIf="tokensHoverData as thd" class="tooltip-group">
-                <rect [attr.x]="thd.tooltipX"
-                      [attr.y]="tokensChart.padT + 6"
-                      [attr.width]="thd.tooltipW" height="46" rx="8" class="tooltip-bg"/>
-                <text [attr.x]="thd.tooltipX + 10"
-                      [attr.y]="tokensChart.padT + 25"
-                      class="tooltip-date">{{ thd.date }}</text>
-                <circle [attr.cx]="thd.tooltipX + 12"
-                        [attr.cy]="tokensChart.padT + 40" r="3.5" class="tooltip-dot-green"/>
-                <text [attr.x]="thd.tooltipX + 20"
-                      [attr.y]="tokensChart.padT + 43"
-                      class="tooltip-value">{{ formatTokens(thd.tokens) }} tokens</text>
-              </g>
-            </svg>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── PROFILE ─── -->
-      <section *ngIf="activeTab === 'profile'" class="page profile-page">
-        <header class="page-head">
-          <div>
-            <h1>{{ i18n.t('admin.profile.title') }}</h1>
-            <p class="page-sub">{{ i18n.t('admin.profile.sub') }}</p>
-          </div>
-        </header>
-
-        <div class="profile-grid">
-          <div class="profile-col">
-            <!-- Photo card -->
-            <div class="card profile-card">
-              <div class="profile-card-head">
-                <h3>{{ i18n.t('admin.profile.photo.title') }}</h3>
-                <p>{{ i18n.t('admin.profile.photo.sub') }}</p>
-              </div>
-
-              <div class="profile-photo-row">
-                <figure class="profile-photo-frame">
-                  <img [src]="profilePhotoUrl" alt="" />
-                  <figcaption>{{ i18n.t('admin.profile.photo.current') }}</figcaption>
-                </figure>
-                <figure class="profile-photo-frame profile-photo-frame--preview" *ngIf="profilePhotoPreview">
-                  <img [src]="profilePhotoPreview" alt="" />
-                  <figcaption>{{ i18n.t('admin.profile.photo.preview') }}</figcaption>
-                </figure>
-              </div>
-
-              <div class="profile-photo-actions">
-                <label class="btn-ghost profile-file-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  <span>{{ profilePhotoPreview ? i18n.t('admin.profile.photo.change') : i18n.t('admin.profile.photo.select') }}</span>
-                  <input type="file" accept="image/jpeg,image/png,image/webp" (change)="onProfilePhotoSelected($event)" hidden />
-                </label>
-                <button type="button"
-                        class="btn-primary"
-                        [disabled]="!profilePhotoDataUrl || profileUploadingPhoto"
-                        (click)="uploadProfilePhoto()">
-                  {{ profileUploadingPhoto ? i18n.t('admin.profile.photo.saving') : i18n.t('admin.profile.photo.upload') }}
-                </button>
-                <span class="profile-file-name" *ngIf="profilePhotoFileName">{{ profilePhotoFileName }}</span>
-              </div>
-
-              <p class="profile-status profile-status--ok" *ngIf="profilePhotoStatus === 'saved'">
-                ✓ {{ i18n.t('admin.profile.photo.saved') }}
-              </p>
-              <p class="profile-status profile-status--err" *ngIf="profilePhotoStatus === 'error'">
-                ✗ {{ profilePhotoError }}
-              </p>
-            </div>
-
-            <!-- Chatbot model card -->
-            <div class="card profile-card">
-              <div class="profile-card-head">
-                <h3>{{ i18n.t('admin.profile.chatbot.model.title') }}</h3>
-                <p>{{ i18n.t('admin.profile.chatbot.model.sub') }}</p>
-              </div>
-
-              <div class="profile-model">
-                <label class="profile-model-label" for="chatbot-model-select">
-                  {{ i18n.t('admin.profile.chatbot.model.label') }}
-                </label>
-                <select id="chatbot-model-select"
-                        class="profile-model-select"
-                        [ngModel]="chatbotModel"
-                        (ngModelChange)="onChatbotModelChange($event)"
-                        name="chatbot_model"
-                        [disabled]="chatbotModelSaving || !chatbotModelOptions.length"
-                        [attr.aria-label]="i18n.t('admin.profile.chatbot.model.label')">
-                  <option *ngFor="let m of chatbotModelOptions" [value]="m">{{ m }}</option>
-                </select>
-                <p class="profile-model-current">
-                  {{ i18n.t('admin.profile.chatbot.model.current') }}
-                  <code>{{ chatbotModel || '—' }}</code>
-                </p>
-              </div>
-
-              <div class="profile-texts-footer">
-                <span class="profile-status profile-status--ok" *ngIf="chatbotModelStatus === 'saved'">
-                  ✓ {{ i18n.t('admin.profile.chatbot.model.saved') }}
-                </span>
-                <span class="profile-status profile-status--err" *ngIf="chatbotModelStatus === 'error'">
-                  ✗ {{ chatbotModelError }}
-                </span>
-                <span class="profile-status" *ngIf="chatbotModelSaving">
-                  {{ i18n.t('admin.profile.chatbot.model.saving') }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="profile-col">
-            <!-- Texts card -->
-            <div class="card profile-card">
-              <div class="profile-card-head">
-                <h3>{{ i18n.t('admin.profile.texts.title') }}</h3>
-                <p>{{ i18n.t('admin.profile.texts.sub') }}</p>
-                <span class="profile-lang-pill">
-                  {{ i18n.lang === 'es' ? i18n.t('admin.profile.lang.es') : i18n.t('admin.profile.lang.en') }}
-                </span>
-              </div>
-
-              <div class="profile-texts-display">
-                <div class="profile-text-row" *ngFor="let f of profileFields">
-                  <span class="profile-text-label">{{ i18n.t(f.labelKey) }}</span>
-                  <p class="profile-text-value" [innerHTML]="profileTexts[i18n.lang][f.key] || '—'"></p>
-                </div>
-              </div>
-
-              <div class="profile-texts-footer">
-                <button type="button"
-                        class="btn-primary"
-                        (click)="startEditProfileTexts()">
-                  {{ i18n.t('admin.profile.texts.edit') }}
-                </button>
-                <span class="profile-status profile-status--ok" *ngIf="profileTextsStatus === 'saved'">
-                  ✓ {{ i18n.t('admin.profile.texts.saved') }}
-                </span>
-                <span class="profile-status profile-status--err" *ngIf="profileTextsStatus === 'error'">
-                  ✗ {{ profileTextsError }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Chatbot prompt card (preview) -->
-            <div class="card profile-card">
-              <div class="profile-card-head">
-                <h3>{{ i18n.t('admin.profile.chatbot.title') }}</h3>
-                <p>{{ i18n.t('admin.profile.chatbot.sub') }}</p>
-              </div>
-
-              <div class="profile-prompt-preview">
-                <pre class="profile-prompt-snippet">{{ chatbotPrompt || i18n.t('admin.profile.chatbot.placeholder') }}</pre>
-              </div>
-
-              <div class="profile-texts-footer">
-                <button type="button"
-                        class="btn-primary"
-                        (click)="startEditChatbotPrompt()">
-                  {{ i18n.t('admin.profile.chatbot.edit') }}
-                </button>
-                <span class="profile-status profile-status--ok" *ngIf="chatbotPromptStatus === 'saved'">
-                  ✓ {{ i18n.t('admin.profile.chatbot.saved') }}
-                </span>
-                <span class="profile-status profile-status--err" *ngIf="chatbotPromptStatus === 'error'">
-                  ✗ {{ chatbotPromptError }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── USERS ─── -->
-      <section *ngIf="activeTab === 'users' && (isAdmin || isEditor)" class="page">
-        <header class="page-head">
-          <h1>{{ i18n.t('admin.users.title') }}</h1>
-          <p class="page-sub">{{ i18n.t('admin.users.sub') }}</p>
-        </header>
-
-        <div class="card table-card">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th class="sortable" [class.sorted]="sortDir('users','id')" (click)="toggleSort('users','id')">
-                  <span>{{ i18n.t('admin.users.col.id') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('users','id')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('users','email')" (click)="toggleSort('users','email')">
-                  <span>{{ i18n.t('admin.users.col.email') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('users','email')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('users','role')" (click)="toggleSort('users','role')">
-                  <span>{{ i18n.t('admin.users.col.role') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('users','role')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('users','created_at')" (click)="toggleSort('users','created_at')">
-                  <span>{{ i18n.t('admin.users.col.created') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('users','created_at')"></span>
-                </th>
-                <th>{{ i18n.t('admin.users.col.actions') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let u of sortedUsers">
-                <td>{{ u.id }}</td>
-                <td>{{ u.email }}</td>
-                <td><span class="pill" [class.pill-dark]="u.role==='admin'" [class.pill-amber]="u.role==='editor'">{{ u.role }}</span></td>
-                <td>{{ u.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td class="actions">
-                  <button class="btn-edit" *ngIf="isAdmin" (click)="editUser(u)">{{ i18n.t('admin.action.edit') }}</button>
-                  <button class="btn-delete" *ngIf="isAdmin" (click)="deleteUser(u)">{{ i18n.t('admin.action.delete') }}</button>
-                </td>
-              </tr>
-              <tr *ngIf="users.length === 0"><td colspan="5" class="empty">{{ i18n.t('admin.users.empty') }}</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="mobile-toolbar">
-          <label class="mobile-sort">
-            <span>{{ i18n.t('admin.mobile.sort.label') }}</span>
-            <select [ngModel]="sortState.users.col" (ngModelChange)="sortState.users.col = $event">
-              <option value="id">{{ i18n.t('admin.users.col.id') }}</option>
-              <option value="email">{{ i18n.t('admin.users.col.email') }}</option>
-              <option value="role">{{ i18n.t('admin.users.col.role') }}</option>
-              <option value="created_at">{{ i18n.t('admin.users.col.created') }}</option>
-            </select>
-          </label>
-          <button type="button" class="dir-btn" (click)="sortState.users.dir = sortState.users.dir === 'asc' ? 'desc' : 'asc'" [attr.aria-label]="i18n.t('admin.mobile.sort.dir')">
-            <span class="dir-arrow" [class.desc]="sortState.users.dir === 'desc'">▲</span>
-          </button>
-        </div>
-
-        <div class="mobile-list">
-          <article class="mobile-card" *ngFor="let u of sortedUsers">
-            <header class="mobile-card-head">
-              <div class="mobile-card-avatar">{{ (u.email || '?').charAt(0).toUpperCase() }}</div>
-              <div class="mobile-card-title">
-                <strong>{{ u.email }}</strong>
-                <span class="mobile-card-sub">#{{ u.id }} · {{ u.created_at | date:'dd/MM/yyyy' }}</span>
-              </div>
-              <span class="pill" [class.pill-dark]="u.role==='admin'" [class.pill-amber]="u.role==='editor'">{{ u.role }}</span>
-            </header>
-            <footer class="mobile-card-actions">
-              <button class="btn-edit" *ngIf="isAdmin" (click)="editUser(u)">{{ i18n.t('admin.action.edit') }}</button>
-              <button class="btn-delete" *ngIf="isAdmin" (click)="deleteUser(u)">{{ i18n.t('admin.action.delete') }}</button>
-            </footer>
-          </article>
-          <div class="empty-state" *ngIf="users.length === 0">
-            <p>{{ i18n.t('admin.users.empty') }}</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── PROJECTS ─── -->
-      <section *ngIf="activeTab === 'projects'" class="page">
-        <header class="page-head">
-          <div>
-            <h1>{{ i18n.t('admin.projects.title') }}</h1>
-            <p class="page-sub">{{ isAdmin ? i18n.t('admin.projects.sub.full') : i18n.t('admin.projects.sub.editor') }}</p>
-          </div>
-          <button class="btn-primary btn-new-compact" (click)="newProject()" [attr.aria-label]="i18n.t('admin.projects.new')">
-            <span class="btn-new-label">{{ i18n.t('admin.projects.new') }}</span>
-            <span class="btn-new-icon" aria-hidden="true">+</span>
-          </button>
-        </header>
-
-        <div class="card table-card">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th class="sortable" [class.sorted]="sortDir('projects','id')" (click)="toggleSort('projects','id')">
-                  <span>{{ i18n.t('admin.projects.col.id') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('projects','id')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('projects','title')" (click)="toggleSort('projects','title')">
-                  <span>{{ i18n.t('admin.projects.col.title') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('projects','title')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('projects','project_date')" (click)="toggleSort('projects','project_date')">
-                  <span>{{ i18n.t('admin.projects.col.date') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('projects','project_date')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('projects','tags')" (click)="toggleSort('projects','tags')">
-                  <span>{{ i18n.t('admin.projects.col.tags') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('projects','tags')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('projects','is_featured')" (click)="toggleSort('projects','is_featured')">
-                  <span>{{ i18n.t('admin.projects.col.featured') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('projects','is_featured')"></span>
-                </th>
-                <th>{{ i18n.t('admin.projects.col.actions') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let p of sortedProjects">
-                <td>{{ p.id }}</td>
-                <td>{{ p.title }}</td>
-                <td>{{ p.project_date | date:'dd/MM/yyyy' }}</td>
-                <td>{{ p.tags }}</td>
-                <td>{{ p.is_featured ? i18n.t('admin.projects.yes') : i18n.t('admin.projects.no') }}</td>
-                <td class="actions">
-                  <button class="btn-edit" (click)="editProject(p)">{{ i18n.t('admin.action.edit') }}</button>
-                  <button class="btn-delete" *ngIf="isAdmin" (click)="deleteProject(p)">{{ i18n.t('admin.action.delete') }}</button>
-                </td>
-              </tr>
-              <tr *ngIf="projects.length === 0"><td colspan="6" class="empty">{{ i18n.t('admin.projects.empty') }}</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="mobile-toolbar">
-          <label class="mobile-sort">
-            <span>{{ i18n.t('admin.mobile.sort.label') }}</span>
-            <select [ngModel]="sortState.projects.col" (ngModelChange)="sortState.projects.col = $event">
-              <option value="id">{{ i18n.t('admin.projects.col.id') }}</option>
-              <option value="title">{{ i18n.t('admin.projects.col.title') }}</option>
-              <option value="project_date">{{ i18n.t('admin.projects.col.date') }}</option>
-              <option value="is_featured">{{ i18n.t('admin.projects.col.featured') }}</option>
-            </select>
-          </label>
-          <button type="button" class="dir-btn" (click)="sortState.projects.dir = sortState.projects.dir === 'asc' ? 'desc' : 'asc'" [attr.aria-label]="i18n.t('admin.mobile.sort.dir')">
-            <span class="dir-arrow" [class.desc]="sortState.projects.dir === 'desc'">▲</span>
-          </button>
-        </div>
-
-        <div class="mobile-list">
-          <article class="mobile-card project-card" *ngFor="let p of sortedProjects">
-            <header class="mobile-card-head">
-              <div class="mobile-card-title">
-                <strong>{{ p.title }}</strong>
-                <span class="mobile-card-sub">{{ p.project_date | date:'dd/MM/yyyy' }}</span>
-              </div>
-              <span class="pill pill-amber" *ngIf="p.is_featured">★ {{ i18n.t('admin.projects.col.featured') }}</span>
-            </header>
-            <div class="mobile-card-body">
-              <p class="mobile-card-desc" *ngIf="p.description">{{ p.description }}</p>
-              <div class="mobile-tags" *ngIf="p.tags">
-                <span class="tag-chip" *ngFor="let t of (p.tags || '').split(',')">{{ t.trim() }}</span>
-              </div>
-            </div>
-            <footer class="mobile-card-actions">
-              <button class="btn-edit" (click)="editProject(p)">{{ i18n.t('admin.action.edit') }}</button>
-              <button class="btn-delete" *ngIf="isAdmin" (click)="deleteProject(p)">{{ i18n.t('admin.action.delete') }}</button>
-            </footer>
-          </article>
-          <div class="empty-state" *ngIf="projects.length === 0">
-            <p>{{ i18n.t('admin.projects.empty') }}</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── EXPERIENCE ─── -->
-      <section *ngIf="activeTab === 'experience'" class="page">
-        <header class="page-head">
-          <div>
-            <h1>{{ i18n.t('admin.experience.title') }}</h1>
-            <p class="page-sub">{{ i18n.t('admin.experience.sub') }}</p>
-          </div>
-          <button class="btn-primary btn-new-compact" (click)="newExperience()" [attr.aria-label]="i18n.t('admin.experience.new')">
-            <span class="btn-new-label">{{ i18n.t('admin.experience.new') }}</span>
-            <span class="btn-new-icon" aria-hidden="true">+</span>
-          </button>
-        </header>
-
-        <div class="card table-card">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th class="sortable" [class.sorted]="sortDir('experiences','id')" (click)="toggleSort('experiences','id')">
-                  <span>{{ i18n.t('admin.experience.col.id') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('experiences','id')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('experiences','title')" (click)="toggleSort('experiences','title')">
-                  <span>{{ i18n.t('admin.experience.col.role') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('experiences','title')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('experiences','company')" (click)="toggleSort('experiences','company')">
-                  <span>{{ i18n.t('admin.experience.col.company') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('experiences','company')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('experiences','start_date')" (click)="toggleSort('experiences','start_date')">
-                  <span>{{ i18n.t('admin.experience.col.start') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('experiences','start_date')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('experiences','end_date')" (click)="toggleSort('experiences','end_date')">
-                  <span>{{ i18n.t('admin.experience.col.end') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('experiences','end_date')"></span>
-                </th>
-                <th>{{ i18n.t('admin.experience.col.actions') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let e of sortedExperiences">
-                <td>{{ e.id }}</td>
-                <td>{{ e.title }}</td>
-                <td>{{ e.company }}</td>
-                <td>{{ e.start_date | date:'dd/MM/yyyy' }}</td>
-                <td>{{ e.end_date ? (e.end_date | date:'dd/MM/yyyy') : i18n.t('admin.experience.current') }}</td>
-                <td class="actions">
-                  <button class="btn-edit" (click)="editExperience(e)">{{ i18n.t('admin.action.edit') }}</button>
-                  <button class="btn-delete" *ngIf="isAdmin" (click)="deleteExperience(e)">{{ i18n.t('admin.action.delete') }}</button>
-                </td>
-              </tr>
-              <tr *ngIf="experiences.length === 0"><td colspan="6" class="empty">{{ i18n.t('admin.experience.empty') }}</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="mobile-toolbar">
-          <label class="mobile-sort">
-            <span>{{ i18n.t('admin.mobile.sort.label') }}</span>
-            <select [ngModel]="sortState.experiences.col" (ngModelChange)="sortState.experiences.col = $event">
-              <option value="start_date">{{ i18n.t('admin.experience.col.start') }}</option>
-              <option value="end_date">{{ i18n.t('admin.experience.col.end') }}</option>
-              <option value="title">{{ i18n.t('admin.experience.col.role') }}</option>
-              <option value="company">{{ i18n.t('admin.experience.col.company') }}</option>
-            </select>
-          </label>
-          <button type="button" class="dir-btn" (click)="sortState.experiences.dir = sortState.experiences.dir === 'asc' ? 'desc' : 'asc'" [attr.aria-label]="i18n.t('admin.mobile.sort.dir')">
-            <span class="dir-arrow" [class.desc]="sortState.experiences.dir === 'desc'">▲</span>
-          </button>
-        </div>
-
-        <div class="mobile-list">
-          <article class="mobile-card experience-card" *ngFor="let e of sortedExperiences">
-            <header class="mobile-card-head">
-              <div class="mobile-card-title">
-                <strong>{{ e.title }}</strong>
-                <span class="mobile-card-sub">{{ e.company }}</span>
-              </div>
-              <span class="pill" [class.pill-dark]="!e.end_date">
-                {{ e.end_date ? ((e.start_date | date:'MM/yy') + ' → ' + (e.end_date | date:'MM/yy')) : i18n.t('admin.experience.current') }}
-              </span>
-            </header>
-            <div class="mobile-card-body">
-              <p class="mobile-card-desc" *ngIf="e.description">{{ e.description }}</p>
-              <div class="mobile-meta-row" *ngIf="e.location">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span>{{ e.location }}</span>
-              </div>
-              <div class="mobile-tags" *ngIf="e.tags">
-                <span class="tag-chip" *ngFor="let t of (e.tags || '').split(',')">{{ t.trim() }}</span>
-              </div>
-            </div>
-            <footer class="mobile-card-actions">
-              <button class="btn-edit" (click)="editExperience(e)">{{ i18n.t('admin.action.edit') }}</button>
-              <button class="btn-delete" *ngIf="isAdmin" (click)="deleteExperience(e)">{{ i18n.t('admin.action.delete') }}</button>
-            </footer>
-          </article>
-          <div class="empty-state" *ngIf="experiences.length === 0">
-            <p>{{ i18n.t('admin.experience.empty') }}</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── VISITORS ─── -->
-      <section *ngIf="activeTab === 'visitors'" class="page">
-        <header class="page-head">
-          <div>
-            <h1>{{ i18n.t('admin.visitors.title') }}</h1>
-            <p class="page-sub">{{ i18n.t('admin.visitors.sub', { total: totalVisits, unique: uniqueVisitors }) }}</p>
-          </div>
-        </header>
-
-        <div class="card chart-card">
-          <div class="chart-head">
-            <h3>{{ i18n.t('admin.chart.activity.title') }}</h3>
-          </div>
-          <div class="bar-chart">
-            <div *ngFor="let bar of visitorChart" class="bar-col" [title]="bar.date + ' · ' + bar.value">
-              <div class="bar bar-blue" [style.height.%]="bar.height"></div>
-              <span class="bar-label">{{ bar.label }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card table-card">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th class="sortable" [class.sorted]="sortDir('visitors','entry_time')" (click)="toggleSort('visitors','entry_time')">
-                  <span>{{ i18n.t('admin.visitors.col.date') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('visitors','entry_time')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('visitors','visitor_uuid')" (click)="toggleSort('visitors','visitor_uuid')">
-                  <span>{{ i18n.t('admin.visitors.col.uuid') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('visitors','visitor_uuid')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('visitors','ip_address')" (click)="toggleSort('visitors','ip_address')">
-                  <span>{{ i18n.t('admin.visitors.col.ip') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('visitors','ip_address')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('visitors','user_agent')" (click)="toggleSort('visitors','user_agent')">
-                  <span>{{ i18n.t('admin.visitors.col.browser') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('visitors','user_agent')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('visitors','is_logged_in')" (click)="toggleSort('visitors','is_logged_in')">
-                  <span>{{ i18n.t('admin.visitors.col.logged') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('visitors','is_logged_in')"></span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let v of sortedVisitorLogs">
-                <td>{{ v.entry_time | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td class="mono">{{ v.visitor_uuid?.substring(0, 8) }}…</td>
-                <td>{{ v.ip_address || '—' }}</td>
-                <td>{{ shortUA(v.user_agent) }}</td>
-                <td>{{ v.is_logged_in ? i18n.t('admin.projects.yes') : i18n.t('admin.projects.no') }}</td>
-              </tr>
-              <tr *ngIf="visitorLogs.length === 0"><td colspan="5" class="empty">{{ i18n.t('admin.visitors.empty') }}</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="mobile-toolbar">
-          <label class="mobile-sort">
-            <span>{{ i18n.t('admin.mobile.sort.label') }}</span>
-            <select [ngModel]="sortState.visitors.col" (ngModelChange)="sortState.visitors.col = $event">
-              <option value="entry_time">{{ i18n.t('admin.visitors.col.date') }}</option>
-              <option value="ip_address">{{ i18n.t('admin.visitors.col.ip') }}</option>
-              <option value="user_agent">{{ i18n.t('admin.visitors.col.browser') }}</option>
-              <option value="is_logged_in">{{ i18n.t('admin.visitors.col.logged') }}</option>
-            </select>
-          </label>
-          <button type="button" class="dir-btn" (click)="sortState.visitors.dir = sortState.visitors.dir === 'asc' ? 'desc' : 'asc'" [attr.aria-label]="i18n.t('admin.mobile.sort.dir')">
-            <span class="dir-arrow" [class.desc]="sortState.visitors.dir === 'desc'">▲</span>
-          </button>
-        </div>
-
-        <div class="mobile-list log-list">
-          <article class="mobile-card log-card" *ngFor="let v of sortedVisitorLogs">
-            <header class="log-card-head">
-              <time>{{ v.entry_time | date:'dd/MM/yyyy HH:mm' }}</time>
-              <span class="pill" [class.pill-dark]="v.is_logged_in">{{ v.is_logged_in ? i18n.t('admin.projects.yes') : i18n.t('admin.projects.no') }}</span>
-            </header>
-            <dl class="log-grid">
-              <div><dt>{{ i18n.t('admin.visitors.col.ip') }}</dt><dd>{{ v.ip_address || '—' }}</dd></div>
-              <div><dt>{{ i18n.t('admin.visitors.col.browser') }}</dt><dd>{{ shortUA(v.user_agent) }}</dd></div>
-              <div class="full"><dt>{{ i18n.t('admin.visitors.col.uuid') }}</dt><dd class="mono">{{ v.visitor_uuid }}</dd></div>
-            </dl>
-          </article>
-          <div class="empty-state" *ngIf="visitorLogs.length === 0">
-            <p>{{ i18n.t('admin.visitors.empty') }}</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── LOGINS ─── -->
-      <section *ngIf="activeTab === 'logins'" class="page">
-        <header class="page-head">
-          <div>
-            <h1>{{ i18n.t('admin.logins.title') }}</h1>
-            <p class="page-sub">{{ i18n.t('admin.logins.sub', { n: totalLogins }) }}</p>
-          </div>
-        </header>
-
-        <div class="card chart-card">
-          <div class="chart-head">
-            <h3>{{ i18n.t('admin.chart.logins14.title') }}</h3>
-          </div>
-          <div class="bar-chart">
-            <div *ngFor="let bar of loginChart" class="bar-col" [title]="bar.date + ' · ' + bar.value">
-              <div class="bar bar-amber" [style.height.%]="bar.height"></div>
-              <span class="bar-label">{{ bar.label }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card table-card">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th class="sortable" [class.sorted]="sortDir('logins','login_time')" (click)="toggleSort('logins','login_time')">
-                  <span>{{ i18n.t('admin.logins.col.date') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','login_time')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('logins','email')" (click)="toggleSort('logins','email')">
-                  <span>{{ i18n.t('admin.logins.col.email') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','email')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('logins','ip_address')" (click)="toggleSort('logins','ip_address')">
-                  <span>{{ i18n.t('admin.logins.col.ip') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','ip_address')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('logins','user_agent')" (click)="toggleSort('logins','user_agent')">
-                  <span>{{ i18n.t('admin.logins.col.browser') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','user_agent')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('logins','language')" (click)="toggleSort('logins','language')">
-                  <span>{{ i18n.t('admin.logins.col.lang') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','language')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('logins','screen_resolution')" (click)="toggleSort('logins','screen_resolution')">
-                  <span>{{ i18n.t('admin.logins.col.resolution') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','screen_resolution')"></span>
-                </th>
-                <th class="sortable" [class.sorted]="sortDir('logins','time_zone')" (click)="toggleSort('logins','time_zone')">
-                  <span>{{ i18n.t('admin.logins.col.zone') }}</span>
-                  <span class="sort-icon" [attr.data-dir]="sortDir('logins','time_zone')"></span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let l of sortedLoginLogs">
-                <td>{{ l.login_time | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td>{{ l.email || '—' }}</td>
-                <td>{{ l.ip_address || '—' }}</td>
-                <td>{{ shortUA(l.user_agent) }}</td>
-                <td>{{ l.language || '—' }}</td>
-                <td>{{ l.screen_resolution || '—' }}</td>
-                <td>{{ l.time_zone || '—' }}</td>
-              </tr>
-              <tr *ngIf="loginLogs.length === 0"><td colspan="7" class="empty">{{ i18n.t('admin.logins.empty') }}</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="mobile-toolbar">
-          <label class="mobile-sort">
-            <span>{{ i18n.t('admin.mobile.sort.label') }}</span>
-            <select [ngModel]="sortState.logins.col" (ngModelChange)="sortState.logins.col = $event">
-              <option value="login_time">{{ i18n.t('admin.logins.col.date') }}</option>
-              <option value="email">{{ i18n.t('admin.logins.col.email') }}</option>
-              <option value="ip_address">{{ i18n.t('admin.logins.col.ip') }}</option>
-              <option value="user_agent">{{ i18n.t('admin.logins.col.browser') }}</option>
-              <option value="time_zone">{{ i18n.t('admin.logins.col.zone') }}</option>
-            </select>
-          </label>
-          <button type="button" class="dir-btn" (click)="sortState.logins.dir = sortState.logins.dir === 'asc' ? 'desc' : 'asc'" [attr.aria-label]="i18n.t('admin.mobile.sort.dir')">
-            <span class="dir-arrow" [class.desc]="sortState.logins.dir === 'desc'">▲</span>
-          </button>
-        </div>
-
-        <div class="mobile-list log-list">
-          <article class="mobile-card log-card" *ngFor="let l of sortedLoginLogs">
-            <header class="log-card-head">
-              <time>{{ l.login_time | date:'dd/MM/yyyy HH:mm' }}</time>
-              <strong class="log-email">{{ l.email || '—' }}</strong>
-            </header>
-            <dl class="log-grid">
-              <div><dt>{{ i18n.t('admin.logins.col.ip') }}</dt><dd>{{ l.ip_address || '—' }}</dd></div>
-              <div><dt>{{ i18n.t('admin.logins.col.browser') }}</dt><dd>{{ shortUA(l.user_agent) }}</dd></div>
-              <div><dt>{{ i18n.t('admin.logins.col.lang') }}</dt><dd>{{ l.language || '—' }}</dd></div>
-              <div><dt>{{ i18n.t('admin.logins.col.resolution') }}</dt><dd>{{ l.screen_resolution || '—' }}</dd></div>
-              <div class="full"><dt>{{ i18n.t('admin.logins.col.zone') }}</dt><dd>{{ l.time_zone || '—' }}</dd></div>
-            </dl>
-          </article>
-          <div class="empty-state" *ngIf="loginLogs.length === 0">
-            <p>{{ i18n.t('admin.logins.empty') }}</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── MESSAGES ─── -->
-      <section *ngIf="activeTab === 'messages'" class="page">
-        <header class="page-head">
-          <div>
-            <h1>{{ i18n.t('admin.messages.title') }}</h1>
-            <p class="page-sub">{{ i18n.t('admin.messages.sub', { n: totalMessages, p: pendingMessages }) }}</p>
-          </div>
-        </header>
-
-        <div class="messages-toolbar">
-          <div class="messages-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input
-              type="text"
-              [(ngModel)]="messagesSearch"
-              [placeholder]="i18n.t('admin.messages.search.placeholder')"
-              [attr.aria-label]="i18n.t('admin.messages.search.placeholder')" />
-          </div>
-          <label class="messages-select">
-            <span>{{ i18n.t('admin.messages.filter.label') }}</span>
-            <select [(ngModel)]="messagesStatus">
-              <option value="all">{{ i18n.t('admin.messages.filter.all') }}</option>
-              <option value="pending">{{ i18n.t('admin.messages.filter.pending') }}</option>
-              <option value="answered">{{ i18n.t('admin.messages.filter.answered') }}</option>
-            </select>
-          </label>
-          <label class="messages-select">
-            <span>{{ i18n.t('admin.messages.sort.label') }}</span>
-            <select [(ngModel)]="messagesSort">
-              <option value="newest">{{ i18n.t('admin.messages.sort.newest') }}</option>
-              <option value="oldest">{{ i18n.t('admin.messages.sort.oldest') }}</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="messages-list">
-          <article class="message-card" [class.answered]="m.is_answered" *ngFor="let m of filteredMessages">
-            <header class="message-head">
-              <div class="message-head-main">
-                <strong>{{ m.name }}</strong>
-                <a [href]="'mailto:' + m.email">{{ m.email }}</a>
-              </div>
-              <div class="message-meta">
-                <time>{{ m.created_at | date:'dd/MM/yyyy HH:mm' }}</time>
-                <label class="answered-toggle" [class.is-on]="m.is_answered">
-                  <input type="checkbox" [checked]="!!m.is_answered" (change)="toggleAnswered(m)" />
-                  <span class="answered-box" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  </span>
-                  <span class="answered-label">{{ m.is_answered ? i18n.t('admin.messages.status.answered') : i18n.t('admin.messages.status.pending') }}</span>
-                </label>
-                <button *ngIf="isAdmin" class="btn-delete" (click)="deleteMessage(m)">{{ i18n.t('admin.action.delete') }}</button>
-              </div>
-            </header>
-            <p class="message-body">{{ m.message }}</p>
-          </article>
-          <div class="empty-state" *ngIf="filteredMessages.length === 0">
-            <p>{{ messages.length === 0 ? i18n.t('admin.messages.empty') : i18n.t('admin.messages.empty.filtered') }}</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── CHATBOT ─── -->
-      <section *ngIf="activeTab === 'chatbot'" class="page">
-        <header class="page-head">
-          <div>
-            <h1>{{ i18n.t('admin.chatbot.title') }}</h1>
-            <p class="page-sub">{{ i18n.t('admin.chatbot.sub', { n: totalChatbotMessages, c: totalChatbotConversations }) }}</p>
-          </div>
-        </header>
-
-        <div class="messages-toolbar">
-          <div class="messages-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input
-              type="text"
-              [(ngModel)]="chatbotSearch"
-              [placeholder]="i18n.t('admin.chatbot.search.placeholder')"
-              [attr.aria-label]="i18n.t('admin.chatbot.search.placeholder')" />
-          </div>
-          <label class="messages-select">
-            <span>{{ i18n.t('admin.messages.sort.label') }}</span>
-            <select [(ngModel)]="chatbotSort">
-              <option value="newest">{{ i18n.t('admin.messages.sort.newest') }}</option>
-              <option value="oldest">{{ i18n.t('admin.messages.sort.oldest') }}</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="chatbot-conversations">
-          <article class="convo-card" *ngFor="let convo of chatbotConversations"
-                   [class.expanded]="expandedConversation === convo.key">
-
-            <header class="convo-head" (click)="toggleConversation(convo.key)">
-              <div class="convo-head-left">
-                <div class="convo-avatar">{{ (convo.email || '?').charAt(0).toUpperCase() }}</div>
-                <div class="convo-info">
-                  <strong>{{ convo.email }}</strong>
-                  <span class="convo-meta">
-                    <ng-container *ngIf="!convo.isAnonymous">#{{ convo.sessionIndex + 1 }} · </ng-container>{{ convo.date }} · {{ convo.messages.length }} {{ i18n.t('admin.chatbot.msgs') }} · {{ convo.totalTokens }} tokens
-                  </span>
-                </div>
-              </div>
-              <div class="convo-head-right">
-                <button *ngIf="isAdmin" class="btn-delete" (click)="deleteChatbotConvo(convo); $event.stopPropagation()">{{ i18n.t('admin.action.delete') }}</button>
-                <span class="convo-chevron" [class.open]="expandedConversation === convo.key">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                </span>
-              </div>
-            </header>
-
-            <div class="convo-body" *ngIf="expandedConversation === convo.key">
-              <div class="convo-thread">
-                <div *ngFor="let msg of convo.messages"
-                     class="convo-bubble"
-                     [class.convo-user]="msg.role === 'user'"
-                     [class.convo-assistant]="msg.role === 'assistant'">
-                  <div class="convo-bubble-head">
-                    <span class="convo-role-tag" [class.tag-user]="msg.role === 'user'" [class.tag-assistant]="msg.role === 'assistant'">
-                      {{ msg.role === 'user' ? i18n.t('admin.chatbot.role.user') : i18n.t('admin.chatbot.role.assistant') }}
-                    </span>
-                    <span class="convo-bubble-time">{{ msg.created_at | date:'HH:mm:ss' }}</span>
-                    <button *ngIf="isAdmin" class="convo-delete-msg" (click)="deleteChatbotMsg(msg)" [attr.aria-label]="i18n.t('admin.action.delete')">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    </button>
-                  </div>
-                  <p class="convo-bubble-text">{{ msg.message }}</p>
-                  <span *ngIf="msg.tokens_used" class="convo-tokens">{{ msg.tokens_used }} tokens</span>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <div class="empty-state" *ngIf="chatbotConversations.length === 0">
-            <p>{{ chatbotMessages.length === 0 ? i18n.t('admin.chatbot.empty') : i18n.t('admin.chatbot.empty.filtered') }}</p>
-          </div>
-        </div>
-      </section>
-
-    </ng-container>
+    @if (state.initialLoading()) {
+      <div class="loading-pill">
+        <div class="spinner spinner-sm"></div>
+        <span>{{ state.i18n.t('admin.loading') }}</span>
+      </div>
+    }
+
+    @if (state.errorMessage()) {
+      <div class="admin-error">{{ state.errorMessage() }}</div>
+    }
+
+    <router-outlet />
   </main>
 
   <!-- ─── Project edit / create modal ─── -->
-  <div class="edit-modal-backdrop" *ngIf="editingProject" (click)="cancelProjectEdit()">
-    <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="saveProject()">
-      <div class="edit-modal-header">
-        <h3>{{ editingProject.id ? i18n.t('admin.projects.edit.title') : i18n.t('admin.projects.create.title') }}</h3>
-        <button type="button" class="edit-modal-close" (click)="cancelProjectEdit()" [attr.aria-label]="i18n.t('admin.action.close')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-      <div class="edit-modal-body">
-        <div class="grid-2">
-          <div class="modal-bilingual-field full">
-            <span class="profile-text-label">{{ i18n.t('admin.projects.field.title') }}</span>
-            <div class="profile-text-cols">
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
-                <input [(ngModel)]="editingProject.title" name="title" required />
-              </div>
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
-                <input [(ngModel)]="editingProject.title_en" name="title_en" />
-              </div>
-            </div>
-          </div>
-          <div class="modal-bilingual-field full">
-            <span class="profile-text-label">{{ i18n.t('admin.projects.field.desc') }}</span>
-            <div class="profile-text-cols">
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
-                <textarea [(ngModel)]="editingProject.description" name="description"></textarea>
-              </div>
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
-                <textarea [(ngModel)]="editingProject.description_en" name="description_en"></textarea>
-              </div>
-            </div>
-          </div>
-          <label>{{ i18n.t('admin.projects.field.date') }}<input type="date" [(ngModel)]="editingProject.project_date" name="project_date"></label>
-          <label>{{ i18n.t('admin.projects.field.tags') }}<input [(ngModel)]="editingProject.tags" name="tags"></label>
-          <label>{{ i18n.t('admin.projects.field.repo') }}<input [(ngModel)]="editingProject.repo_url" name="repo_url"></label>
-          <label>{{ i18n.t('admin.projects.field.demo') }}<input [(ngModel)]="editingProject.live_url" name="live_url"></label>
-          <label>
-            {{ i18n.t('admin.projects.field.type') }}
-            <select [(ngModel)]="editingProject.project_type" name="project_type">
-              <option value="web">{{ i18n.t('admin.projects.type.web') }}</option>
-              <option value="android">{{ i18n.t('admin.projects.type.android') }}</option>
-              <option value="ai">{{ i18n.t('admin.projects.type.ai') }}</option>
-              <option value="other">{{ i18n.t('admin.projects.type.other') }}</option>
-            </select>
-          </label>
-          <label>
-            {{ i18n.t('admin.projects.field.status') }}
-            <select [(ngModel)]="editingProject.status" name="status">
-              <option value="">—</option>
-              <option value="production">{{ i18n.t('admin.projects.status.production') }}</option>
-              <option value="development">{{ i18n.t('admin.projects.status.development') }}</option>
-              <option value="archived">{{ i18n.t('admin.projects.status.archived') }}</option>
-            </select>
-          </label>
-          <!-- ─── Galería de capturas ─── -->
-          <div class="full project-gallery">
-            <div class="project-gallery-header">
-              <h4 class="project-gallery-title">{{ i18n.t('admin.projects.gallery.title') }}</h4>
-              <p class="project-gallery-sub">{{ i18n.t('admin.projects.gallery.sub') }}</p>
-            </div>
-
-            <!-- Zona de subida: clic o drag&drop de archivos. -->
-            <label class="project-gallery-dropzone"
-                   [class.is-over]="galleryDragOver"
-                   [class.is-uploading]="projectImagesUploading > 0"
-                   (dragover)="onProjectGalleryDragOver($event)"
-                   (dragleave)="onProjectGalleryDragLeave()"
-                   (drop)="onProjectGalleryDrop($event)">
-              <input type="file"
-                     accept="image/png,image/jpeg,image/webp,image/gif"
-                     multiple
-                     (change)="onProjectImagesSelected($event)"
-                     hidden />
-              <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              <span class="dropzone-title">{{ i18n.t('admin.projects.gallery.dropzone') }}</span>
-              <span class="dropzone-sub">{{ i18n.t('admin.projects.gallery.dropzone.sub') }}</span>
-            </label>
-
-            <p class="project-gallery-status" *ngIf="projectImagesUploading > 0">
-              {{ i18n.t('admin.projects.gallery.uploading', { n: projectImagesUploading }) }}
-            </p>
-            <p class="project-gallery-error" *ngIf="projectImagesUploadError">
-              {{ projectImagesUploadError }}
-            </p>
-
-            <p class="project-gallery-empty" *ngIf="!editingProject.images || editingProject.images.length === 0">
-              {{ i18n.t('admin.projects.gallery.empty') }}
-            </p>
-
-            <!-- Rejilla de miniaturas — arrastra una sobre otra para reordenar. -->
-            <div class="project-gallery-grid" *ngIf="editingProject.images && editingProject.images.length > 0">
-              <div class="project-gallery-card"
-                   *ngFor="let img of editingProject.images; let i = index; trackBy: trackImageIndex"
-                   draggable="true"
-                   [class.is-dragging]="galleryDraggedIndex === i"
-                   [class.is-drop-target]="galleryDragOverIndex === i && galleryDraggedIndex !== null && galleryDraggedIndex !== i"
-                   (dragstart)="onImageDragStart(i, $event)"
-                   (dragover)="onImageDragOverCard(i, $event)"
-                   (drop)="onImageDropCard(i, $event)"
-                   (dragend)="onImageDragEnd()">
-                <span class="card-position">{{ i + 1 }}</span>
-                <button type="button"
-                        class="card-remove"
-                        (click)="removeProjectImage(i)"
-                        [attr.aria-label]="i18n.t('admin.projects.gallery.delete')">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-                <div class="card-thumb">
-                  <img [src]="imagePreviewUrl(img.url)" [alt]="i18n.t('admin.projects.gallery.preview')" (error)="onImagePreviewError($event)" />
-                  <span class="card-thumb-placeholder">{{ i18n.t('admin.projects.gallery.preview') }}</span>
+  @if (state.editingProject(); as editingProject) {
+    <div class="edit-modal-backdrop" (click)="state.cancelProjectEdit()">
+      <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="state.saveProject()">
+        <div class="edit-modal-header">
+          <h3>{{ editingProject.id ? state.i18n.t('admin.projects.edit.title') : state.i18n.t('admin.projects.create.title') }}</h3>
+          <button type="button" class="edit-modal-close" (click)="state.cancelProjectEdit()" [attr.aria-label]="state.i18n.t('admin.action.close')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="edit-modal-body">
+          <div class="grid-2">
+            <div class="modal-bilingual-field full">
+              <span class="profile-text-label">{{ state.i18n.t('admin.projects.field.title') }}</span>
+              <div class="profile-text-cols">
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
+                  <input [(ngModel)]="editingProject.title" name="title" required />
+                </div>
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
+                  <input [(ngModel)]="editingProject.title_en" name="title_en" />
                 </div>
               </div>
             </div>
-          </div>
+            <div class="modal-bilingual-field full">
+              <span class="profile-text-label">{{ state.i18n.t('admin.projects.field.desc') }}</span>
+              <div class="profile-text-cols">
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
+                  <textarea [(ngModel)]="editingProject.description" name="description"></textarea>
+                </div>
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
+                  <textarea [(ngModel)]="editingProject.description_en" name="description_en"></textarea>
+                </div>
+              </div>
+            </div>
+            <label>{{ state.i18n.t('admin.projects.field.date') }}<input type="date" [(ngModel)]="editingProject.project_date" name="project_date"></label>
+            <label>{{ state.i18n.t('admin.projects.field.tags') }}<input [(ngModel)]="editingProject.tags" name="tags"></label>
+            <label>{{ state.i18n.t('admin.projects.field.repo') }}<input [(ngModel)]="editingProject.repo_url" name="repo_url"></label>
+            <label>{{ state.i18n.t('admin.projects.field.demo') }}<input [(ngModel)]="editingProject.live_url" name="live_url"></label>
+            <label>
+              {{ state.i18n.t('admin.projects.field.type') }}
+              <select [(ngModel)]="editingProject.project_type" name="project_type">
+                <option value="web">{{ state.i18n.t('admin.projects.type.web') }}</option>
+                <option value="android">{{ state.i18n.t('admin.projects.type.android') }}</option>
+                <option value="ai">{{ state.i18n.t('admin.projects.type.ai') }}</option>
+                <option value="other">{{ state.i18n.t('admin.projects.type.other') }}</option>
+              </select>
+            </label>
+            <label>
+              {{ state.i18n.t('admin.projects.field.status') }}
+              <select [(ngModel)]="editingProject.status" name="status">
+                <option value="">—</option>
+                <option value="production">{{ state.i18n.t('admin.projects.status.production') }}</option>
+                <option value="development">{{ state.i18n.t('admin.projects.status.development') }}</option>
+                <option value="archived">{{ state.i18n.t('admin.projects.status.archived') }}</option>
+              </select>
+            </label>
+            <!-- ─── Galería de capturas ─── -->
+            <div class="full project-gallery">
+              <div class="project-gallery-header">
+                <h4 class="project-gallery-title">{{ state.i18n.t('admin.projects.gallery.title') }}</h4>
+                <p class="project-gallery-sub">{{ state.i18n.t('admin.projects.gallery.sub') }}</p>
+              </div>
 
-          <!-- Destacado al final, ocupando todo el ancho debajo de la galería. -->
-          <label class="checkbox full">
-            <input type="checkbox" [(ngModel)]="editingProject.is_featured" name="is_featured">
-            {{ i18n.t('admin.projects.field.featured') }}
-          </label>
+              <!-- Zona de subida: clic o drag&drop de archivos. -->
+              <label class="project-gallery-dropzone"
+                     [class.is-over]="state.galleryDragOver()"
+                     [class.is-uploading]="state.projectImagesUploading() > 0"
+                     (dragover)="state.onProjectGalleryDragOver($event)"
+                     (dragleave)="state.onProjectGalleryDragLeave()"
+                     (drop)="state.onProjectGalleryDrop($event)">
+                <input type="file"
+                       accept="image/png,image/jpeg,image/webp,image/gif"
+                       multiple
+                       (change)="state.onProjectImagesSelected($event)"
+                       hidden />
+                <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span class="dropzone-title">{{ state.i18n.t('admin.projects.gallery.dropzone') }}</span>
+                <span class="dropzone-sub">{{ state.i18n.t('admin.projects.gallery.dropzone.sub') }}</span>
+              </label>
+
+              @if (state.projectImagesUploading() > 0) {
+                <p class="project-gallery-status">
+                  {{ state.i18n.t('admin.projects.gallery.uploading', { n: state.projectImagesUploading() }) }}
+                </p>
+              }
+              @if (state.projectImagesUploadError()) {
+                <p class="project-gallery-error">
+                  {{ state.projectImagesUploadError() }}
+                </p>
+              }
+
+              @if (!editingProject.images || editingProject.images.length === 0) {
+                <p class="project-gallery-empty">
+                  {{ state.i18n.t('admin.projects.gallery.empty') }}
+                </p>
+              }
+
+              <!-- Rejilla de miniaturas — arrastra una sobre otra para reordenar. -->
+              @if (editingProject.images && editingProject.images.length > 0) {
+                <div class="project-gallery-grid">
+                  @for (img of editingProject.images; track $index; let i = $index) {
+                    <div class="project-gallery-card"
+                         draggable="true"
+                         [class.is-dragging]="state.galleryDraggedIndex() === i"
+                         [class.is-drop-target]="state.galleryDragOverIndex() === i && state.galleryDraggedIndex() !== null && state.galleryDraggedIndex() !== i"
+                         (dragstart)="state.onImageDragStart(i, $event)"
+                         (dragover)="state.onImageDragOverCard(i, $event)"
+                         (drop)="state.onImageDropCard(i, $event)"
+                         (dragend)="state.onImageDragEnd()">
+                      <span class="card-position">{{ i + 1 }}</span>
+                      <button type="button"
+                              class="card-remove"
+                              (click)="state.removeProjectImage(i)"
+                              [attr.aria-label]="state.i18n.t('admin.projects.gallery.delete')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                      <div class="card-thumb">
+                        <img [src]="imagePreviewUrl(img.url)" [alt]="state.i18n.t('admin.projects.gallery.preview')" (error)="onImagePreviewError($event)" />
+                        <span class="card-thumb-placeholder">{{ state.i18n.t('admin.projects.gallery.preview') }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Destacado al final, ocupando todo el ancho debajo de la galería. -->
+            <label class="checkbox full">
+              <input type="checkbox" [(ngModel)]="editingProject.is_featured" name="is_featured">
+              {{ state.i18n.t('admin.projects.field.featured') }}
+            </label>
+          </div>
         </div>
-      </div>
-      <div class="edit-modal-footer">
-        <button type="button" class="btn-secondary" (click)="cancelProjectEdit()">{{ i18n.t('admin.action.cancel') }}</button>
-        <button type="submit" class="btn-primary">{{ i18n.t('admin.action.save') }}</button>
-      </div>
-    </form>
-  </div>
+        <div class="edit-modal-footer">
+          <button type="button" class="btn-secondary" (click)="state.cancelProjectEdit()">{{ state.i18n.t('admin.action.cancel') }}</button>
+          <button type="submit" class="btn-primary">{{ state.i18n.t('admin.action.save') }}</button>
+        </div>
+      </form>
+    </div>
+  }
 
   <!-- ─── Experience edit / create modal ─── -->
-  <div class="edit-modal-backdrop" *ngIf="editingExperience" (click)="cancelExperienceEdit()">
-    <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="saveExperience()">
-      <div class="edit-modal-header">
-        <h3>{{ editingExperience.id ? i18n.t('admin.experience.edit.title') : i18n.t('admin.experience.create.title') }}</h3>
-        <button type="button" class="edit-modal-close" (click)="cancelExperienceEdit()" [attr.aria-label]="i18n.t('admin.action.close')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-      <div class="edit-modal-body">
-        <div class="grid-2">
-          <label>{{ i18n.t('admin.experience.field.start') }}<input type="date" [(ngModel)]="editingExperience.start_date" name="start_date" required></label>
-          <label>{{ i18n.t('admin.experience.field.end') }}<input type="date" [(ngModel)]="editingExperience.end_date" name="end_date"></label>
-
-          <label class="full">{{ i18n.t('admin.experience.field.company') }}<input [(ngModel)]="editingExperience.company" name="company" required></label>
-
-          <div class="modal-bilingual-field full">
-            <span class="profile-text-label">{{ i18n.t('admin.experience.field.role') }}</span>
-            <div class="profile-text-cols">
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
-                <input [(ngModel)]="editingExperience.title" name="title" required />
-              </div>
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
-                <input [(ngModel)]="editingExperience.title_en" name="title_en" />
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-bilingual-field full">
-            <span class="profile-text-label">{{ i18n.t('admin.experience.field.contract') }}</span>
-            <div class="profile-text-cols">
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
-                <input [(ngModel)]="editingExperience.contract_type" name="contract_type" />
-              </div>
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
-                <input [(ngModel)]="editingExperience.contract_type_en" name="contract_type_en" />
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-bilingual-field full">
-            <span class="profile-text-label">{{ i18n.t('admin.experience.field.location') }}</span>
-            <div class="profile-text-cols">
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
-                <input [(ngModel)]="editingExperience.location" name="location" />
-              </div>
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
-                <input [(ngModel)]="editingExperience.location_en" name="location_en" />
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-bilingual-field full">
-            <span class="profile-text-label">{{ i18n.t('admin.experience.field.desc') }}</span>
-            <div class="profile-text-cols">
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
-                <textarea [(ngModel)]="editingExperience.description" name="description"></textarea>
-              </div>
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
-                <textarea [(ngModel)]="editingExperience.description_en" name="description_en"></textarea>
-              </div>
-            </div>
-          </div>
-
-          <label class="full">{{ i18n.t('admin.experience.field.tags') }}<input [(ngModel)]="editingExperience.tags" name="tags"></label>
+  @if (state.editingExperience(); as editingExperience) {
+    <div class="edit-modal-backdrop" (click)="state.cancelExperienceEdit()">
+      <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="state.saveExperience()">
+        <div class="edit-modal-header">
+          <h3>{{ editingExperience.id ? state.i18n.t('admin.experience.edit.title') : state.i18n.t('admin.experience.create.title') }}</h3>
+          <button type="button" class="edit-modal-close" (click)="state.cancelExperienceEdit()" [attr.aria-label]="state.i18n.t('admin.action.close')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
-      </div>
-      <div class="edit-modal-footer">
-        <button type="button" class="btn-secondary" (click)="cancelExperienceEdit()">{{ i18n.t('admin.action.cancel') }}</button>
-        <button type="submit" class="btn-primary">{{ i18n.t('admin.action.save') }}</button>
-      </div>
-    </form>
-  </div>
+        <div class="edit-modal-body">
+          <div class="grid-2">
+            <label>{{ state.i18n.t('admin.experience.field.start') }}<input type="date" [(ngModel)]="editingExperience.start_date" name="start_date" required></label>
+            <label>{{ state.i18n.t('admin.experience.field.end') }}<input type="date" [(ngModel)]="editingExperience.end_date" name="end_date"></label>
+
+            <label class="full">{{ state.i18n.t('admin.experience.field.company') }}<input [(ngModel)]="editingExperience.company" name="company" required></label>
+
+            <div class="modal-bilingual-field full">
+              <span class="profile-text-label">{{ state.i18n.t('admin.experience.field.role') }}</span>
+              <div class="profile-text-cols">
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
+                  <input [(ngModel)]="editingExperience.title" name="title" required />
+                </div>
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
+                  <input [(ngModel)]="editingExperience.title_en" name="title_en" />
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-bilingual-field full">
+              <span class="profile-text-label">{{ state.i18n.t('admin.experience.field.contract') }}</span>
+              <div class="profile-text-cols">
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
+                  <input [(ngModel)]="editingExperience.contract_type" name="contract_type" />
+                </div>
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
+                  <input [(ngModel)]="editingExperience.contract_type_en" name="contract_type_en" />
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-bilingual-field full">
+              <span class="profile-text-label">{{ state.i18n.t('admin.experience.field.location') }}</span>
+              <div class="profile-text-cols">
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
+                  <input [(ngModel)]="editingExperience.location" name="location" />
+                </div>
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
+                  <input [(ngModel)]="editingExperience.location_en" name="location_en" />
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-bilingual-field full">
+              <span class="profile-text-label">{{ state.i18n.t('admin.experience.field.desc') }}</span>
+              <div class="profile-text-cols">
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
+                  <textarea [(ngModel)]="editingExperience.description" name="description"></textarea>
+                </div>
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
+                  <textarea [(ngModel)]="editingExperience.description_en" name="description_en"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <label class="full">{{ state.i18n.t('admin.experience.field.tags') }}<input [(ngModel)]="editingExperience.tags" name="tags"></label>
+          </div>
+        </div>
+        <div class="edit-modal-footer">
+          <button type="button" class="btn-secondary" (click)="state.cancelExperienceEdit()">{{ state.i18n.t('admin.action.cancel') }}</button>
+          <button type="submit" class="btn-primary">{{ state.i18n.t('admin.action.save') }}</button>
+        </div>
+      </form>
+    </div>
+  }
 
   <!-- ─── User edit modal ─── -->
-  <div class="edit-modal-backdrop" *ngIf="editingUser" (click)="cancelUserEdit()">
-    <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="saveUser()">
-      <div class="edit-modal-header">
-        <h3>{{ i18n.t('admin.users.edit.title') }}</h3>
-        <button type="button" class="edit-modal-close" (click)="cancelUserEdit()" [attr.aria-label]="i18n.t('admin.action.close')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-      <div class="edit-modal-body">
-        <div class="grid-2">
-          <label>{{ i18n.t('admin.users.field.email') }}<input type="email" [(ngModel)]="editingUser.email" name="user_email" required></label>
-          <label>{{ i18n.t('admin.users.field.role') }}
-            <select *ngIf="isAdmin" [(ngModel)]="editingUser.role" name="user_role">
-              <option value="user">user</option>
-              <option value="editor">editor</option>
-              <option value="admin">admin</option>
-            </select>
-            <input *ngIf="!isAdmin" [value]="editingUser.role" disabled>
-          </label>
+  @if (state.editingUser(); as editingUser) {
+    <div class="edit-modal-backdrop" (click)="state.cancelUserEdit()">
+      <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="state.saveUser()">
+        <div class="edit-modal-header">
+          <h3>{{ state.i18n.t('admin.users.edit.title') }}</h3>
+          <button type="button" class="edit-modal-close" (click)="state.cancelUserEdit()" [attr.aria-label]="state.i18n.t('admin.action.close')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
-      </div>
-      <div class="edit-modal-footer">
-        <button type="button" class="btn-secondary" (click)="cancelUserEdit()">{{ i18n.t('admin.action.cancel') }}</button>
-        <button type="submit" class="btn-primary">{{ i18n.t('admin.action.save') }}</button>
-      </div>
-    </form>
-  </div>
+        <div class="edit-modal-body">
+          <div class="grid-2">
+            <label>{{ state.i18n.t('admin.users.field.email') }}<input type="email" [(ngModel)]="editingUser.email" name="user_email" required></label>
+            <label>{{ state.i18n.t('admin.users.field.role') }}
+              @if (state.isAdmin()) {
+                <select [(ngModel)]="editingUser.role" name="user_role">
+                  <option value="user">user</option>
+                  <option value="editor">editor</option>
+                  <option value="admin">admin</option>
+                </select>
+              } @else {
+                <input [value]="editingUser.role" disabled>
+              }
+            </label>
+          </div>
+        </div>
+        <div class="edit-modal-footer">
+          <button type="button" class="btn-secondary" (click)="state.cancelUserEdit()">{{ state.i18n.t('admin.action.cancel') }}</button>
+          <button type="submit" class="btn-primary">{{ state.i18n.t('admin.action.save') }}</button>
+        </div>
+      </form>
+    </div>
+  }
 
   <!-- ─── Profile texts edit modal ─── -->
-  <div class="edit-modal-backdrop" *ngIf="editingProfileTexts" (click)="cancelEditProfileTexts()">
-    <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="saveProfileTexts()">
-      <div class="edit-modal-header">
-        <h3>{{ i18n.t('admin.profile.texts.edit.title') }}</h3>
-        <button type="button" class="edit-modal-close" (click)="cancelEditProfileTexts()" [attr.aria-label]="i18n.t('admin.action.close')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-      <div class="edit-modal-body">
-        <div class="profile-modal-fields">
-          <div class="profile-modal-field" *ngFor="let f of profileFields">
-            <span class="profile-text-label">{{ i18n.t(f.labelKey) }}</span>
-            <div class="profile-text-cols">
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.es') }}</span>
-                <input *ngIf="f.type === 'text'"
-                       type="text"
-                       [(ngModel)]="editingProfileTexts.es[f.key]"
-                       [name]="'edit_es_' + f.key" />
-                <textarea *ngIf="f.type === 'textarea'"
-                          rows="11"
-                          [(ngModel)]="editingProfileTexts.es[f.key]"
-                          [name]="'edit_es_' + f.key"></textarea>
+  @if (state.editingProfileTexts(); as editingProfileTexts) {
+    <div class="edit-modal-backdrop" (click)="state.cancelEditProfileTexts()">
+      <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="state.saveProfileTexts()">
+        <div class="edit-modal-header">
+          <h3>{{ state.i18n.t('admin.profile.texts.edit.title') }}</h3>
+          <button type="button" class="edit-modal-close" (click)="state.cancelEditProfileTexts()" [attr.aria-label]="state.i18n.t('admin.action.close')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="edit-modal-body">
+          <div class="profile-modal-fields">
+            @for (f of state.profileFields; track f.key) {
+              <div class="profile-modal-field">
+                <span class="profile-text-label">{{ state.i18n.t(f.labelKey) }}</span>
+                <div class="profile-text-cols">
+                  <div class="profile-text-col">
+                    <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
+                    @if (f.type === 'text') {
+                      <input type="text"
+                             [(ngModel)]="editingProfileTexts.es[f.key]"
+                             [name]="'edit_es_' + f.key" />
+                    } @else {
+                      <textarea rows="11"
+                                [(ngModel)]="editingProfileTexts.es[f.key]"
+                                [name]="'edit_es_' + f.key"></textarea>
+                    }
+                  </div>
+                  <div class="profile-text-col">
+                    <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
+                    @if (f.type === 'text') {
+                      <input type="text"
+                             [(ngModel)]="editingProfileTexts.en[f.key]"
+                             [name]="'edit_en_' + f.key" />
+                    } @else {
+                      <textarea rows="11"
+                                [(ngModel)]="editingProfileTexts.en[f.key]"
+                                [name]="'edit_en_' + f.key"></textarea>
+                    }
+                  </div>
+                </div>
               </div>
-              <div class="profile-text-col">
-                <span class="profile-lang-tag">{{ i18n.t('admin.profile.lang.en') }}</span>
-                <input *ngIf="f.type === 'text'"
-                       type="text"
-                       [(ngModel)]="editingProfileTexts.en[f.key]"
-                       [name]="'edit_en_' + f.key" />
-                <textarea *ngIf="f.type === 'textarea'"
-                          rows="11"
-                          [(ngModel)]="editingProfileTexts.en[f.key]"
-                          [name]="'edit_en_' + f.key"></textarea>
-              </div>
+            }
+          </div>
+        </div>
+        <div class="edit-modal-footer">
+          @if (state.profileTextsStatus() === 'error') {
+            <span class="profile-status profile-status--err">
+              ✗ {{ state.profileTextsError() }}
+            </span>
+          }
+          <button type="button" class="btn-secondary" (click)="state.cancelEditProfileTexts()" [disabled]="state.profileSavingTexts()">{{ state.i18n.t('admin.action.cancel') }}</button>
+          <button type="submit" class="btn-primary" [disabled]="state.profileSavingTexts()">
+            {{ state.profileSavingTexts() ? state.i18n.t('admin.profile.texts.saving') : state.i18n.t('admin.action.save') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ─── Chatbot prompt edit modal ─── -->
+  @if (state.editingChatbotPrompt() !== null) {
+    <div class="edit-modal-backdrop" (click)="state.cancelEditChatbotPrompt()">
+      <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="state.saveChatbotPrompt()">
+        <div class="edit-modal-header">
+          <h3>{{ state.i18n.t('admin.profile.chatbot.edit.title') }}</h3>
+          <button type="button" class="edit-modal-close" (click)="state.cancelEditChatbotPrompt()" [attr.aria-label]="state.i18n.t('admin.action.close')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="edit-modal-body">
+          <div class="profile-prompt profile-prompt--modal">
+            <textarea class="profile-prompt-input profile-prompt-input--modal"
+                      [ngModel]="state.editingChatbotPrompt()"
+                      (ngModelChange)="state.editingChatbotPrompt.set($event)"
+                      name="edit_chatbot_prompt"
+                      [attr.aria-label]="state.i18n.t('admin.profile.chatbot.title')"
+                      [placeholder]="state.i18n.t('admin.profile.chatbot.placeholder')"></textarea>
+            <div class="profile-prompt-meta">
+              <span class="profile-prompt-count" [class.profile-prompt-count--warn]="state.editingChatbotPromptLength() > 18000">
+                {{ state.editingChatbotPromptLength() }} / 20000
+              </span>
             </div>
           </div>
         </div>
-      </div>
-      <div class="edit-modal-footer">
-        <span class="profile-status profile-status--err" *ngIf="profileTextsStatus === 'error'">
-          ✗ {{ profileTextsError }}
-        </span>
-        <button type="button" class="btn-secondary" (click)="cancelEditProfileTexts()" [disabled]="profileSavingTexts">{{ i18n.t('admin.action.cancel') }}</button>
-        <button type="submit" class="btn-primary" [disabled]="profileSavingTexts">
-          {{ profileSavingTexts ? i18n.t('admin.profile.texts.saving') : i18n.t('admin.action.save') }}
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- ─── Chatbot prompt edit modal ─── -->
-  <div class="edit-modal-backdrop" *ngIf="editingChatbotPrompt !== null" (click)="cancelEditChatbotPrompt()">
-    <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="saveChatbotPrompt()">
-      <div class="edit-modal-header">
-        <h3>{{ i18n.t('admin.profile.chatbot.edit.title') }}</h3>
-        <button type="button" class="edit-modal-close" (click)="cancelEditChatbotPrompt()" [attr.aria-label]="i18n.t('admin.action.close')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-      <div class="edit-modal-body">
-        <div class="profile-prompt profile-prompt--modal">
-          <textarea class="profile-prompt-input profile-prompt-input--modal"
-                    [(ngModel)]="editingChatbotPrompt"
-                    name="edit_chatbot_prompt"
-                    [attr.aria-label]="i18n.t('admin.profile.chatbot.title')"
-                    [placeholder]="i18n.t('admin.profile.chatbot.placeholder')"></textarea>
-          <div class="profile-prompt-meta">
-            <span class="profile-prompt-count" [class.profile-prompt-count--warn]="editingChatbotPromptLength > 18000">
-              {{ editingChatbotPromptLength }} / 20000
+        <div class="edit-modal-footer">
+          <button type="button"
+                  class="btn-secondary"
+                  [disabled]="!state.chatbotPromptDefault() || state.chatbotPromptSaving()"
+                  (click)="state.resetEditingChatbotPrompt()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            <span>{{ state.i18n.t('admin.profile.chatbot.reset') }}</span>
+          </button>
+          @if (state.chatbotPromptStatus() === 'error') {
+            <span class="profile-status profile-status--err">
+              ✗ {{ state.chatbotPromptError() }}
             </span>
-          </div>
+          }
+          <button type="button" class="btn-secondary" (click)="state.cancelEditChatbotPrompt()" [disabled]="state.chatbotPromptSaving()">{{ state.i18n.t('admin.action.cancel') }}</button>
+          <button type="submit" class="btn-primary" [disabled]="state.chatbotPromptSaving()">
+            {{ state.chatbotPromptSaving() ? state.i18n.t('admin.profile.chatbot.saving') : state.i18n.t('admin.action.save') }}
+          </button>
         </div>
-      </div>
-      <div class="edit-modal-footer">
-        <button type="button"
-                class="btn-ghost profile-file-btn"
-                [disabled]="!chatbotPromptDefault || chatbotPromptSaving"
-                (click)="resetEditingChatbotPrompt()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-          <span>{{ i18n.t('admin.profile.chatbot.reset') }}</span>
-        </button>
-        <span class="profile-status profile-status--err" *ngIf="chatbotPromptStatus === 'error'">
-          ✗ {{ chatbotPromptError }}
-        </span>
-        <button type="button" class="btn-secondary" (click)="cancelEditChatbotPrompt()" [disabled]="chatbotPromptSaving">{{ i18n.t('admin.action.cancel') }}</button>
-        <button type="submit" class="btn-primary" [disabled]="chatbotPromptSaving">
-          {{ chatbotPromptSaving ? i18n.t('admin.profile.chatbot.saving') : i18n.t('admin.action.save') }}
-        </button>
-      </div>
-    </form>
-  </div>
+      </form>
+    </div>
+  }
 
   <!-- ─── Confirmation modal ─── -->
-  <div class="confirm-backdrop" *ngIf="confirmModal" (click)="cancelConfirm()">
-    <div class="confirm-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-      <div class="confirm-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
-        </svg>
-      </div>
-      <h3 class="confirm-title">{{ confirmModal.title }}</h3>
-      <p class="confirm-message">{{ confirmModal.message }}</p>
-      <div class="confirm-actions">
-        <button type="button" class="btn-secondary" (click)="cancelConfirm()">{{ i18n.t('admin.action.cancel') }}</button>
-        <button type="button" class="btn-danger" (click)="confirmAction()">{{ confirmModal.confirmLabel }}</button>
+  @if (state.confirmModal(); as confirm) {
+    <div class="confirm-backdrop" (click)="state.cancelConfirm()">
+      <div class="confirm-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
+        <div class="confirm-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+        </div>
+        <h3 class="confirm-title">{{ confirm.title }}</h3>
+        <p class="confirm-message">{{ confirm.message }}</p>
+        <div class="confirm-actions">
+          <button type="button" class="btn-secondary" (click)="state.cancelConfirm()">{{ state.i18n.t('admin.action.cancel') }}</button>
+          <button type="button" class="btn-danger" (click)="state.confirmAction()">{{ confirm.confirmLabel }}</button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 </div>

@@ -1,0 +1,275 @@
+<section class="page">
+  <header class="page-head">
+    <h1>{{ state.i18n.t('admin.dashboard.title') }}</h1>
+    <p class="page-sub">{{ state.i18n.t('admin.dashboard.sub') }}</p>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">{{ state.i18n.t('admin.stat.visits') }}</span>
+      <span class="stat-value">{{ state.totalVisits() }}</span>
+      <span class="stat-foot">{{ state.i18n.t('admin.stat.visits.foot', { n: state.uniqueVisitors() }) }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">{{ state.i18n.t('admin.stat.logins') }}</span>
+      <span class="stat-value">{{ state.totalLogins() }}</span>
+      <span class="stat-foot">{{ state.i18n.t('admin.stat.logins.foot') }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">{{ state.i18n.t('admin.stat.messages') }}</span>
+      <span class="stat-value">{{ state.totalMessages() }}</span>
+      <span class="stat-foot">{{ state.i18n.t('admin.stat.messages.foot') }}</span>
+    </div>
+    @if (state.isAdmin()) {
+      <div class="stat-card">
+        <span class="stat-label">{{ state.i18n.t('admin.stat.users') }}</span>
+        <span class="stat-value">{{ state.totalUsers() }}</span>
+        <span class="stat-foot">{{ state.i18n.t('admin.stat.users.foot') }}</span>
+      </div>
+    }
+    <div class="stat-card">
+      <span class="stat-label">{{ state.i18n.t('admin.stat.projects') }}</span>
+      <span class="stat-value">{{ state.totalProjects() }}</span>
+      <span class="stat-foot">{{ state.i18n.t('admin.stat.projects.foot') }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">{{ state.i18n.t('admin.stat.chatbot') }}</span>
+      <span class="stat-value">{{ state.totalChatbotMessages() }}</span>
+      <span class="stat-foot">{{ state.i18n.t('admin.stat.chatbot.foot', { n: state.totalChatbotConversations() }) }}</span>
+    </div>
+  </div>
+
+  <div class="chart-card line-chart-card">
+    <div class="chart-head">
+      <div>
+        <h3>{{ state.i18n.t('admin.chart.activity.title') }}</h3>
+        <div class="chart-legend">
+          <span class="legend-item">
+            <span class="legend-dot legend-dot-blue"></span>
+            {{ state.i18n.t('admin.tab.visitors') }} <strong>{{ state.totalVisits() }}</strong>
+          </span>
+          <span class="legend-item">
+            <span class="legend-dot legend-dot-amber"></span>
+            {{ state.i18n.t('admin.tab.logins') }} <strong>{{ state.totalLogins() }}</strong>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line-chart-wrap">
+      <svg class="line-chart-svg"
+           [attr.viewBox]="'0 0 ' + state.lineChart().w + ' ' + state.lineChart().h"
+           role="img">
+        <defs>
+          <linearGradient id="grad-blue" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" class="grad-stop-blue" stop-opacity="0.35"/>
+            <stop offset="100%" class="grad-stop-blue" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="grad-amber" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" class="grad-stop-amber" stop-opacity="0.28"/>
+            <stop offset="100%" class="grad-stop-amber" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <g class="chart-grid-lines">
+          @for (tick of state.lineChartTicks(); track $index) {
+            <line [attr.x1]="state.lineChart().padL"
+                  [attr.x2]="state.lineChart().w - state.lineChart().padR"
+                  [attr.y1]="tick.y"
+                  [attr.y2]="tick.y"
+                  class="grid-line"/>
+          }
+          @for (tick of state.lineChartTicks(); track $index) {
+            <text [attr.x]="state.lineChart().padL - 12"
+                  [attr.y]="tick.y + 4"
+                  class="axis-label axis-label-y">{{ tick.value }}</text>
+          }
+        </g>
+
+        <g class="chart-axis-x">
+          @for (tk of state.lineChartXAxis(); track tk.date) {
+            <text [attr.x]="tk.x"
+                  [attr.y]="state.lineChart().h - state.lineChart().padB + 22"
+                  class="axis-label axis-label-x">{{ tk.label }}</text>
+          }
+        </g>
+
+        @if (state.visitorAreaPath()) {
+          <path [attr.d]="state.visitorAreaPath()" fill="url(#grad-blue)"/>
+        }
+        @if (state.loginAreaPath()) {
+          <path [attr.d]="state.loginAreaPath()" fill="url(#grad-amber)"/>
+        }
+
+        @if (state.hoverData(); as hd) {
+          <line class="hover-guide"
+                [attr.x1]="hd.x"
+                [attr.x2]="hd.x"
+                [attr.y1]="state.lineChart().padT"
+                [attr.y2]="state.lineChart().h - state.lineChart().padB"/>
+        }
+
+        @if (state.visitorLinePath()) {
+          <path [attr.d]="state.visitorLinePath()" class="line line-blue"/>
+        }
+        @if (state.loginLinePath()) {
+          <path [attr.d]="state.loginLinePath()" class="line line-amber"/>
+        }
+
+        <g class="points">
+          @for (p of state.loginPoints(); track $index; let i = $index) {
+            <circle [attr.cx]="p.x"
+                    [attr.cy]="p.y"
+                    [attr.r]="state.hoverIndex() === i ? 6 : 4"
+                    class="point point-amber"/>
+          }
+        </g>
+
+        <g class="points">
+          @for (p of state.visitorPoints(); track $index; let i = $index) {
+            <circle [attr.cx]="p.x"
+                    [attr.cy]="p.y"
+                    [attr.r]="state.hoverIndex() === i ? 6 : 4"
+                    class="point point-blue"/>
+          }
+        </g>
+
+        <g class="hover-targets">
+          @for (p of state.visitorPoints(); track $index; let i = $index) {
+            <rect [attr.x]="p.x - 18"
+                  [attr.y]="state.lineChart().padT"
+                  width="36"
+                  [attr.height]="state.lineChart().h - state.lineChart().padT - state.lineChart().padB"
+                  fill="transparent"
+                  (mouseenter)="state.onChartHover(i)"
+                  (mouseleave)="state.onChartHover(null)"/>
+          }
+        </g>
+
+        @if (state.hoverData(); as hd) {
+          <g class="tooltip-group">
+            <rect [attr.x]="hd.tooltipX"
+                  [attr.y]="state.lineChart().padT + 6"
+                  [attr.width]="hd.tooltipW" height="62" rx="8" class="tooltip-bg"/>
+            <text [attr.x]="hd.tooltipX + 10"
+                  [attr.y]="state.lineChart().padT + 25"
+                  class="tooltip-date">{{ hd.date }}</text>
+            <circle [attr.cx]="hd.tooltipX + 12"
+                    [attr.cy]="state.lineChart().padT + 40" r="3.5" class="tooltip-dot-blue"/>
+            <text [attr.x]="hd.tooltipX + 20"
+                  [attr.y]="state.lineChart().padT + 43"
+                  class="tooltip-value">{{ state.i18n.t('admin.tab.visitors') }}: {{ hd.visitors }}</text>
+            <circle [attr.cx]="hd.tooltipX + 12"
+                    [attr.cy]="state.lineChart().padT + 56" r="3.5" class="tooltip-dot-amber"/>
+            <text [attr.x]="hd.tooltipX + 20"
+                  [attr.y]="state.lineChart().padT + 59"
+                  class="tooltip-value">{{ state.i18n.t('admin.tab.logins') }}: {{ hd.logins }}</text>
+          </g>
+        }
+      </svg>
+    </div>
+  </div>
+
+  <div class="chart-card line-chart-card tokens-chart-card">
+    <div class="chart-head">
+      <div>
+        <h3>{{ state.i18n.t('admin.chart.tokens.title') }}</h3>
+        <div class="chart-legend">
+          <span class="legend-item">
+            <span class="legend-dot legend-dot-green"></span>
+            Tokens <strong>{{ state.formatTokens(state.totalTokensUsed()) }}</strong>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="line-chart-wrap">
+      <svg class="line-chart-svg"
+           [attr.viewBox]="'0 0 ' + state.tokensChart().w + ' ' + state.tokensChart().h"
+           role="img">
+        <defs>
+          <linearGradient id="grad-green" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" class="grad-stop-green" stop-opacity="0.35"/>
+            <stop offset="100%" class="grad-stop-green" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <g class="chart-grid-lines">
+          @for (tick of state.tokensChartTicks(); track $index) {
+            <line [attr.x1]="state.tokensChart().padL"
+                  [attr.x2]="state.tokensChart().w - state.tokensChart().padR"
+                  [attr.y1]="tick.y"
+                  [attr.y2]="tick.y"
+                  class="grid-line"/>
+          }
+          @for (tick of state.tokensChartTicks(); track $index) {
+            <text [attr.x]="state.tokensChart().padL - 12"
+                  [attr.y]="tick.y + 4"
+                  class="axis-label axis-label-y">{{ state.formatTokens(tick.value) }}</text>
+          }
+        </g>
+
+        <g class="chart-axis-x">
+          @for (tk of state.tokensChartXAxis(); track tk.date) {
+            <text [attr.x]="tk.x"
+                  [attr.y]="state.tokensChart().h - state.tokensChart().padB + 22"
+                  class="axis-label axis-label-x">{{ tk.label }}</text>
+          }
+        </g>
+
+        @if (state.tokensAreaPath()) {
+          <path [attr.d]="state.tokensAreaPath()" fill="url(#grad-green)"/>
+        }
+
+        @if (state.tokensHoverData(); as thd) {
+          <line class="hover-guide"
+                [attr.x1]="thd.x"
+                [attr.x2]="thd.x"
+                [attr.y1]="state.tokensChart().padT"
+                [attr.y2]="state.tokensChart().h - state.tokensChart().padB"/>
+        }
+
+        @if (state.tokensLinePath()) {
+          <path [attr.d]="state.tokensLinePath()" class="line line-green"/>
+        }
+
+        <g class="points">
+          @for (p of state.tokensPoints(); track $index; let i = $index) {
+            <circle [attr.cx]="p.x"
+                    [attr.cy]="p.y"
+                    [attr.r]="state.tokensHoverIndex() === i ? 6 : 4"
+                    class="point point-green"/>
+          }
+        </g>
+
+        <g class="hover-targets">
+          @for (p of state.tokensPoints(); track $index; let i = $index) {
+            <rect [attr.x]="p.x - 18"
+                  [attr.y]="state.tokensChart().padT"
+                  width="36"
+                  [attr.height]="state.tokensChart().h - state.tokensChart().padT - state.tokensChart().padB"
+                  fill="transparent"
+                  (mouseenter)="state.onTokensChartHover(i)"
+                  (mouseleave)="state.onTokensChartHover(null)"/>
+          }
+        </g>
+
+        @if (state.tokensHoverData(); as thd) {
+          <g class="tooltip-group">
+            <rect [attr.x]="thd.tooltipX"
+                  [attr.y]="state.tokensChart().padT + 6"
+                  [attr.width]="thd.tooltipW" height="46" rx="8" class="tooltip-bg"/>
+            <text [attr.x]="thd.tooltipX + 10"
+                  [attr.y]="state.tokensChart().padT + 25"
+                  class="tooltip-date">{{ thd.date }}</text>
+            <circle [attr.cx]="thd.tooltipX + 12"
+                    [attr.cy]="state.tokensChart().padT + 40" r="3.5" class="tooltip-dot-green"/>
+            <text [attr.x]="thd.tooltipX + 20"
+                  [attr.y]="state.tokensChart().padT + 43"
+                  class="tooltip-value">{{ state.formatTokens(thd.tokens) }} tokens</text>
+          </g>
+        }
+      </svg>
+    </div>
+  </div>
+</section>

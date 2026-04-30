@@ -1,0 +1,112 @@
+<section class="page">
+  <header class="page-head">
+    <div>
+      <h1>{{ state.i18n.t('admin.logins.title') }}</h1>
+      <p class="page-sub">{{ state.i18n.t('admin.logins.sub', { n: state.totalLogins() }) }}</p>
+    </div>
+  </header>
+
+  <div class="card chart-card">
+    <div class="chart-head">
+      <h3>{{ state.i18n.t('admin.chart.logins14.title') }}</h3>
+    </div>
+    <div class="bar-chart">
+      @for (bar of state.loginChart(); track bar.date) {
+        <div class="bar-col" [title]="bar.date + ' · ' + bar.value">
+          <div class="bar bar-amber" [style.height.%]="bar.height"></div>
+          <span class="bar-label">{{ bar.label }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="sortable" [class.sorted]="state.sortDir('logins','login_time')" (click)="state.toggleSort('logins','login_time')">
+            <span>{{ state.i18n.t('admin.logins.col.date') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('logins','login_time')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('logins','email')" (click)="state.toggleSort('logins','email')">
+            <span>{{ state.i18n.t('admin.logins.col.email') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('logins','email')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('logins','ip_address')" (click)="state.toggleSort('logins','ip_address')">
+            <span>{{ state.i18n.t('admin.logins.col.ip') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('logins','ip_address')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('logins','user_agent')" (click)="state.toggleSort('logins','user_agent')">
+            <span>{{ state.i18n.t('admin.logins.col.browser') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('logins','user_agent')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('logins','language')" (click)="state.toggleSort('logins','language')">
+            <span>{{ state.i18n.t('admin.logins.col.lang') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('logins','language')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('logins','screen_resolution')" (click)="state.toggleSort('logins','screen_resolution')">
+            <span>{{ state.i18n.t('admin.logins.col.resolution') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('logins','screen_resolution')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('logins','time_zone')" (click)="state.toggleSort('logins','time_zone')">
+            <span>{{ state.i18n.t('admin.logins.col.zone') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('logins','time_zone')"></span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of state.sortedLoginLogs(); track $index) {
+          <tr>
+            <td>{{ l.login_time | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ l.email || '—' }}</td>
+            <td>{{ l.ip_address || '—' }}</td>
+            <td>{{ state.shortUA(l.user_agent) }}</td>
+            <td>{{ l.language || '—' }}</td>
+            <td>{{ l.screen_resolution || '—' }}</td>
+            <td>{{ l.time_zone || '—' }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="empty">{{ state.i18n.t('admin.logins.empty') }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mobile-toolbar">
+    <label class="mobile-sort">
+      <span>{{ state.i18n.t('admin.mobile.sort.label') }}</span>
+      <select [ngModel]="state.sortState().logins.col" (ngModelChange)="state.setSortCol('logins', $event)">
+        <option value="login_time">{{ state.i18n.t('admin.logins.col.date') }}</option>
+        <option value="email">{{ state.i18n.t('admin.logins.col.email') }}</option>
+        <option value="ip_address">{{ state.i18n.t('admin.logins.col.ip') }}</option>
+        <option value="user_agent">{{ state.i18n.t('admin.logins.col.browser') }}</option>
+        <option value="time_zone">{{ state.i18n.t('admin.logins.col.zone') }}</option>
+      </select>
+    </label>
+    <button type="button" class="dir-btn" (click)="state.toggleSortDir('logins')" [attr.aria-label]="state.i18n.t('admin.mobile.sort.dir')">
+      <span class="dir-arrow" [class.desc]="state.sortState().logins.dir === 'desc'">▲</span>
+    </button>
+  </div>
+
+  <div class="mobile-list log-list">
+    @for (l of state.sortedLoginLogs(); track $index) {
+      <article class="mobile-card log-card">
+        <header class="log-card-head">
+          <time>{{ l.login_time | date:'dd/MM/yyyy HH:mm' }}</time>
+          <strong class="log-email">{{ l.email || '—' }}</strong>
+        </header>
+        <dl class="log-grid">
+          <div><dt>{{ state.i18n.t('admin.logins.col.ip') }}</dt><dd>{{ l.ip_address || '—' }}</dd></div>
+          <div><dt>{{ state.i18n.t('admin.logins.col.browser') }}</dt><dd>{{ state.shortUA(l.user_agent) }}</dd></div>
+          <div><dt>{{ state.i18n.t('admin.logins.col.lang') }}</dt><dd>{{ l.language || '—' }}</dd></div>
+          <div><dt>{{ state.i18n.t('admin.logins.col.resolution') }}</dt><dd>{{ l.screen_resolution || '—' }}</dd></div>
+          <div class="full"><dt>{{ state.i18n.t('admin.logins.col.zone') }}</dt><dd>{{ l.time_zone || '—' }}</dd></div>
+        </dl>
+      </article>
+    } @empty {
+      <div class="empty-state">
+        <p>{{ state.i18n.t('admin.logins.empty') }}</p>
+      </div>
+    }
+  </div>
+</section>

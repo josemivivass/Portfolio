@@ -1,0 +1,174 @@
+<section class="page profile-page">
+  <header class="page-head">
+    <div>
+      <h1>{{ state.i18n.t('admin.profile.title') }}</h1>
+      <p class="page-sub">{{ state.i18n.t('admin.profile.sub') }}</p>
+    </div>
+  </header>
+
+  <div class="profile-grid">
+    <div class="profile-col">
+      <div class="card profile-card">
+        <div class="profile-card-head">
+          <h3>{{ state.i18n.t('admin.profile.photo.title') }}</h3>
+          <p>{{ state.i18n.t('admin.profile.photo.sub') }}</p>
+        </div>
+
+        <div class="profile-photo-row">
+          <figure class="profile-photo-frame">
+            <img [src]="state.profilePhotoUrl()" alt="" />
+            <figcaption>{{ state.i18n.t('admin.profile.photo.current') }}</figcaption>
+          </figure>
+          @if (state.profilePhotoPreview(); as preview) {
+            <figure class="profile-photo-frame profile-photo-frame--preview">
+              <img [src]="preview" alt="" />
+              <figcaption>{{ state.i18n.t('admin.profile.photo.preview') }}</figcaption>
+            </figure>
+          }
+        </div>
+
+        <div class="profile-photo-actions">
+          <label class="btn-ghost profile-file-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>{{ state.profilePhotoPreview() ? state.i18n.t('admin.profile.photo.change') : state.i18n.t('admin.profile.photo.select') }}</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp" (change)="state.onProfilePhotoSelected($event)" hidden />
+          </label>
+          <button type="button"
+                  class="btn-primary"
+                  [disabled]="!state.profilePhotoDataUrl() || state.profileUploadingPhoto()"
+                  (click)="state.uploadProfilePhoto()">
+            {{ state.profileUploadingPhoto() ? state.i18n.t('admin.profile.photo.saving') : state.i18n.t('admin.profile.photo.upload') }}
+          </button>
+          @if (state.profilePhotoFileName(); as name) {
+            <span class="profile-file-name">{{ name }}</span>
+          }
+        </div>
+
+        @if (state.profilePhotoStatus() === 'saved') {
+          <p class="profile-status profile-status--ok">
+            ✓ {{ state.i18n.t('admin.profile.photo.saved') }}
+          </p>
+        }
+        @if (state.profilePhotoStatus() === 'error') {
+          <p class="profile-status profile-status--err">
+            ✗ {{ state.profilePhotoError() }}
+          </p>
+        }
+      </div>
+
+      <div class="card profile-card">
+        <div class="profile-card-head">
+          <h3>{{ state.i18n.t('admin.profile.chatbot.model.title') }}</h3>
+          <p>{{ state.i18n.t('admin.profile.chatbot.model.sub') }}</p>
+        </div>
+
+        <div class="profile-model">
+          <label class="profile-model-label" for="chatbot-model-select">
+            {{ state.i18n.t('admin.profile.chatbot.model.label') }}
+          </label>
+          <select id="chatbot-model-select"
+                  class="profile-model-select"
+                  [ngModel]="state.chatbotModel()"
+                  (ngModelChange)="state.onChatbotModelChange($event)"
+                  name="chatbot_model"
+                  [disabled]="state.chatbotModelSaving() || !state.chatbotModelOptions().length"
+                  [attr.aria-label]="state.i18n.t('admin.profile.chatbot.model.label')">
+            @for (m of state.chatbotModelOptions(); track m) {
+              <option [value]="m">{{ m }}</option>
+            }
+          </select>
+          <p class="profile-model-current">
+            {{ state.i18n.t('admin.profile.chatbot.model.current') }}
+            <code>{{ state.chatbotModel() || '—' }}</code>
+          </p>
+        </div>
+
+        <div class="profile-texts-footer">
+          @if (state.chatbotModelStatus() === 'saved') {
+            <span class="profile-status profile-status--ok">
+              ✓ {{ state.i18n.t('admin.profile.chatbot.model.saved') }}
+            </span>
+          }
+          @if (state.chatbotModelStatus() === 'error') {
+            <span class="profile-status profile-status--err">
+              ✗ {{ state.chatbotModelError() }}
+            </span>
+          }
+          @if (state.chatbotModelSaving()) {
+            <span class="profile-status">
+              {{ state.i18n.t('admin.profile.chatbot.model.saving') }}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-col">
+      <div class="card profile-card">
+        <div class="profile-card-head">
+          <h3>{{ state.i18n.t('admin.profile.texts.title') }}</h3>
+          <p>{{ state.i18n.t('admin.profile.texts.sub') }}</p>
+          <span class="profile-lang-pill">
+            {{ state.i18n.lang === 'es' ? state.i18n.t('admin.profile.lang.es') : state.i18n.t('admin.profile.lang.en') }}
+          </span>
+        </div>
+
+        <div class="profile-texts-display">
+          @for (f of state.profileFields; track f.key) {
+            <div class="profile-text-row">
+              <span class="profile-text-label">{{ state.i18n.t(f.labelKey) }}</span>
+              <p class="profile-text-value" [innerHTML]="state.profileTexts()[state.i18n.lang][f.key] || '—'"></p>
+            </div>
+          }
+        </div>
+
+        <div class="profile-texts-footer">
+          <button type="button"
+                  class="btn-primary"
+                  (click)="state.startEditProfileTexts()">
+            {{ state.i18n.t('admin.profile.texts.edit') }}
+          </button>
+          @if (state.profileTextsStatus() === 'saved') {
+            <span class="profile-status profile-status--ok">
+              ✓ {{ state.i18n.t('admin.profile.texts.saved') }}
+            </span>
+          }
+          @if (state.profileTextsStatus() === 'error') {
+            <span class="profile-status profile-status--err">
+              ✗ {{ state.profileTextsError() }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="card profile-card">
+        <div class="profile-card-head">
+          <h3>{{ state.i18n.t('admin.profile.chatbot.title') }}</h3>
+          <p>{{ state.i18n.t('admin.profile.chatbot.sub') }}</p>
+        </div>
+
+        <div class="profile-prompt-preview">
+          <pre class="profile-prompt-snippet">{{ state.chatbotPrompt() || state.i18n.t('admin.profile.chatbot.placeholder') }}</pre>
+        </div>
+
+        <div class="profile-texts-footer">
+          <button type="button"
+                  class="btn-primary"
+                  (click)="state.startEditChatbotPrompt()">
+            {{ state.i18n.t('admin.profile.chatbot.edit') }}
+          </button>
+          @if (state.chatbotPromptStatus() === 'saved') {
+            <span class="profile-status profile-status--ok">
+              ✓ {{ state.i18n.t('admin.profile.chatbot.saved') }}
+            </span>
+          }
+          @if (state.chatbotPromptStatus() === 'error') {
+            <span class="profile-status profile-status--err">
+              ✗ {{ state.chatbotPromptError() }}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

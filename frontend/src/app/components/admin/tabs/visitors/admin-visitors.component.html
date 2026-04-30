@@ -1,0 +1,99 @@
+<section class="page">
+  <header class="page-head">
+    <div>
+      <h1>{{ state.i18n.t('admin.visitors.title') }}</h1>
+      <p class="page-sub">{{ state.i18n.t('admin.visitors.sub', { total: state.totalVisits(), unique: state.uniqueVisitors() }) }}</p>
+    </div>
+  </header>
+
+  <div class="card chart-card">
+    <div class="chart-head">
+      <h3>{{ state.i18n.t('admin.chart.activity.title') }}</h3>
+    </div>
+    <div class="bar-chart">
+      @for (bar of state.visitorChart(); track bar.date) {
+        <div class="bar-col" [title]="bar.date + ' · ' + bar.value">
+          <div class="bar bar-blue" [style.height.%]="bar.height"></div>
+          <span class="bar-label">{{ bar.label }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="sortable" [class.sorted]="state.sortDir('visitors','entry_time')" (click)="state.toggleSort('visitors','entry_time')">
+            <span>{{ state.i18n.t('admin.visitors.col.date') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('visitors','entry_time')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('visitors','visitor_uuid')" (click)="state.toggleSort('visitors','visitor_uuid')">
+            <span>{{ state.i18n.t('admin.visitors.col.uuid') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('visitors','visitor_uuid')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('visitors','ip_address')" (click)="state.toggleSort('visitors','ip_address')">
+            <span>{{ state.i18n.t('admin.visitors.col.ip') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('visitors','ip_address')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('visitors','user_agent')" (click)="state.toggleSort('visitors','user_agent')">
+            <span>{{ state.i18n.t('admin.visitors.col.browser') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('visitors','user_agent')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('visitors','is_logged_in')" (click)="state.toggleSort('visitors','is_logged_in')">
+            <span>{{ state.i18n.t('admin.visitors.col.logged') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('visitors','is_logged_in')"></span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (v of state.sortedVisitorLogs(); track $index) {
+          <tr>
+            <td>{{ v.entry_time | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="mono">{{ v.visitor_uuid?.substring(0, 8) }}…</td>
+            <td>{{ v.ip_address || '—' }}</td>
+            <td>{{ state.shortUA(v.user_agent) }}</td>
+            <td>{{ v.is_logged_in ? state.i18n.t('admin.projects.yes') : state.i18n.t('admin.projects.no') }}</td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="empty">{{ state.i18n.t('admin.visitors.empty') }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mobile-toolbar">
+    <label class="mobile-sort">
+      <span>{{ state.i18n.t('admin.mobile.sort.label') }}</span>
+      <select [ngModel]="state.sortState().visitors.col" (ngModelChange)="state.setSortCol('visitors', $event)">
+        <option value="entry_time">{{ state.i18n.t('admin.visitors.col.date') }}</option>
+        <option value="ip_address">{{ state.i18n.t('admin.visitors.col.ip') }}</option>
+        <option value="user_agent">{{ state.i18n.t('admin.visitors.col.browser') }}</option>
+        <option value="is_logged_in">{{ state.i18n.t('admin.visitors.col.logged') }}</option>
+      </select>
+    </label>
+    <button type="button" class="dir-btn" (click)="state.toggleSortDir('visitors')" [attr.aria-label]="state.i18n.t('admin.mobile.sort.dir')">
+      <span class="dir-arrow" [class.desc]="state.sortState().visitors.dir === 'desc'">▲</span>
+    </button>
+  </div>
+
+  <div class="mobile-list log-list">
+    @for (v of state.sortedVisitorLogs(); track $index) {
+      <article class="mobile-card log-card">
+        <header class="log-card-head">
+          <time>{{ v.entry_time | date:'dd/MM/yyyy HH:mm' }}</time>
+          <span class="pill" [class.pill-dark]="v.is_logged_in">{{ v.is_logged_in ? state.i18n.t('admin.projects.yes') : state.i18n.t('admin.projects.no') }}</span>
+        </header>
+        <dl class="log-grid">
+          <div><dt>{{ state.i18n.t('admin.visitors.col.ip') }}</dt><dd>{{ v.ip_address || '—' }}</dd></div>
+          <div><dt>{{ state.i18n.t('admin.visitors.col.browser') }}</dt><dd>{{ state.shortUA(v.user_agent) }}</dd></div>
+          <div class="full"><dt>{{ state.i18n.t('admin.visitors.col.uuid') }}</dt><dd class="mono">{{ v.visitor_uuid }}</dd></div>
+        </dl>
+      </article>
+    } @empty {
+      <div class="empty-state">
+        <p>{{ state.i18n.t('admin.visitors.empty') }}</p>
+      </div>
+    }
+  </div>
+</section>

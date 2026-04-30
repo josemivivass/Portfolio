@@ -1,0 +1,350 @@
+/* Dashboard-only: stats, line charts (visitors/logins/tokens). Las
+   reglas de tarjeta/header/leyenda compartidas viven en admin-shared.css. */
+
+.stats-grid {
+  display: grid;
+  /* Layout estricto: siempre 6 columnas en escritorio. Evita
+     filas desiguales (5+1, 4+2, etc.) cuando el viewport cambia. */
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--c-primary-soft);
+}
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+.stat-value {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--brand);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-family: 'Arial Black', 'Inter', sans-serif;
+}
+.stat-foot {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+/* ─── Line chart card ─── */
+.line-chart-card {
+  margin-bottom: 18px;
+  padding: 16px 18px 12px;
+}
+.line-chart-card .chart-head {
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.legend-item strong {
+  color: var(--text);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.legend-dot-blue {
+  background: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.18);
+}
+.legend-dot-amber {
+  background: var(--c-amber);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+}
+.legend-dot-green {
+  background: var(--c-green-vivid);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+}
+
+.line-chart-wrap {
+  width: 100%;
+  margin: 4px 0 0;
+}
+.line-chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.line-chart-svg .grid-line {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+.line-chart-svg .axis-label {
+  font-size: 11px;
+  fill: var(--text-muted);
+  font-weight: 600;
+}
+.line-chart-svg .axis-label-y { text-anchor: end; }
+.line-chart-svg .axis-label-x { text-anchor: middle; }
+
+.line-chart-svg .line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.line-chart-svg .line-blue {
+  stroke: var(--c-primary);
+}
+.line-chart-svg .line-amber {
+  stroke: var(--c-amber);
+}
+.line-chart-svg .line-green {
+  stroke: var(--c-green-vivid);
+}
+.line-chart-svg .point {
+  stroke: #fff;
+  stroke-width: 2;
+  transition: r 0.15s;
+}
+.line-chart-svg .point-blue { fill: var(--c-primary); }
+.line-chart-svg .point-amber { fill: var(--c-amber); }
+.line-chart-svg .point-green { fill: var(--c-green-vivid); }
+
+.line-chart-svg .tooltip-dot-blue { fill: var(--c-primary); }
+.line-chart-svg .tooltip-dot-amber { fill: var(--c-amber); }
+.line-chart-svg .tooltip-dot-green { fill: var(--c-green-vivid); }
+.line-chart-svg .grad-stop-blue { stop-color: var(--c-primary); }
+.line-chart-svg .grad-stop-amber { stop-color: var(--c-amber); }
+.line-chart-svg .grad-stop-green { stop-color: var(--c-green-vivid); }
+
+.line-chart-svg .hover-guide {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0.6;
+}
+.line-chart-svg .hover-targets rect { cursor: pointer; }
+
+.line-chart-svg .tooltip-group { pointer-events: none; }
+.line-chart-svg .tooltip-bg {
+  fill: var(--brand);
+  opacity: 0.96;
+  filter: drop-shadow(0 4px 12px rgba(30, 45, 61, 0.35));
+}
+.line-chart-svg .tooltip-date {
+  fill: rgba(255, 255, 255, 0.7);
+  font-size: 10px;
+  font-weight: 600;
+}
+.line-chart-svg .tooltip-value {
+  fill: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1100px) {
+  .chart-grid { grid-template-columns: 1fr; }
+}
+
+/* Laptop: stat-cards compactas para que las 6 quepan en una sola
+   fila junto al sidebar reducido del shell. Cubre todo el rango común
+   de portátiles hasta 1920 px de ancho. */
+@media (min-width: 861px) and (max-width: 1920px) {
+  .stats-grid {
+    /* hereda repeat(6, minmax(0, 1fr)) del base */
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    padding: 14px 14px;
+    border-radius: 12px;
+    gap: 4px;
+    min-width: 0;
+  }
+  .stat-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    margin-bottom: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .stat-value {
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+  }
+  .stat-foot {
+    font-size: 0.66rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Rango medio: cuando el viewport ya no da para 6 columnas cómodas,
+   pasamos directamente a 2 filas de 3 (sin estados intermedios tipo
+   5+1 o 4+2). Por debajo de 861 px entra el layout móvil. */
+@media (min-width: 861px) and (max-width: 1199px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  /* Stats — compact horizontal rows on mobile */
+  .stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 20px;
+    padding: 6px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .stat-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 14px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: 1px solid var(--border);
+    min-width: 0;
+    position: relative;
+  }
+  .stat-card:last-child { border-bottom: none; }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: 14px;
+    left: 0;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(45, 106, 79, 0.4);
+  }
+  .stat-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--border);
+    background: var(--accent-softer);
+  }
+  .stat-card .stat-label {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding-left: 12px;
+    order: 1;
+  }
+  .stat-card .stat-value {
+    font-size: 1.45rem;
+    font-weight: 900;
+    color: var(--brand);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    order: 3;
+    flex-shrink: 0;
+  }
+  .stat-card .stat-foot {
+    display: block;
+    width: 100%;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    padding-left: 12px;
+    margin-top: 4px;
+    order: 2;
+  }
+  /* Reorder: label + foot on left column, value on right */
+  .stat-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    row-gap: 0;
+  }
+  .stat-card .stat-label { grid-column: 1; grid-row: 1; }
+  .stat-card .stat-foot { grid-column: 1; grid-row: 2; }
+  .stat-card .stat-value {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+
+  /* Line chart compact on mobile */
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.7rem;
+  }
+  .card.line-chart-card,
+  .line-chart-card { padding: 8px 6px 4px; margin-bottom: 12px; }
+  .line-chart-card .chart-head { padding: 0 4px; margin-bottom: 4px; }
+  .line-chart-card .line-chart-wrap { margin: 0; }
+  .line-chart-svg .axis-label { font-size: 16px; }
+  .line-chart-svg .tooltip-date { font-size: 13px; }
+  .line-chart-svg .tooltip-value { font-size: 15px; }
+  .line-chart-svg .line { stroke-width: 3; }
+}
+
+@media (max-width: 480px) {
+  .stat-card { padding: 12px 12px; }
+  .stat-card .stat-label { font-size: 0.62rem; padding-left: 10px; }
+  .stat-card .stat-foot { font-size: 0.66rem; padding-left: 10px; }
+  .stat-card .stat-value { font-size: 1.35rem; }
+
+  .line-chart-svg .axis-label { font-size: 18px; }
+  .line-chart-svg .tooltip-date { font-size: 15px; }
+  .line-chart-svg .tooltip-value { font-size: 17px; }
+}

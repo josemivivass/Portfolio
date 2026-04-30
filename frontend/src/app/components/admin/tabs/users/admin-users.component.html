@@ -1,0 +1,90 @@
+<section class="page">
+  <header class="page-head">
+    <h1>{{ state.i18n.t('admin.users.title') }}</h1>
+    <p class="page-sub">{{ state.i18n.t('admin.users.sub') }}</p>
+  </header>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="sortable" [class.sorted]="state.sortDir('users','id')" (click)="state.toggleSort('users','id')">
+            <span>{{ state.i18n.t('admin.users.col.id') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('users','id')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('users','email')" (click)="state.toggleSort('users','email')">
+            <span>{{ state.i18n.t('admin.users.col.email') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('users','email')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('users','role')" (click)="state.toggleSort('users','role')">
+            <span>{{ state.i18n.t('admin.users.col.role') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('users','role')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('users','created_at')" (click)="state.toggleSort('users','created_at')">
+            <span>{{ state.i18n.t('admin.users.col.created') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('users','created_at')"></span>
+          </th>
+          <th>{{ state.i18n.t('admin.users.col.actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of state.sortedUsers(); track u.id) {
+          <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.email }}</td>
+            <td><span class="pill" [class.pill-dark]="u.role==='admin'" [class.pill-amber]="u.role==='editor'">{{ u.role }}</span></td>
+            <td>{{ u.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="actions">
+              @if (state.isAdmin()) {
+                <button class="btn-edit" (click)="state.editUser(u)">{{ state.i18n.t('admin.action.edit') }}</button>
+                <button class="btn-delete" (click)="state.deleteUser(u)">{{ state.i18n.t('admin.action.delete') }}</button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="empty">{{ state.i18n.t('admin.users.empty') }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mobile-toolbar">
+    <label class="mobile-sort">
+      <span>{{ state.i18n.t('admin.mobile.sort.label') }}</span>
+      <select [ngModel]="state.sortState().users.col" (ngModelChange)="state.setSortCol('users', $event)">
+        <option value="id">{{ state.i18n.t('admin.users.col.id') }}</option>
+        <option value="email">{{ state.i18n.t('admin.users.col.email') }}</option>
+        <option value="role">{{ state.i18n.t('admin.users.col.role') }}</option>
+        <option value="created_at">{{ state.i18n.t('admin.users.col.created') }}</option>
+      </select>
+    </label>
+    <button type="button" class="dir-btn" (click)="state.toggleSortDir('users')" [attr.aria-label]="state.i18n.t('admin.mobile.sort.dir')">
+      <span class="dir-arrow" [class.desc]="state.sortState().users.dir === 'desc'">▲</span>
+    </button>
+  </div>
+
+  <div class="mobile-list">
+    @for (u of state.sortedUsers(); track u.id) {
+      <article class="mobile-card">
+        <header class="mobile-card-head">
+          <div class="mobile-card-avatar">{{ (u.email || '?').charAt(0).toUpperCase() }}</div>
+          <div class="mobile-card-title">
+            <strong>{{ u.email }}</strong>
+            <span class="mobile-card-sub">#{{ u.id }} · {{ u.created_at | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <span class="pill" [class.pill-dark]="u.role==='admin'" [class.pill-amber]="u.role==='editor'">{{ u.role }}</span>
+        </header>
+        <footer class="mobile-card-actions">
+          @if (state.isAdmin()) {
+            <button class="btn-edit" (click)="state.editUser(u)">{{ state.i18n.t('admin.action.edit') }}</button>
+            <button class="btn-delete" (click)="state.deleteUser(u)">{{ state.i18n.t('admin.action.delete') }}</button>
+          }
+        </footer>
+      </article>
+    } @empty {
+      <div class="empty-state">
+        <p>{{ state.i18n.t('admin.users.empty') }}</p>
+      </div>
+    }
+  </div>
+</section>

@@ -1,0 +1,89 @@
+<section class="page">
+  <header class="page-head">
+    <div>
+      <h1>{{ state.i18n.t('admin.chatbot.title') }}</h1>
+      <p class="page-sub">{{ state.i18n.t('admin.chatbot.sub', { n: state.totalChatbotMessages(), c: state.totalChatbotConversations() }) }}</p>
+    </div>
+  </header>
+
+  <div class="messages-toolbar">
+    <div class="messages-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input
+        type="text"
+        [(ngModel)]="state.chatbotSearch"
+        (ngModelChange)="state.onChatbotFilterChange()"
+        [placeholder]="state.i18n.t('admin.chatbot.search.placeholder')"
+        [attr.aria-label]="state.i18n.t('admin.chatbot.search.placeholder')" />
+    </div>
+    <label class="messages-select">
+      <span>{{ state.i18n.t('admin.messages.sort.label') }}</span>
+      <select [(ngModel)]="state.chatbotSort" (ngModelChange)="state.onChatbotFilterChange()">
+        <option value="newest">{{ state.i18n.t('admin.messages.sort.newest') }}</option>
+        <option value="oldest">{{ state.i18n.t('admin.messages.sort.oldest') }}</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="chatbot-conversations">
+    @for (convo of state.chatbotConversations(); track convo.key) {
+      <article class="convo-card"
+               [class.expanded]="state.expandedConversation() === convo.key">
+
+        <header class="convo-head" (click)="state.toggleConversation(convo.key)">
+          <div class="convo-head-left">
+            <div class="convo-avatar">{{ (convo.email || '?').charAt(0).toUpperCase() }}</div>
+            <div class="convo-info">
+              <strong>{{ convo.email }}</strong>
+              <span class="convo-meta">
+                @if (!convo.isAnonymous) {
+                  <span>#{{ convo.sessionIndex + 1 }} · </span>
+                }{{ convo.date }} · {{ convo.messages.length }} {{ state.i18n.t('admin.chatbot.msgs') }} · {{ convo.totalTokens }} tokens
+              </span>
+            </div>
+          </div>
+          <div class="convo-head-right">
+            @if (state.isAdmin()) {
+              <button class="btn-delete" (click)="state.deleteChatbotConvo(convo); $event.stopPropagation()">{{ state.i18n.t('admin.action.delete') }}</button>
+            }
+            <span class="convo-chevron" [class.open]="state.expandedConversation() === convo.key">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </div>
+        </header>
+
+        @if (state.expandedConversation() === convo.key) {
+          <div class="convo-body">
+            <div class="convo-thread">
+              @for (msg of convo.messages; track msg.id) {
+                <div class="convo-bubble"
+                     [class.convo-user]="msg.role === 'user'"
+                     [class.convo-assistant]="msg.role === 'assistant'">
+                  <div class="convo-bubble-head">
+                    <span class="convo-role-tag" [class.tag-user]="msg.role === 'user'" [class.tag-assistant]="msg.role === 'assistant'">
+                      {{ msg.role === 'user' ? state.i18n.t('admin.chatbot.role.user') : state.i18n.t('admin.chatbot.role.assistant') }}
+                    </span>
+                    <span class="convo-bubble-time">{{ msg.created_at | date:'HH:mm:ss' }}</span>
+                    @if (state.isAdmin()) {
+                      <button class="convo-delete-msg" (click)="state.deleteChatbotMsg(msg)" [attr.aria-label]="state.i18n.t('admin.action.delete')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                      </button>
+                    }
+                  </div>
+                  <p class="convo-bubble-text">{{ msg.message }}</p>
+                  @if (msg.tokens_used) {
+                    <span class="convo-tokens">{{ msg.tokens_used }} tokens</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </article>
+    } @empty {
+      <div class="empty-state">
+        <p>{{ state.chatbotMessages().length === 0 ? state.i18n.t('admin.chatbot.empty') : state.i18n.t('admin.chatbot.empty.filtered') }}</p>
+      </div>
+    }
+  </div>
+</section>

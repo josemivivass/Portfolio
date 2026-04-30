@@ -1,0 +1,764 @@
+/* ═══════════════════════════════════════════════════════════════════
+   admin-shared.css — utilidades transversales del panel admin.
+   Cargado como global en angular.json. Todas las reglas están
+   ancestradas en `.admin-shell` para que NO afecten a nada fuera del
+   panel. Este archivo concentra lo que comparten varias tabs y/o el
+   shell del padre, evitando duplicarlo en cada componente.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Page header ─────────────────────────────────── */
+.admin-shell .page {
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.admin-shell .btn-new-compact { align-items: center; gap: 8px; }
+.admin-shell .btn-new-compact .btn-new-icon { display: none; }
+
+.admin-shell .page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+.admin-shell .page-head h1 {
+  margin: 0;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--brand);
+  letter-spacing: -0.4px;
+  font-family: 'Arial Black', 'Inter', sans-serif;
+}
+.admin-shell .page-head h1::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 22px;
+  background: var(--accent);
+  margin-right: 14px;
+  vertical-align: middle;
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(45, 106, 79, 0.5);
+}
+.admin-shell .page-sub {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin: 4px 0 0;
+}
+
+/* ─── Card / Table base ───────────────────────────── */
+.admin-shell .page .card {
+  display: block;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  padding: 0;
+  margin: 0 0 22px 0;
+}
+.admin-shell .messages-list { width: 100%; box-sizing: border-box; }
+.admin-shell .stats-grid,
+.admin-shell .chart-grid { width: 100%; box-sizing: border-box; }
+
+.admin-shell .data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.admin-shell .data-table th,
+.admin-shell .data-table td {
+  padding: 15px 22px;
+  text-align: left;
+  font-size: 0.86rem;
+  border-bottom: 1px solid var(--border);
+}
+.admin-shell .data-table th {
+  background: var(--surface-alt);
+  font-weight: 800;
+  color: var(--text-label);
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+.admin-shell .data-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s, color 0.15s;
+}
+.admin-shell .data-table th.sortable:hover {
+  background: var(--accent-softer);
+  color: var(--accent);
+}
+.admin-shell .data-table th.sortable > span:first-child {
+  display: inline-block;
+  vertical-align: middle;
+}
+.admin-shell .data-table th .sort-icon {
+  position: relative;
+  display: inline-block;
+  width: 10px;
+  height: 14px;
+  margin-left: 6px;
+  vertical-align: middle;
+  opacity: 0.35;
+  transition: opacity 0.15s, color 0.15s;
+}
+.admin-shell .data-table th .sort-icon::before,
+.admin-shell .data-table th .sort-icon::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+}
+.admin-shell .data-table th .sort-icon::before {
+  top: 1px;
+  border-bottom: 4px solid currentColor;
+}
+.admin-shell .data-table th .sort-icon::after {
+  bottom: 1px;
+  border-top: 4px solid currentColor;
+}
+.admin-shell .data-table th.sortable:hover .sort-icon { opacity: 0.6; }
+.admin-shell .data-table th.sorted { color: var(--accent); background: var(--accent-softer); }
+.admin-shell .data-table th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+.admin-shell .data-table th .sort-icon[data-dir="asc"]::after { border-top-color: transparent; }
+.admin-shell .data-table th .sort-icon[data-dir="desc"]::before { border-bottom-color: transparent; }
+.admin-shell .data-table tr:last-child td { border-bottom: none; }
+.admin-shell .data-table tbody tr { transition: background 0.15s; }
+.admin-shell .data-table tbody tr:hover { background: var(--surface-alt); }
+.admin-shell .data-table .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--text-muted); }
+
+.admin-shell .empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 50px 20px;
+  font-size: 0.9rem;
+}
+
+.admin-shell .pill {
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.admin-shell .pill.pill-dark { background: var(--brand); color: #fff; }
+.admin-shell .pill.pill-amber { background: var(--c-amber-light); color: var(--c-amber-dark); }
+
+.admin-shell .actions { gap: 8px; white-space: nowrap; }
+.admin-shell .actions::before { content: ''; display: inline-block; width: 0; height: 30px; vertical-align: middle; }
+.admin-shell .actions > button { vertical-align: middle; }
+
+/* ─── Buttons ─────────────────────────────────────── */
+.admin-shell button.btn-primary,
+.admin-shell button.btn-secondary,
+.admin-shell button.btn-edit,
+.admin-shell button.btn-delete,
+.admin-shell button.btn-danger,
+.admin-shell button.btn-ghost {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+}
+.admin-shell button.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow-accent);
+}
+.admin-shell button.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-accent-lg);
+}
+.admin-shell button.btn-secondary {
+  background: transparent;
+  color: var(--text-label);
+  border: 1.5px solid var(--border-strong);
+}
+.admin-shell button.btn-secondary:hover {
+  background: var(--surface-alt);
+  border-color: var(--text-muted);
+}
+.admin-shell button.btn-edit {
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 7px 14px;
+  font-size: 0.76rem;
+  border: 1px solid transparent;
+}
+.admin-shell button.btn-edit:hover {
+  background: rgba(45, 106, 79, 0.18);
+}
+.admin-shell button.btn-delete {
+  background: transparent;
+  color: var(--danger);
+  border: 1.5px solid rgba(220, 53, 69, 0.25);
+  padding: 7px 14px;
+  font-size: 0.76rem;
+}
+.admin-shell button.btn-delete:hover {
+  background: rgba(220, 53, 69, 0.08);
+  border-color: var(--danger);
+}
+.admin-shell button.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  padding: 11px 20px;
+  font-size: 0.86rem;
+  box-shadow: 0 4px 14px rgba(220, 53, 69, 0.35);
+}
+.admin-shell button.btn-danger:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.45);
+}
+.admin-shell button:active:not(:disabled) { transform: translateY(0); }
+
+/* ─── Charts (compartidos: dashboard, visitors, logins) ─── */
+.admin-shell .chart-card,
+.admin-shell .card.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+}
+.admin-shell .chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.admin-shell .chart-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.admin-shell .chart-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.admin-shell .bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 170px;
+  padding-top: 8px;
+}
+.admin-shell .bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 100%;
+  cursor: pointer;
+}
+.admin-shell .bar {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.admin-shell .bar-blue { background: linear-gradient(180deg, var(--c-primary-light), var(--c-primary)); }
+.admin-shell .bar-amber { background: linear-gradient(180deg, var(--c-amber-bar-light), var(--c-amber-bar)); }
+.admin-shell .bar-col:hover .bar { opacity: 0.88; transform: scaleY(1.02); transform-origin: bottom; }
+.admin-shell .bar-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ─── Messages toolbar (compartido: messages, chatbot) ─── */
+.admin-shell .messages-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.admin-shell .messages-search {
+  position: relative;
+  flex: 0 1 300px;
+  max-width: 300px;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+}
+.admin-shell .messages-search svg {
+  position: absolute;
+  left: 11px;
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.admin-shell .messages-search input {
+  width: 100%;
+  padding: 8px 12px 8px 33px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.admin-shell .messages-search input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+}
+.admin-shell .messages-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.admin-shell .messages-select select {
+  min-width: 120px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  border-radius: 8px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ─── Empty state ─────────────────────────────────── */
+.admin-shell .empty-state {
+  text-align: center;
+  padding: 70px 20px;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: 14px;
+}
+
+/* ─── Profile text label (usado en tab profile y modales del shell) ─── */
+.admin-shell .profile-text-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-label);
+  text-transform: uppercase;
+}
+
+/* ─── Profile file btn (usado en profile y en modal del prompt chatbot) ─── */
+.admin-shell .profile-file-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-label);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  font-family: inherit;
+}
+.admin-shell .profile-file-btn:hover {
+  background: var(--surface-alt);
+  border-color: var(--text-muted);
+  color: var(--text);
+}
+.admin-shell .profile-file-btn svg { width: 14px; height: 14px; }
+
+/* ─── Mobile lists (display:none por defecto, se activan en @media) ─── */
+.admin-shell .mobile-list,
+.admin-shell .mobile-toolbar { display: none; }
+
+/* ─── Responsive ──────────────────────────────────── */
+@media (max-width: 1100px) {
+  .admin-shell .chart-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 860px) {
+  .admin-shell .page { width: 100%; padding: 0; }
+  .admin-shell .page-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 22px;
+    padding-bottom: 14px;
+  }
+  .admin-shell .page-head > div { min-width: 0; }
+  .admin-shell .page-head h1 {
+    font-size: 1.5rem;
+    letter-spacing: -0.4px;
+  }
+  .admin-shell .page-head h1::before {
+    height: 18px;
+    margin-right: 10px;
+  }
+  .admin-shell .page-sub { font-size: 0.85rem; }
+  .admin-shell .page-head .btn-primary {
+    width: 100%;
+    padding: 12px 16px;
+  }
+
+  /* Compact "+" button on mobile for projects/experience headers */
+  .admin-shell .page-head:has(.btn-new-compact) {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+  .admin-shell .page-head:has(.btn-new-compact) > div { flex: 1; min-width: 0; }
+  .admin-shell .page-head .btn-primary.btn-new-compact {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+  }
+  .admin-shell .btn-new-compact .btn-new-label { display: none; }
+  .admin-shell .btn-new-compact .btn-new-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 1.5rem;
+    line-height: 1;
+    font-weight: 700;
+    transform: translateY(-1px);
+  }
+
+  /* Charts shared on mobile */
+  .admin-shell .chart-grid { gap: 10px; margin-bottom: 12px; }
+  .admin-shell .card.chart-card,
+  .admin-shell .chart-card { padding: 8px 10px; border-radius: 12px; }
+  .admin-shell .chart-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .admin-shell .chart-head h3 { font-size: 0.85rem; }
+  .admin-shell .bar-chart {
+    height: 140px;
+    gap: 4px;
+  }
+
+  /* Tables hidden on mobile, cards take over */
+  .admin-shell .card.table-card { display: none; }
+  .admin-shell .mobile-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .admin-shell .mobile-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .admin-shell .mobile-sort {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--text-muted);
+    min-width: 0;
+  }
+  .admin-shell .mobile-sort > span { white-space: nowrap; }
+  .admin-shell .mobile-sort select {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .admin-shell .dir-btn {
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid var(--border);
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 0;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .admin-shell .dir-btn:hover { background: var(--accent-softer); border-color: var(--accent); }
+  .admin-shell .dir-btn .dir-arrow {
+    font-size: 0.8rem;
+    font-weight: 900;
+    display: inline-block;
+    transition: transform 0.2s;
+  }
+  .admin-shell .dir-btn .dir-arrow.desc { transform: rotate(180deg); }
+
+  .admin-shell .mobile-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .admin-shell .mobile-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(45, 106, 79, 0.35);
+  }
+  .admin-shell .mobile-card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+  }
+  .admin-shell .mobile-card-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.94rem;
+    flex-shrink: 0;
+  }
+  .admin-shell .mobile-card-title {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .admin-shell .mobile-card-title strong {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--brand);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .admin-shell .mobile-card-sub {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .admin-shell .mobile-card-head .pill {
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+  .admin-shell .mobile-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .admin-shell .mobile-card-desc {
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.55;
+    color: var(--text);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .admin-shell .mobile-meta-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .admin-shell .mobile-meta-row svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+  .admin-shell .mobile-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .admin-shell .tag-chip {
+    display: inline-block;
+    padding: 3px 10px;
+    background: var(--accent-softer);
+    color: var(--accent);
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .admin-shell .mobile-card-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 2px;
+    padding-top: 12px;
+  }
+  .admin-shell .mobile-card-actions .btn-edit,
+  .admin-shell .mobile-card-actions .btn-delete {
+    flex: 1;
+    padding: 9px 14px;
+    font-size: 0.78rem;
+  }
+
+  /* Log cards (visitors / logins) */
+  .admin-shell .log-card { padding: 14px 16px; }
+  .admin-shell .log-card::before { background: var(--amber); box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+  .admin-shell .log-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .admin-shell .log-card-head time {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--brand);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .admin-shell .log-email {
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 700;
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .admin-shell .log-grid {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+  }
+  .admin-shell .log-grid > div { min-width: 0; }
+  .admin-shell .log-grid > div.full { grid-column: 1 / -1; }
+  .admin-shell .log-grid dt {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+  .admin-shell .log-grid dd {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .admin-shell .log-grid dd.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  /* Messages toolbar on mobile (también para chatbot) */
+  .admin-shell .messages-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+  .admin-shell .messages-search {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .admin-shell .messages-select {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .admin-shell .messages-select select { flex: 1; margin-left: 8px; min-width: 0; }
+}
+
+@media (max-width: 480px) {
+  .admin-shell .mobile-card { padding: 14px 14px; }
+  .admin-shell .mobile-card-title strong { font-size: 0.9rem; }
+  .admin-shell .log-email { max-width: 100%; }
+  .admin-shell .bar-chart { height: 120px; }
+}

@@ -1,0 +1,66 @@
+<section class="page">
+  <header class="page-head">
+    <div>
+      <h1>{{ state.i18n.t('admin.messages.title') }}</h1>
+      <p class="page-sub">{{ state.i18n.t('admin.messages.sub', { n: state.totalMessages(), p: state.pendingMessages() }) }}</p>
+    </div>
+  </header>
+
+  <div class="messages-toolbar">
+    <div class="messages-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input
+        type="text"
+        [(ngModel)]="state.messagesSearch"
+        (ngModelChange)="state.onMessagesFilterChange()"
+        [placeholder]="state.i18n.t('admin.messages.search.placeholder')"
+        [attr.aria-label]="state.i18n.t('admin.messages.search.placeholder')" />
+    </div>
+    <label class="messages-select">
+      <span>{{ state.i18n.t('admin.messages.filter.label') }}</span>
+      <select [(ngModel)]="state.messagesStatus" (ngModelChange)="state.onMessagesFilterChange()">
+        <option value="all">{{ state.i18n.t('admin.messages.filter.all') }}</option>
+        <option value="pending">{{ state.i18n.t('admin.messages.filter.pending') }}</option>
+        <option value="answered">{{ state.i18n.t('admin.messages.filter.answered') }}</option>
+      </select>
+    </label>
+    <label class="messages-select">
+      <span>{{ state.i18n.t('admin.messages.sort.label') }}</span>
+      <select [(ngModel)]="state.messagesSort" (ngModelChange)="state.onMessagesFilterChange()">
+        <option value="newest">{{ state.i18n.t('admin.messages.sort.newest') }}</option>
+        <option value="oldest">{{ state.i18n.t('admin.messages.sort.oldest') }}</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="messages-list">
+    @for (m of state.filteredMessages(); track m.id) {
+      <article class="message-card" [class.answered]="m.is_answered">
+        <header class="message-head">
+          <div class="message-head-main">
+            <strong>{{ m.name }}</strong>
+            <a [href]="'mailto:' + m.email">{{ m.email }}</a>
+          </div>
+          <div class="message-meta">
+            <time>{{ m.created_at | date:'dd/MM/yyyy HH:mm' }}</time>
+            <label class="answered-toggle" [class.is-on]="m.is_answered">
+              <input type="checkbox" [checked]="!!m.is_answered" (change)="state.toggleAnswered(m)" />
+              <span class="answered-box" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span class="answered-label">{{ m.is_answered ? state.i18n.t('admin.messages.status.answered') : state.i18n.t('admin.messages.status.pending') }}</span>
+            </label>
+            @if (state.isAdmin()) {
+              <button class="btn-delete" (click)="state.deleteMessage(m)">{{ state.i18n.t('admin.action.delete') }}</button>
+            }
+          </div>
+        </header>
+        <p class="message-body">{{ m.message }}</p>
+      </article>
+    } @empty {
+      <div class="empty-state">
+        <p>{{ state.messages().length === 0 ? state.i18n.t('admin.messages.empty') : state.i18n.t('admin.messages.empty.filtered') }}</p>
+      </div>
+    }
+  </div>
+</section>

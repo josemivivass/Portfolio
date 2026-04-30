@@ -1,0 +1,114 @@
+<section class="page">
+  <header class="page-head">
+    <div>
+      <h1>{{ state.i18n.t('admin.projects.title') }}</h1>
+      <p class="page-sub">{{ state.isAdmin() ? state.i18n.t('admin.projects.sub.full') : state.i18n.t('admin.projects.sub.editor') }}</p>
+    </div>
+    <button class="btn-primary btn-new-compact" (click)="state.newProject()" [attr.aria-label]="state.i18n.t('admin.projects.new')">
+      <span class="btn-new-label">{{ state.i18n.t('admin.projects.new') }}</span>
+      <span class="btn-new-icon" aria-hidden="true">+</span>
+    </button>
+  </header>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="sortable" [class.sorted]="state.sortDir('projects','id')" (click)="state.toggleSort('projects','id')">
+            <span>{{ state.i18n.t('admin.projects.col.id') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('projects','id')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('projects','title')" (click)="state.toggleSort('projects','title')">
+            <span>{{ state.i18n.t('admin.projects.col.title') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('projects','title')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('projects','project_date')" (click)="state.toggleSort('projects','project_date')">
+            <span>{{ state.i18n.t('admin.projects.col.date') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('projects','project_date')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('projects','tags')" (click)="state.toggleSort('projects','tags')">
+            <span>{{ state.i18n.t('admin.projects.col.tags') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('projects','tags')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('projects','is_featured')" (click)="state.toggleSort('projects','is_featured')">
+            <span>{{ state.i18n.t('admin.projects.col.featured') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('projects','is_featured')"></span>
+          </th>
+          <th>{{ state.i18n.t('admin.projects.col.actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of state.sortedProjects(); track p.id) {
+          <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.title }}</td>
+            <td>{{ p.project_date | date:'dd/MM/yyyy' }}</td>
+            <td>{{ p.tags }}</td>
+            <td>{{ p.is_featured ? state.i18n.t('admin.projects.yes') : state.i18n.t('admin.projects.no') }}</td>
+            <td class="actions">
+              <button class="btn-edit" (click)="state.editProject(p)">{{ state.i18n.t('admin.action.edit') }}</button>
+              @if (state.isAdmin()) {
+                <button class="btn-delete" (click)="state.deleteProject(p)">{{ state.i18n.t('admin.action.delete') }}</button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="empty">{{ state.i18n.t('admin.projects.empty') }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mobile-toolbar">
+    <label class="mobile-sort">
+      <span>{{ state.i18n.t('admin.mobile.sort.label') }}</span>
+      <select [ngModel]="state.sortState().projects.col" (ngModelChange)="state.setSortCol('projects', $event)">
+        <option value="id">{{ state.i18n.t('admin.projects.col.id') }}</option>
+        <option value="title">{{ state.i18n.t('admin.projects.col.title') }}</option>
+        <option value="project_date">{{ state.i18n.t('admin.projects.col.date') }}</option>
+        <option value="is_featured">{{ state.i18n.t('admin.projects.col.featured') }}</option>
+      </select>
+    </label>
+    <button type="button" class="dir-btn" (click)="state.toggleSortDir('projects')" [attr.aria-label]="state.i18n.t('admin.mobile.sort.dir')">
+      <span class="dir-arrow" [class.desc]="state.sortState().projects.dir === 'desc'">▲</span>
+    </button>
+  </div>
+
+  <div class="mobile-list">
+    @for (p of state.sortedProjects(); track p.id) {
+      <article class="mobile-card project-card">
+        <header class="mobile-card-head">
+          <div class="mobile-card-title">
+            <strong>{{ p.title }}</strong>
+            <span class="mobile-card-sub">{{ p.project_date | date:'dd/MM/yyyy' }}</span>
+          </div>
+          @if (p.is_featured) {
+            <span class="pill pill-amber">★ {{ state.i18n.t('admin.projects.col.featured') }}</span>
+          }
+        </header>
+        <div class="mobile-card-body">
+          @if (p.description) {
+            <p class="mobile-card-desc">{{ p.description }}</p>
+          }
+          @if (p.tags) {
+            <div class="mobile-tags">
+              @for (t of (p.tags || '').split(','); track $index) {
+                <span class="tag-chip">{{ t.trim() }}</span>
+              }
+            </div>
+          }
+        </div>
+        <footer class="mobile-card-actions">
+          <button class="btn-edit" (click)="state.editProject(p)">{{ state.i18n.t('admin.action.edit') }}</button>
+          @if (state.isAdmin()) {
+            <button class="btn-delete" (click)="state.deleteProject(p)">{{ state.i18n.t('admin.action.delete') }}</button>
+          }
+        </footer>
+      </article>
+    } @empty {
+      <div class="empty-state">
+        <p>{{ state.i18n.t('admin.projects.empty') }}</p>
+      </div>
+    }
+  </div>
+</section>

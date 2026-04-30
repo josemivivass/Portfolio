@@ -1,0 +1,209 @@
+/* Chatbot-tab-only: tarjetas y burbujas de conversaciones. El toolbar de
+   búsqueda/orden lo comparte con messages → vive en admin-shared.css. */
+
+.chatbot-conversations {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.convo-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  overflow: hidden;
+}
+.convo-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--c-primary-soft);
+}
+.convo-card.expanded {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lg);
+}
+.convo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  cursor: pointer;
+  gap: 16px;
+  user-select: none;
+  transition: background 0.15s;
+}
+.convo-head:hover {
+  background: var(--c-primary-softer);
+}
+.convo-head-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.convo-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.convo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.convo-info strong {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--brand);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.convo-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.convo-head-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.convo-chevron {
+  display: flex;
+  align-items: center;
+  transition: transform 0.25s;
+}
+.convo-chevron svg {
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+}
+.convo-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Hilo de mensajes */
+.convo-body {
+  border-top: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+.convo-thread {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+.convo-bubble {
+  max-width: 85%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  position: relative;
+}
+.convo-bubble.convo-user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.convo-bubble.convo-assistant {
+  align-self: flex-start;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+.convo-bubble-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.convo-role-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.convo-role-tag.tag-user {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+.convo-role-tag.tag-assistant {
+  background: var(--c-primary-soft);
+  color: var(--accent);
+}
+.convo-bubble-time {
+  font-size: 0.68rem;
+  opacity: 0.7;
+  font-weight: 500;
+}
+.convo-delete-msg {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
+  margin-left: auto;
+}
+.convo-delete-msg svg {
+  width: 14px;
+  height: 14px;
+}
+.convo-bubble.convo-user .convo-delete-msg {
+  color: rgba(255, 255, 255, 0.6);
+}
+.convo-bubble.convo-user .convo-delete-msg:hover {
+  color: #fff;
+}
+.convo-bubble.convo-assistant .convo-delete-msg {
+  color: var(--text-muted);
+}
+.convo-bubble.convo-assistant .convo-delete-msg:hover {
+  color: var(--danger);
+}
+.convo-bubble:hover .convo-delete-msg {
+  opacity: 1;
+}
+.convo-bubble-text {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.convo-tokens {
+  display: block;
+  font-size: 0.65rem;
+  margin-top: 6px;
+  opacity: 0.5;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 860px) {
+  .convo-head { padding: 14px 16px; flex-wrap: wrap; gap: 10px; }
+  .convo-avatar { width: 34px; height: 34px; font-size: 0.8rem; }
+  .convo-head-right { width: 100%; justify-content: flex-end; }
+  .convo-thread { padding: 14px 12px; }
+  .convo-bubble { max-width: 92%; }
+  .convo-bubble-text { font-size: 0.82rem; }
+}

@@ -1,0 +1,120 @@
+<section class="page">
+  <header class="page-head">
+    <div>
+      <h1>{{ state.i18n.t('admin.experience.title') }}</h1>
+      <p class="page-sub">{{ state.i18n.t('admin.experience.sub') }}</p>
+    </div>
+    <button class="btn-primary btn-new-compact" (click)="state.newExperience()" [attr.aria-label]="state.i18n.t('admin.experience.new')">
+      <span class="btn-new-label">{{ state.i18n.t('admin.experience.new') }}</span>
+      <span class="btn-new-icon" aria-hidden="true">+</span>
+    </button>
+  </header>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="sortable" [class.sorted]="state.sortDir('experiences','id')" (click)="state.toggleSort('experiences','id')">
+            <span>{{ state.i18n.t('admin.experience.col.id') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('experiences','id')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('experiences','title')" (click)="state.toggleSort('experiences','title')">
+            <span>{{ state.i18n.t('admin.experience.col.role') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('experiences','title')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('experiences','company')" (click)="state.toggleSort('experiences','company')">
+            <span>{{ state.i18n.t('admin.experience.col.company') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('experiences','company')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('experiences','start_date')" (click)="state.toggleSort('experiences','start_date')">
+            <span>{{ state.i18n.t('admin.experience.col.start') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('experiences','start_date')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortDir('experiences','end_date')" (click)="state.toggleSort('experiences','end_date')">
+            <span>{{ state.i18n.t('admin.experience.col.end') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('experiences','end_date')"></span>
+          </th>
+          <th>{{ state.i18n.t('admin.experience.col.actions') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (e of state.sortedExperiences(); track e.id) {
+          <tr>
+            <td>{{ e.id }}</td>
+            <td>{{ e.title }}</td>
+            <td>{{ e.company }}</td>
+            <td>{{ e.start_date | date:'dd/MM/yyyy' }}</td>
+            <td>{{ e.end_date ? (e.end_date | date:'dd/MM/yyyy') : state.i18n.t('admin.experience.current') }}</td>
+            <td class="actions">
+              <button class="btn-edit" (click)="state.editExperience(e)">{{ state.i18n.t('admin.action.edit') }}</button>
+              @if (state.isAdmin()) {
+                <button class="btn-delete" (click)="state.deleteExperience(e)">{{ state.i18n.t('admin.action.delete') }}</button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="empty">{{ state.i18n.t('admin.experience.empty') }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mobile-toolbar">
+    <label class="mobile-sort">
+      <span>{{ state.i18n.t('admin.mobile.sort.label') }}</span>
+      <select [ngModel]="state.sortState().experiences.col" (ngModelChange)="state.setSortCol('experiences', $event)">
+        <option value="start_date">{{ state.i18n.t('admin.experience.col.start') }}</option>
+        <option value="end_date">{{ state.i18n.t('admin.experience.col.end') }}</option>
+        <option value="title">{{ state.i18n.t('admin.experience.col.role') }}</option>
+        <option value="company">{{ state.i18n.t('admin.experience.col.company') }}</option>
+      </select>
+    </label>
+    <button type="button" class="dir-btn" (click)="state.toggleSortDir('experiences')" [attr.aria-label]="state.i18n.t('admin.mobile.sort.dir')">
+      <span class="dir-arrow" [class.desc]="state.sortState().experiences.dir === 'desc'">▲</span>
+    </button>
+  </div>
+
+  <div class="mobile-list">
+    @for (e of state.sortedExperiences(); track e.id) {
+      <article class="mobile-card experience-card">
+        <header class="mobile-card-head">
+          <div class="mobile-card-title">
+            <strong>{{ e.title }}</strong>
+            <span class="mobile-card-sub">{{ e.company }}</span>
+          </div>
+          <span class="pill" [class.pill-dark]="!e.end_date">
+            {{ e.end_date ? ((e.start_date | date:'MM/yy') + ' → ' + (e.end_date | date:'MM/yy')) : state.i18n.t('admin.experience.current') }}
+          </span>
+        </header>
+        <div class="mobile-card-body">
+          @if (e.description) {
+            <p class="mobile-card-desc">{{ e.description }}</p>
+          }
+          @if (e.location) {
+            <div class="mobile-meta-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>{{ e.location }}</span>
+            </div>
+          }
+          @if (e.tags) {
+            <div class="mobile-tags">
+              @for (t of (e.tags || '').split(','); track $index) {
+                <span class="tag-chip">{{ t.trim() }}</span>
+              }
+            </div>
+          }
+        </div>
+        <footer class="mobile-card-actions">
+          <button class="btn-edit" (click)="state.editExperience(e)">{{ state.i18n.t('admin.action.edit') }}</button>
+          @if (state.isAdmin()) {
+            <button class="btn-delete" (click)="state.deleteExperience(e)">{{ state.i18n.t('admin.action.delete') }}</button>
+          }
+        </footer>
+      </article>
+    } @empty {
+      <div class="empty-state">
+        <p>{{ state.i18n.t('admin.experience.empty') }}</p>
+      </div>
+    }
+  </div>
+</section>

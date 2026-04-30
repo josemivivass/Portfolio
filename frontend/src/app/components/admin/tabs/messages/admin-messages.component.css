@@ -1,0 +1,175 @@
+/* Messages-tab-only: tarjeta de mensaje y toggle de "respondido". El toolbar
+   (.messages-toolbar/.messages-search/.messages-select) vive en admin-shared.css
+   porque también lo usa la pestaña de chatbot. */
+
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.message-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 26px;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.message-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(45, 106, 79, 0.4);
+  transition: background 0.25s, box-shadow 0.25s;
+}
+.message-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(45, 106, 79, 0.25);
+}
+.message-card.answered {
+  background: linear-gradient(180deg, var(--surface) 0%, rgba(16, 185, 129, 0.04) 100%);
+}
+.message-card.answered::before {
+  background: var(--c-green-answered);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
+}
+.message-card.answered .message-body {
+  color: var(--text-muted);
+}
+.message-head-main { min-width: 0; }
+.message-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.message-head strong {
+  display: block;
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--brand);
+}
+.message-head a {
+  font-size: 0.8rem;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.message-head a:hover { text-decoration: underline; }
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.message-meta time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.message-body {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+/* Toggle de "respondido" */
+.answered-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px 12px 6px 8px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  user-select: none;
+}
+.answered-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.answered-toggle .answered-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border-strong);
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.answered-toggle .answered-box svg {
+  width: 12px;
+  height: 12px;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.2s, transform 0.2s;
+}
+.answered-toggle .answered-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.answered-toggle:hover {
+  border-color: rgba(16, 185, 129, 0.45);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.08);
+}
+.answered-toggle:focus-within {
+  border-color: var(--c-green-answered);
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+.answered-toggle.is-on {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+.answered-toggle.is-on .answered-box {
+  background: var(--c-green-answered);
+  border-color: var(--c-green-answered);
+}
+.answered-toggle.is-on .answered-box svg {
+  opacity: 1;
+  transform: scale(1);
+}
+.answered-toggle.is-on .answered-label {
+  color: var(--c-green-answered-dk);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 860px) {
+  .message-card { padding: 16px 18px; }
+  .message-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .message-head-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .message-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .message-meta time { flex: 1; }
+  .answered-toggle { flex-shrink: 0; }
+}
