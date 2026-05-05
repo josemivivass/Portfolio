@@ -1,5 +1,4 @@
-copiar el .env
-copiar el ai.env con la api key
+copiar el .env (incluye DB, JWT, email, reCAPTCHA y AI_API_KEY del chatbot)
 
 npm install
 

@@ -1,15 +1,8 @@
 const pool = require('../config/db');
 const Groq = require('groq-sdk');
-const fs = require('fs');
-const path = require('path');
 const { loadSystemPrompt, loadChatbotModel } = require('./profile.controller');
 
-// Load API key from ai.env
-const envPath = path.join(__dirname, '../../ai.env');
-const envContent = fs.readFileSync(envPath, 'utf8');
-const apiKey = envContent.match(/AI_API_KEY=(.+)/)?.[1]?.trim();
-
-const groq = new Groq({ apiKey });
+const groq = new Groq({ apiKey: process.env.AI_API_KEY });
 
 const USER_TOKEN_LIMIT = 400000;
 const ANON_IP_TOKEN_LIMIT = 400000;
