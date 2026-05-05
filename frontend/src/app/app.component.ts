@@ -41,6 +41,7 @@ export class AppComponent implements OnInit, OnDestroy {
   canAccessAdmin = false;
   isHomeRoute = true;
   isAdminRoute = false;
+  mobileMenuOpen = false;
 
   introScale = 1;
   introTranslateY = 0;
@@ -166,6 +167,29 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const scrollCvFlag = sessionStorage.getItem('scrollToCv');
+    if (scrollCvFlag) {
+      sessionStorage.removeItem('scrollToCv');
+      this.showPreloader = false;
+      this.showIntro = false;
+      this.mainTranslateY = 0;
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        this.homeComponent?.initAnimations();
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          ScrollTrigger.refresh();
+          this.stopVirtualScroll();
+          this.scrollMode = 'main';
+          const targetY = this.computeCvTargetY();
+          this.currentScrollY = targetY;
+          this.targetScrollY = targetY;
+          window.scrollTo(0, targetY);
+        }, 100);
+      }, 100);
+      return;
+    }
+
     const scrollProjFlag = sessionStorage.getItem('scrollToProjects');
     if (scrollProjFlag) {
       sessionStorage.removeItem('scrollToProjects');
@@ -179,8 +203,7 @@ export class AppComponent implements OnInit, OnDestroy {
         setTimeout(() => {
           ScrollTrigger.refresh();
           this.scrollMode = 'main';
-          const showcaseSection = document.querySelector('.skills-showcase-section') as HTMLElement;
-          const targetY = showcaseSection ? showcaseSection.getBoundingClientRect().top + window.scrollY + (window.innerHeight * 0.5) : Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+          const targetY = this.computeProjectsTargetY();
           this.currentScrollY = targetY;
           this.targetScrollY = targetY;
           window.scrollTo(0, targetY);
@@ -625,6 +648,49 @@ export class AppComponent implements OnInit, OnDestroy {
     this.startVirtualScroll(false);
   }
 
+  scrollToCv(event: Event): void {
+    event.preventDefault();
+    if (!this.isHomeRoute) {
+      sessionStorage.setItem('scrollToCv', '1');
+      this.router.navigateByUrl('/');
+      return;
+    }
+    this.doScrollToCv();
+  }
+
+  private doScrollToCv(): void {
+    if (this.showIntro) {
+      this.stopVirtualScroll();
+      this.isTransitioning = true;
+      this.showIntro = false;
+      this.mainTranslateY = 0;
+      this.menuTranslateY = 0;
+      this.cdr.detectChanges();
+      window.scrollTo(0, 0);
+
+      setTimeout(() => {
+        ScrollTrigger.refresh();
+        window.dispatchEvent(new Event('resize'));
+        this.homeComponent?.initAnimations();
+        setTimeout(() => {
+          this.isTransitioning = false;
+          this.scrollMode = 'main';
+          const target = this.computeCvTargetY();
+          this.currentScrollY = target;
+          this.targetScrollY = target;
+          window.scrollTo(0, target);
+        }, 600);
+      }, 100);
+    } else {
+      this.stopVirtualScroll();
+      this.scrollMode = 'main';
+      const target = this.computeCvTargetY();
+      this.currentScrollY = target;
+      this.targetScrollY = target;
+      window.scrollTo(0, target);
+    }
+  }
+
   scrollToProjects(event: Event): void {
     event.preventDefault();
     if (!this.isHomeRoute) {
@@ -636,14 +702,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private doScrollToProjects(): void {
-    const getTargetY = () => {
-      const showcaseSection = document.querySelector('.skills-showcase-section') as HTMLElement;
-      if (showcaseSection) {
-        // Sumamos 0.5vh para sobrepasar la animación de Skills y que el telón esté totalmente desplegado
-        return showcaseSection.getBoundingClientRect().top + window.scrollY + (window.innerHeight * 0.5);
-      }
-      return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    };
+    const getTargetY = () => this.computeProjectsTargetY();
 
     if (this.showIntro) {
       this.stopVirtualScroll();
@@ -706,6 +765,55 @@ export class AppComponent implements OnInit, OnDestroy {
       sessionStorage.setItem('preAuthState', saved);
     }
     window.location.href = '/';
+  }
+
+  /**
+   * Centra el `.hero-avatar` (foto de perfil) en el viewport. La sección
+   * hero ocupa 100vh con la foto centrada, así que normalmente el resultado
+   * será cercano a 0; lo calculamos contra el rect real para tolerar
+   * variaciones (safe areas móviles, márgenes, etc.).
+   */
+  private computeCvTargetY(): number {
+    if (!isPlatformBrowser(this.platformId)) return 0;
+    const avatar = document.querySelector('.hero-avatar') as HTMLElement | null;
+    if (avatar) {
+      const rect = avatar.getBoundingClientRect();
+      const center = rect.top + window.scrollY + rect.height / 2;
+      return Math.max(0, center - window.innerHeight / 2);
+    }
+    return 0;
+  }
+
+  /**
+   * Calcula la coordenada Y a la que hay que desplazarse para mostrar los
+   * proyectos. En desktop el telón está pinneado con GSAP y se revela durante
+   * los primeros ~150vh de la sección, así que sumamos 0.5vh para sobrepasar
+   * la fase de skills. En móvil (≤850px) el telón se renderiza en flujo
+   * normal como un elemento `position: relative` después de los 100vh del
+   * pin, por lo que apuntamos directamente al top del propio curtain.
+   */
+  private computeProjectsTargetY(): number {
+    if (!isPlatformBrowser(this.platformId)) return 0;
+    const isMobile = window.innerWidth <= 850;
+    if (isMobile) {
+      const curtain = document.querySelector('.sp-projects-curtain') as HTMLElement | null;
+      if (curtain) {
+        return curtain.getBoundingClientRect().top + window.scrollY;
+      }
+    }
+    const showcaseSection = document.querySelector('.skills-showcase-section') as HTMLElement | null;
+    if (showcaseSection) {
+      return showcaseSection.getBoundingClientRect().top + window.scrollY + (window.innerHeight * 0.5);
+    }
+    return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen = false;
   }
 
   logout(): void {
