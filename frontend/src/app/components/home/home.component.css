@@ -733,23 +733,21 @@
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  overflow: hidden;
+  /* `clip` (no `hidden`) para que sticky de los filtros se ancle al viewport.
+     `hidden` crea un scroll container y atrapa al sticky dentro de la sección. */
+  overflow: clip;
 }
 
 .sp-pin {
   position: relative;
   width: 100%;
-  height: 100vh;
-  overflow: hidden;
 }
 
-/* ── Capa 1 — Habilidades en dos columnas ─────────────── */
+/* ── Capa 1 — Habilidades en dos columnas (flujo normal) ─────────────── */
 .sp-skills-layer {
-  position: absolute;
-  inset: 0;
+  position: relative;
   padding: 80px 20px 60px;
   z-index: 1;
-  overflow: hidden;
 }
 
 .sp-skills-layer .section-inner {
@@ -809,18 +807,15 @@
   font-weight: 600;
 }
 
-/* ── Capa 2 — Telón de proyectos destacados (tema claro) ── */
+/* ── Capa 2 — Proyectos destacados (flujo normal, tema claro) ── */
 .sp-projects-curtain {
-  position: absolute;
-  inset: 0;
+  position: relative;
   z-index: 5;
-  overflow: hidden;
   background:
     var(--c-projects-glow-1),
     var(--c-projects-glow-2),
     var(--c-projects-bg);
   box-shadow: var(--c-projects-curtain-shadow);
-  will-change: transform;
 }
 
 .sp-projects-curtain::before {
@@ -858,16 +853,45 @@
   transform: translateX(-4px);
 }
 
-.showcase-inner {
-  position: relative;
+/* Cabecera pegajosa de proyectos: flecha + título + año + filtros.
+   Vive fuera de .showcase-inner como hijo directo de .sp-projects-curtain
+   para que el fondo opaco ocupe todo el ancho del viewport y oculte los
+   proyectos al pasar por debajo durante el scroll. */
+.showcase-sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   width: 100%;
-  height: 100%;
+  background: #f8f9fa;
+  border-bottom: 1px solid var(--c-border-card);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  /* Promociona a su propia capa de composición para que el navegador
+     no re-pinte el sticky en cada frame (causa de "temblor" en móvil). */
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.showcase-sticky-inner {
+  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 20px 36px 16px;
+  padding: 16px 36px 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  color: var(--c-text-body);
+}
+
+.showcase-inner {
+  position: relative;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 22px 36px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
   color: var(--c-text-body);
 }
 
@@ -896,12 +920,12 @@
 }
 
 /* ─── Filtros por tipo de proyecto ───────────────────────
-   Pills compactas con contador. Soportan hover, foco y estado activo. */
+   Pills compactas con contador. El sticky vive en el wrapper padre
+   (.showcase-sticky-top), aquí solo es una fila flex normal. */
 .showcase-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 4px;
 }
 
 .showcase-filter {
@@ -957,37 +981,27 @@
   color: #ffffff;
 }
 
-/* Lista de proyectos: flex column con scroll interno independiente.
-   overflow-y:auto siempre activo → la barra nativa funciona en todo momento
-   (touch, drag, teclado). El wheel handler en TS sólo intercepta wheel después
-   de .is-unveiled, así que la fase de revelado de la cortina no se rompe.
-   overscroll-behavior: contain → la rueda sobre esta caja queda dentro mientras
-   haya scroll por consumir; cuando topa, el evento se propaga al documento. */
+/* Lista de proyectos en flujo normal: la página entera hace scroll, sin
+   contenedor con overflow propio. Así todos los proyectos del filtro activo
+   son accesibles con el scroll natural y el footer queda al final de la lista. */
 .showcase-list {
-  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-height: 0;
-  padding-right: 6px;
-  overflow-y: auto;
-  overscroll-behavior: auto;
+  gap: 18px;
 }
 
-.showcase-list::-webkit-scrollbar        { width: 8px; }
-.showcase-list::-webkit-scrollbar-track  { background: var(--c-projects-scroll-track); }
-.showcase-list::-webkit-scrollbar-thumb  { background: var(--c-projects-scroll-thumb); border-radius: 4px; }
-.showcase-list::-webkit-scrollbar-thumb:hover { background: var(--c-projects-scroll-thumb-h); }
-
-/* ─── Card "bento": imagen dominante a la izquierda, contenido a la derecha.
-   Ratio ~55/45. La imagen es la protagonista. */
+/* ─── Card "bento": mockup a un lado, contenido al otro.
+   Por defecto mockup a la izquierda; las pares (--reverse) lo invierten. */
 .showcase-card {
   position: relative;
   display: grid;
   grid-template-columns: minmax(220px, 0.9fr) minmax(240px, 1.1fr);
-  gap: 18px;
+  gap: 22px;
   align-items: stretch;
-  padding: 12px;
+  /* Más margen vertical en escritorio: el contenido (que usa space-between)
+     deja el título pegado arriba y los botones pegados abajo, así que un
+     padding alto separa visualmente ambos del borde y crea más aire. */
+  padding: 34px 22px;
   background: var(--c-surface);
   border: 1px solid var(--c-border-card);
   border-radius: 14px;
@@ -1002,6 +1016,23 @@
   box-shadow: var(--c-projects-card-shadow-h);
 }
 
+/* Tarjetas alternas (índice impar): mockup a la derecha, contenido a la izquierda.
+   Invertimos también las columnas para que el mockup conserve la misma anchura
+   proporcional (0.9fr) en ambos lados y el contenido conserve la suya (1.1fr).
+   Sin esto, en anchos intermedios las fotos a la derecha quedan más grandes
+   y las tarjetas inversas tienen menos hueco para los botones. */
+.showcase-card--reverse {
+  grid-template-columns: minmax(240px, 1.1fr) minmax(220px, 0.9fr);
+}
+.showcase-card--reverse > .showcase-mockup {
+  grid-column: 2;
+  grid-row: 1;
+}
+.showcase-card--reverse > .showcase-content {
+  grid-column: 1;
+  grid-row: 1;
+}
+
 /* ─── Mockup wrapper común ─── */
 .showcase-mockup {
   position: relative;
@@ -1013,15 +1044,25 @@
   min-height: 130px;
 }
 
+/* Pill (estado del proyecto): siempre en la esquina superior izquierda de la
+   foto, justo debajo de la barra del navegador para no solaparse con la URL.
+   Misma posición en escritorio y en móvil. Para mockups Android (sin barra
+   de URL) la mantenemos abajo-izquierda dentro del cuerpo del teléfono. */
 .showcase-card-badges {
   position: absolute;
-  bottom: 10px;
+  top: 38px;
   left: 12px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   z-index: 3;
   pointer-events: none;
+}
+
+.showcase-mockup[data-type='android'] .showcase-card-badges {
+  top: auto;
+  bottom: 10px;
+  left: 12px;
 }
 
 .showcase-pill {
@@ -1227,62 +1268,123 @@
   opacity: 0.55;
 }
 
-/* ─── Contenido derecho ─── */
+/* ─── Contenido: cabecera arriba (título+nº ↔ fecha), descripción centrada,
+   pie abajo (tags+botones ↔ QR). justify-content: space-between reparte
+   verticalmente para que cabecera quede pegada arriba y pie abajo. */
 .showcase-content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 12px;
   min-width: 0;
   position: relative;
-  align-self: center;
+  align-self: stretch;
+  padding: 4px 4px;
 }
 
-.showcase-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.64rem;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-  color: var(--c-text-muted);
-  font-weight: 700;
+/* Cabecera de la tarjeta: nº · título · fecha en la MISMA línea horizontal.
+   Grid 3 columnas (auto · 1fr · auto) alineadas por baseline para que el
+   número grande, el título y la fecha compartan línea base tipográfica. */
+.showcase-card-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 14px;
+  row-gap: 4px;
 }
 
 .showcase-num-inline {
   font-family: 'Courier New', monospace;
   color: var(--c-primary);
-  font-size: 0.72rem;
-  letter-spacing: 1px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  opacity: 0.55;
+  line-height: 1;
 }
 
-.showcase-dot { color: var(--c-primary); }
-
-.showcase-card-title {
-  font-size: 1.18rem;
+.showcase-date {
+  font-size: 0.7rem;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--c-text-muted);
   font-weight: 700;
-  color: var(--c-text-heading);
-  line-height: 1.18;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* Título: protagonista de la tarjeta. Más grande, negrita fuerte y degradado
+   sutil hacia el primary para darle identidad propia. */
+.showcase-card-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.7px;
   margin: 0;
-  letter-spacing: -0.4px;
+  background: linear-gradient(135deg, var(--c-text-heading) 0%, var(--c-primary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  /* Subrayado decorativo bajo el texto cuando hay hover. */
+  position: relative;
+}
+
+.showcase-card-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 28px;
+  height: 2px;
+  background: var(--c-primary);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.32s ease;
+}
+
+.showcase-card:hover .showcase-card-title::after {
+  transform: scaleX(1);
 }
 
 .showcase-desc {
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   color: var(--c-text-body);
-  line-height: 1.5;
+  line-height: 1.45;
   margin: 0;
+  /* `pre-line` respeta los saltos de línea (\n) que se introduzcan en
+     la descripción del proyecto, manteniendo el wrap normal en el resto. */
+  white-space: pre-line;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* ─── Tags con icono del stack ─── */
+/* Pie de la tarjeta: tags+botones a la izquierda, QR a la derecha. */
+.showcase-card-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: auto;
+}
+
+.showcase-card-footer-left {
+  display: flex;
+  flex-direction: column;
+  /* Espacio entre la fila de tags y la fila de botones. */
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+}
+
+/* ─── Tags con icono del stack (encima de los botones, abajo-izquierda) ─── */
 .showcase-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 2px;
 }
 
 .showcase-tag {
@@ -1306,23 +1408,22 @@
   flex-shrink: 0;
 }
 
-/* ─── Acciones ─── */
+/* ─── Acciones (abajo-izquierda) ─── */
 .showcase-links {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 6px;
 }
 
 .showcase-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
-  border-radius: 7px;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.76rem;
+  font-size: 0.86rem;
   letter-spacing: 0.3px;
   font-family: inherit;
   cursor: pointer;
@@ -1360,7 +1461,7 @@
   background: transparent;
   border: none;
   color: var(--c-primary);
-  padding: 7px 4px;
+  padding: 9px 6px;
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-color: rgba(45, 106, 79, 0.35);
@@ -1370,32 +1471,32 @@
   text-decoration-color: var(--c-primary);
 }
 
-/* ─── QR inline: aparece como una fila más en el flujo de la card.
-     Sin position:absolute → no se corta nunca, suma altura al card y la
-     lista hace scroll natural si hace falta. */
+/* ─── QR inline: vive en el pie a la derecha, sin estorbar a tags/botones.
+     Layout vertical compacto (QR arriba + label "ESCANEAR" abajo). */
 .showcase-qr-inline {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 14px;
-  margin-top: 8px;
-  padding: 10px 12px;
+  gap: 6px;
+  padding: 8px 10px 6px;
   background: var(--c-surface);
   border: 1px solid var(--c-border-card);
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: 0 4px 12px rgba(17, 24, 39, 0.06);
+  flex-shrink: 0;
   animation: qr-pop-in 0.22s ease-out;
 }
 
 @keyframes qr-pop-in {
-  from { opacity: 0; transform: translateY(-4px); max-height: 0; }
-  to   { opacity: 1; transform: translateY(0);    max-height: 200px; }
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1);    }
 }
 
 .showcase-qr-frame {
   position: relative;
-  width: 88px;
-  height: 88px;
-  padding: 6px;
+  width: 76px;
+  height: 76px;
+  padding: 5px;
   flex-shrink: 0;
   background: #ffffff;
   border-radius: 8px;
@@ -1435,41 +1536,13 @@
   padding: 40px 20px;
 }
 
-/* ─── Indicador de scroll dentro del telón ─── */
+/* Indicador de scroll dentro del telón — ya no aplica con la lista en
+   flujo normal. Lo ocultamos en todas las anchuras. */
 .showcase-scroll-hint {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 6px 0 2px;
-  color: var(--c-text-muted);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  opacity: 0.7;
-  pointer-events: none;
-  flex-shrink: 0;
-}
-
-.showcase-scroll-hint svg {
-  width: 14px;
-  height: 14px;
-  color: var(--c-primary);
-  animation: showcase-bounce 1.6s ease-in-out infinite;
-}
-
-@keyframes showcase-bounce {
-  0%, 100% { transform: translateY(0);   opacity: 0.6; }
-  50%      { transform: translateY(3px); opacity: 1;   }
-}
-
-.sp-projects-curtain.is-unveiled .showcase-scroll-hint {
-  opacity: 0.85;
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .showcase-scroll-hint svg,
   .showcase-pill--prod .showcase-pill-dot {
     animation: none;
   }
@@ -1670,11 +1743,20 @@
 
 .case-modal-actions {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
   margin-top: 6px;
   padding-top: 14px;
   border-top: 1px solid var(--c-border-card);
+}
+
+/* Botones del modal de caso: un punto más grandes que los de la tarjeta para
+   que tengan más presencia en el contexto del modal. */
+.case-modal-actions .showcase-btn {
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  border-radius: 9px;
+  gap: 8px;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -2021,7 +2103,7 @@
   }
 }
 
-/* ── Footer integrado dentro del telón (tema claro) ─────── */
+/* ── Footer integrado al final de la lista (tema claro) ─────── */
 .sp-projects-curtain .portfolio-footer {
   flex-shrink: 0;
   margin-top: auto;
@@ -2034,22 +2116,36 @@
 }
 
 /* ═══════════════════════════════════════════════════════
-   FOOTER
+   FOOTER — una sola línea: marca a la izquierda, contacto a la derecha
+   El padding-right reserva hueco para el FAB del chatbot (52px @ right:28px,
+   con un margen de seguridad) para que la línea de contacto no quede tapada.
    ═══════════════════════════════════════════════════════ */
 .portfolio-footer {
-  padding: 40px 20px;
+  padding: 24px 20px;
   border-top: 1px solid var(--c-border-separator);
   margin-top: 20px;
 }
 
 .footer-inner {
-  max-width: 900px;
+  max-width: 1400px;
   margin: 0 auto;
-  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
 }
 
 .footer-brand {
-  margin-bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.footer-contact {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .footer-name {
@@ -2092,12 +2188,14 @@
   .hero-scroll-arrow { bottom: 14px; }
 
   /* Proyectos extra-compactos en pantallas de portátil */
+  .showcase-sticky-inner { padding: 10px 28px 8px; gap: 8px; }
   .showcase-inner { padding: 14px 28px 12px; gap: 10px; }
   .showcase-title { font-size: 1.6rem; }
   .showcase-sub   { font-size: 0.7rem; }
   .showcase-list  { gap: 10px; }
-  .showcase-card  { padding: 10px; gap: 14px; border-radius: 12px;
+  .showcase-card  { padding: 22px 18px; gap: 18px; border-radius: 12px;
                     grid-template-columns: minmax(190px, 0.85fr) minmax(220px, 1.1fr); }
+  .showcase-card--reverse { grid-template-columns: minmax(220px, 1.1fr) minmax(190px, 0.85fr); }
   .showcase-mockup        { min-height: 110px; }
   .mockup-browser-screen,
   .mockup-browser-screen img { min-height: 110px; }
@@ -2106,14 +2204,19 @@
   .mockup-phone-screen,
   .mockup-phone-screen img { min-height: 150px; }
   .mockup-phone-bar       { width: 46px; height: 3px; margin-top: 6px; }
-  .showcase-card-title    { font-size: 1.04rem; }
+  .showcase-card-title    { font-size: 1.25rem; letter-spacing: -0.5px; }
   .showcase-desc          { font-size: 0.76rem; -webkit-line-clamp: 2; }
   .showcase-tag           { font-size: 0.64rem; padding: 2px 8px; }
-  .showcase-btn           { font-size: 0.72rem; padding: 4px 9px; }
-  .showcase-meta          { font-size: 0.6rem; letter-spacing: 1.4px; }
+  .showcase-btn           { font-size: 0.8rem;  padding: 7px 12px; }
+  .showcase-num-inline    { font-size: 1.15rem; }
+  .showcase-date          { font-size: 0.62rem; letter-spacing: 1.4px; }
   .showcase-filter        { padding: 3px 9px 3px 11px; font-size: 0.7rem; }
   .showcase-filter-count  { min-width: 18px; font-size: 0.64rem; padding: 0 5px; }
-  .showcase-content       { gap: 5px; }
+  .showcase-content       { gap: 8px; padding: 2px 4px; }
+  .showcase-card-footer   { gap: 10px; }
+  .showcase-card-footer-left { gap: 10px; }
+  .showcase-qr-frame      { width: 64px; height: 64px; padding: 4px; }
+  .showcase-qr-label      { font-size: 0.58rem; letter-spacing: 1.2px; }
   .projects-back-arrow    { font-size: 0.78rem; }
   .projects-back-arrow svg { width: 15px; height: 15px; }
 
@@ -2142,8 +2245,8 @@
   .case-modal-tech        { gap: 5px; margin-top: 0; }
   .case-modal-tech-label  { font-size: 0.6rem; letter-spacing: 1.4px; }
   .case-modal-tech .showcase-tag { font-size: 0.64rem; padding: 2px 7px; }
-  .case-modal-actions     { gap: 8px; margin-top: 0; padding-top: 8px; }
-  .case-modal-actions .showcase-btn { font-size: 0.72rem; padding: 4px 9px; }
+  .case-modal-actions     { gap: 10px; margin-top: 0; padding-top: 8px; }
+  .case-modal-actions .showcase-btn { font-size: 0.88rem; padding: 8px 15px; border-radius: 8px; }
   .case-modal-close       { width: 28px; height: 28px; top: 8px; right: 8px; }
   .case-modal-close svg   { width: 13px; height: 13px; }
   .case-modal-fullscreen-btn { width: 28px; height: 28px; top: 8px; right: 44px; }
@@ -2168,8 +2271,14 @@
   .mockup-phone           { width: 100px; }
   .mockup-phone-screen,
   .mockup-phone-screen img { min-height: 130px; }
-  .showcase-card-title    { font-size: 0.96rem; }
+  .showcase-card-title    { font-size: 1.1rem; letter-spacing: -0.4px; }
   .showcase-desc          { font-size: 0.72rem; -webkit-line-clamp: 2; }
+}
+
+/* Entre escritorio compacto y móvil (≈850px–1500px): el contenido del
+   footer no se solape con el FAB del chatbot */
+@media (max-width: 1500px) and (min-width: 851px) {
+  .footer-inner { padding-right: 60px; }
 }
 
 @media (max-width: 850px) {
@@ -2185,28 +2294,46 @@
   .about-languages { flex-direction: column; gap: 10px; }
   .about-card { padding: 16px 18px; }
 
-  /* En móvil desactivamos el pin y dejamos contenido en flujo normal */
-  .sp-pin { height: auto; overflow: visible; }
-  .sp-skills-layer { position: relative; padding: 60px 20px 40px; }
-  .sp-projects-curtain { position: relative; transform: none !important; min-height: auto; }
-  .showcase-inner { padding: 40px 20px; }
-  .showcase-list { overflow: visible; padding-right: 0; gap: 18px; }
+  /* En móvil compactamos los paddings de skills/proyectos. Sin
+     padding-bottom en el showcase-inner para que la última línea del
+     footer quede pegada al borde inferior, sin hueco extra. */
+  .sp-skills-layer { padding: 60px 20px 40px; }
+  .showcase-inner { padding: 40px 20px 0; }
 
-  /* Indicador "desliza para abajo" sólo aplica al telón con scroll interno
-     (escritorio). En móvil la lista está en flujo natural, así que sobra. */
-  .showcase-scroll-hint { display: none; }
+  /* Footer en móvil: misma fila si cabe, si no envuelve. Padding-bottom
+     ≈ una línea de texto para que la línea de contacto no quede pegada al
+     borde inferior del viewport. */
+  .portfolio-footer { padding: 12px 16px 20px; margin-top: 12px; }
+  .sp-projects-curtain .portfolio-footer { padding: 10px 0 20px; }
+  .footer-inner {
+    padding-right: 70px;
+    gap: 6px 14px;
+  }
 
-  /* En móvil colapsamos la card a una columna: mockup arriba, contenido debajo */
+  /* En móvil colapsamos la card a una columna: mockup arriba, contenido debajo.
+     La alternancia (--reverse) se desactiva en móvil — el orden visual siempre
+     es mockup → contenido para mantener la lectura natural. */
   .showcase-card {
     grid-template-columns: 1fr;
     gap: 16px;
-    padding: 14px;
+    padding: 18px 18px 16px;
   }
+  .showcase-card--reverse > .showcase-mockup,
+  .showcase-card--reverse > .showcase-content {
+    grid-column: 1;
+  }
+  .showcase-card--reverse > .showcase-mockup  { grid-row: 1; }
+  .showcase-card--reverse > .showcase-content { grid-row: 2; }
   .showcase-mockup { min-height: auto; }
-  .showcase-content { align-self: stretch; }
-  /* QR inline en móvil: sigue siendo flujo, solo ajustamos padding */
-  .showcase-qr-inline { padding: 10px; gap: 12px; }
-  .showcase-qr-frame  { width: 80px; height: 80px; }
+  .showcase-content { align-self: stretch; padding: 2px 0 0; }
+
+  /* En móvil el título encoge un poco para que respire en columna estrecha. */
+  .showcase-card-title { font-size: 1.4rem; letter-spacing: -0.5px; }
+
+  /* QR inline en móvil: sigue siendo abajo-derecha pero más compacto */
+  .showcase-qr-inline { padding: 6px 8px 4px; }
+  .showcase-qr-frame  { width: 64px; height: 64px; padding: 4px; }
+  .showcase-qr-label  { font-size: 0.58rem; }
 
   /* En móvil ocultamos el botón "Ver en móvil" / QR: ya estás en móvil,
      no tiene sentido generar un QR para abrir la web en otro dispositivo. */
@@ -2270,7 +2397,8 @@
     font-size: 0.72rem;
   }
 
-  /* Filtros: más comprimidos */
+  /* Cabecera sticky compacta en móvil. */
+  .showcase-sticky-inner { padding: 12px 20px 10px; gap: 10px; }
   .showcase-filters { gap: 6px; }
   .showcase-filter  { padding: 5px 10px 5px 12px; font-size: 0.76rem; }
 

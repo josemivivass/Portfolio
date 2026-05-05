@@ -240,34 +240,42 @@
 
     <!-- Capa telón: proyectos destacados -->
     <div class="sp-projects-curtain" #projectsCurtain>
-      <div class="showcase-inner">
 
-        <a href="javascript:void(0)" (click)="scrollToTop($event)" class="projects-back-arrow" aria-label="Volver al inicio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-          <span>{{ i18n.t('login.back') }}</span>
-        </a>
+      <!-- Cabecera pegajosa: flecha de volver, título + año y filtros.
+           Vive fuera de .showcase-inner para que el background ocupe todo el
+           ancho del viewport (no solo el max-width de 1400px del inner). -->
+      <div class="showcase-sticky-top">
+        <div class="showcase-sticky-inner">
+          <a href="javascript:void(0)" (click)="scrollToTop($event)" class="projects-back-arrow" aria-label="Volver al inicio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>{{ i18n.t('login.back') }}</span>
+          </a>
 
-        <header class="showcase-header">
-          <h2 class="showcase-title">{{ i18n.t('projects.title') }}</h2>
-          <span class="showcase-sub">{{ i18n.t('projects.featured_label') }}</span>
-        </header>
+          <header class="showcase-header">
+            <h2 class="showcase-title">{{ i18n.t('projects.title') }}</h2>
+            <span class="showcase-sub" *ngIf="projectsYearRange">{{ projectsYearRange }}</span>
+          </header>
 
-        <!-- Filtro por tipo de proyecto -->
-        <div class="showcase-filters" *ngIf="projects.length > 0" role="tablist">
-          <button type="button"
-                  *ngFor="let f of projectFilters"
-                  class="showcase-filter"
-                  role="tab"
-                  [class.is-active]="activeFilter === f.id"
-                  [attr.aria-selected]="activeFilter === f.id"
-                  (click)="setFilter(f.id)">
-            <span class="showcase-filter-label">{{ i18n.t(f.labelKey) }}</span>
-            <span class="showcase-filter-count">{{ countByFilter(f.id) }}</span>
-          </button>
+          <!-- Filtro por tipo de proyecto -->
+          <div class="showcase-filters" *ngIf="projects.length > 0" role="tablist">
+            <button type="button"
+                    *ngFor="let f of projectFilters"
+                    class="showcase-filter"
+                    role="tab"
+                    [class.is-active]="activeFilter === f.id"
+                    [attr.aria-selected]="activeFilter === f.id"
+                    (click)="setFilter(f.id)">
+              <span class="showcase-filter-label">{{ i18n.t(f.labelKey) }}</span>
+              <span class="showcase-filter-count">{{ countByFilter(f.id) }}</span>
+            </button>
+          </div>
         </div>
+      </div>
+
+      <div class="showcase-inner">
 
         <div *ngIf="errorMessage" class="showcase-error">
           {{ i18n.t('projects.error') }}
@@ -278,6 +286,7 @@
           <ng-container *ngIf="filteredProjects.length > 0; else emptyFilterTpl">
             <article class="showcase-card"
                      *ngFor="let project of filteredProjects; let i = index"
+                     [class.showcase-card--reverse]="i % 2 === 1"
                      [class.showcase-card--featured]="project.is_featured"
                      [class.showcase-card--android]="getType(project) === 'android'"
                      [class.showcase-card--web]="getType(project) === 'web'"
@@ -378,62 +387,70 @@
                 </div>
               </div>
 
-              <!-- Contenido -->
+              <!-- Contenido: cabecera (título+nº a la izda, fecha a la dcha),
+                   descripción centrada y pie con tags+botones a la izda y QR a la dcha. -->
               <div class="showcase-content">
-                <div class="showcase-meta">
-                  <span class="showcase-num-inline">{{ i + 1 | number:'2.0-0' }}</span>
-                  <span class="showcase-dot">·</span>
-                  <span class="showcase-date">{{ project.project_date | date:'MMM yyyy' }}</span>
-                </div>
 
-                <h3 class="showcase-card-title">
-                  {{ i18n.lang === 'en' && project.title_en ? project.title_en : project.title }}
-                </h3>
+                <!-- HEADER: nº · título · fecha en la misma línea horizontal
+                     (grid 3 columnas: auto 1fr auto, alineadas por baseline). -->
+                <header class="showcase-card-header">
+                  <span class="showcase-num-inline">{{ i + 1 | number:'2.0-0' }}</span>
+                  <h3 class="showcase-card-title">
+                    {{ i18n.lang === 'en' && project.title_en ? project.title_en : project.title }}
+                  </h3>
+                  <span class="showcase-date">{{ project.project_date | date:'MMM yyyy' }}</span>
+                </header>
 
                 <p class="showcase-desc">
                   {{ i18n.lang === 'en' && project.description_en ? project.description_en : project.description }}
                 </p>
 
-                <!-- Tags con icono del stack -->
-                <div class="showcase-tags" *ngIf="project.tags">
-                  <span class="showcase-tag" *ngFor="let tag of project.tags.split(',')">
-                    <img *ngIf="techIcon(tag)" [src]="techIcon(tag)" alt="" class="showcase-tag-icon" loading="lazy" />
-                    {{ tag.trim() }}
-                  </span>
-                </div>
+                <!-- FOOTER: abajo-izquierda tags+botones · abajo-derecha QR -->
+                <div class="showcase-card-footer">
+                  <div class="showcase-card-footer-left">
+                    <!-- Tags con icono del stack (encima de los botones) -->
+                    <div class="showcase-tags" *ngIf="project.tags">
+                      <span class="showcase-tag" *ngFor="let tag of project.tags.split(',')">
+                        <img *ngIf="techIcon(tag)" [src]="techIcon(tag)" alt="" class="showcase-tag-icon" loading="lazy" />
+                        {{ tag.trim() }}
+                      </span>
+                    </div>
 
-                <!-- Acciones -->
-                <div class="showcase-links">
-                  <a *ngIf="project.repo_url" [href]="project.repo_url" target="_blank" rel="noopener" class="showcase-btn showcase-btn--ghost">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.69-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.13 0 1.54-.01 2.78-.01 3.16 0 .31.21.68.8.56C20.21 21.39 23.5 17.07 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
-                    {{ i18n.t('projects.code') }}
-                  </a>
-                  <a *ngIf="project.live_url" [href]="project.live_url" target="_blank" rel="noopener" class="showcase-btn showcase-btn--solid">
-                    {{ i18n.t('projects.demo') }} →
-                  </a>
-                  <button type="button"
-                          class="showcase-btn showcase-btn--ghost showcase-btn--qr"
-                          (click)="toggleQr(project, $event)"
-                          [attr.aria-expanded]="openQrId === project.id"
-                          [attr.aria-label]="i18n.t('projects.qr.aria')">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14v7M17 21h4M14 17h3"/></svg>
-                    {{ i18n.t('projects.qr.toggle') }}
-                  </button>
-                  <button type="button"
-                          class="showcase-btn showcase-btn--link"
-                          (click)="openCase(project)"
-                          [attr.aria-label]="i18n.t('projects.view_case.aria')">
-                    {{ i18n.t('projects.view_case') }} →
-                  </button>
-                </div>
-
-                <!-- QR inline: aparece como una fila más en la card al pulsar
-                     "Ver en móvil". Evita problemas de clipping del popover. -->
-                <div class="showcase-qr-inline" *ngIf="openQrId === project.id" (click)="$event.stopPropagation()">
-                  <div class="showcase-qr-frame">
-                    <img [src]="qrUrl(project)" alt="QR" loading="lazy" />
+                    <!-- Acciones -->
+                    <div class="showcase-links">
+                      <a *ngIf="project.repo_url" [href]="project.repo_url" target="_blank" rel="noopener" class="showcase-btn showcase-btn--ghost">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.69-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.13 0 1.54-.01 2.78-.01 3.16 0 .31.21.68.8.56C20.21 21.39 23.5 17.07 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+                        {{ i18n.t('projects.code') }}
+                      </a>
+                      <a *ngIf="project.live_url" [href]="project.live_url" target="_blank" rel="noopener" class="showcase-btn showcase-btn--solid">
+                        {{ i18n.t('projects.demo') }} →
+                      </a>
+                      <!-- "Ver en móvil" solo si hay live_url (sin URL no hay QR que generar) -->
+                      <button *ngIf="project.live_url"
+                              type="button"
+                              class="showcase-btn showcase-btn--ghost showcase-btn--qr"
+                              (click)="toggleQr(project, $event)"
+                              [attr.aria-expanded]="openQrId === project.id"
+                              [attr.aria-label]="i18n.t('projects.qr.aria')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14v7M17 21h4M14 17h3"/></svg>
+                        {{ i18n.t('projects.qr.toggle') }}
+                      </button>
+                      <button type="button"
+                              class="showcase-btn showcase-btn--link"
+                              (click)="openCase(project)"
+                              [attr.aria-label]="i18n.t('projects.view_case.aria')">
+                        {{ i18n.t('projects.view_case') }} →
+                      </button>
+                    </div>
                   </div>
-                  <span class="showcase-qr-label">{{ i18n.t('projects.scan') }}</span>
+
+                  <!-- QR inline (abajo-derecha cuando se abre desde "Ver en móvil") -->
+                  <div class="showcase-qr-inline" *ngIf="openQrId === project.id && project.live_url" (click)="$event.stopPropagation()">
+                    <div class="showcase-qr-frame">
+                      <img [src]="qrUrl(project)" alt="QR" loading="lazy" />
+                    </div>
+                    <span class="showcase-qr-label">{{ i18n.t('projects.scan') }}</span>
+                  </div>
                 </div>
               </div>
             </article>
@@ -455,12 +472,11 @@
         </ng-template>
 
 
-        <!-- FOOTER (integrado dentro del telón para que permanezca visible
-             mientras el telón está subido) -->
+        <!-- FOOTER (al final de la lista de proyectos) -->
         <footer class="portfolio-footer">
           <div class="footer-inner">
             <div class="footer-brand">
-              <span class="footer-name">Jose Miguel Vivas Sanchez</span>
+              <span class="footer-name">José Miguel Vivas Sánchez</span>
               <span class="footer-sep">&middot;</span>
               <span class="footer-role">{{ i18n.t('footer.role') }}</span>
             </div>

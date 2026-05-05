@@ -3,6 +3,7 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { adminGuard } from './guards/admin.guard';
+import { adminExitGuard } from './guards/admin-exit.guard';
 
 export const routes: Routes = [
   // Ruta raíz: el contenido home se renderiza directamente desde AppComponent (<app-home>)
@@ -15,6 +16,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [adminGuard],
+    canDeactivate: [adminExitGuard],
     loadComponent: () => import('./components/admin/admin.component').then(m => m.AdminComponent),
     loadChildren: () => import('./components/admin/admin.routes').then(m => m.adminRoutes)
   },

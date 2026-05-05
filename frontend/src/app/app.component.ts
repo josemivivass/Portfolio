@@ -749,22 +749,18 @@ export class AppComponent implements OnInit, OnDestroy {
 
   enterAdmin(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    sessionStorage.setItem('preAdminState', JSON.stringify({
-      showIntro: this.showIntro,
-      scrollY: window.scrollY
-    }));
     this.router.navigateByUrl('/admin');
   }
 
+  /**
+   * Sale del panel de admin. La recarga + scroll al avatar la fuerza el
+   * `adminExitGuard` (CanDeactivate) — así cubrimos también la salida por
+   * botón atrás del navegador, swipe atrás en móvil, o cualquier otra
+   * navegación, no solo el clic en el botón ← de la página.
+   */
   exitAdmin(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    const saved = sessionStorage.getItem('preAdminState');
-    sessionStorage.removeItem('preAdminState');
-    sessionStorage.setItem('authReturn', '1');
-    if (saved) {
-      sessionStorage.setItem('preAuthState', saved);
-    }
-    window.location.href = '/';
+    this.router.navigateByUrl('/');
   }
 
   /**
@@ -786,24 +782,18 @@ export class AppComponent implements OnInit, OnDestroy {
 
   /**
    * Calcula la coordenada Y a la que hay que desplazarse para mostrar los
-   * proyectos. En desktop el telón está pinneado con GSAP y se revela durante
-   * los primeros ~150vh de la sección, así que sumamos 0.5vh para sobrepasar
-   * la fase de skills. En móvil (≤850px) el telón se renderiza en flujo
-   * normal como un elemento `position: relative` después de los 100vh del
-   * pin, por lo que apuntamos directamente al top del propio curtain.
+   * proyectos. La sección de skills + proyectos vive en flujo normal en
+   * todas las anchuras, así que apuntamos al top del telón directamente.
    */
   private computeProjectsTargetY(): number {
     if (!isPlatformBrowser(this.platformId)) return 0;
-    const isMobile = window.innerWidth <= 850;
-    if (isMobile) {
-      const curtain = document.querySelector('.sp-projects-curtain') as HTMLElement | null;
-      if (curtain) {
-        return curtain.getBoundingClientRect().top + window.scrollY;
-      }
+    const curtain = document.querySelector('.sp-projects-curtain') as HTMLElement | null;
+    if (curtain) {
+      return curtain.getBoundingClientRect().top + window.scrollY;
     }
     const showcaseSection = document.querySelector('.skills-showcase-section') as HTMLElement | null;
     if (showcaseSection) {
-      return showcaseSection.getBoundingClientRect().top + window.scrollY + (window.innerHeight * 0.5);
+      return showcaseSection.getBoundingClientRect().top + window.scrollY;
     }
     return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
   }

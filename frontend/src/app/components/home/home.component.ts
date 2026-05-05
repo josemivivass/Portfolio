@@ -52,7 +52,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     { id: 'web',     labelKey: 'projects.filter.web' },
     { id: 'android', labelKey: 'projects.filter.android' },
     { id: 'ai',      labelKey: 'projects.filter.ai' },
-    { id: 'other',   labelKey: 'projects.filter.other' },
   ];
   activeFilter: ProjectFilterId = 'all';
 
@@ -86,6 +85,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   private animationsInitialized = false;
   private langSub!: Subscription;
 
+  // Datos para el pin/scroll horizontal de la sección Experiencia. Si
+  // `initAnimations()` se llama antes de que llegue la respuesta del
+  // backend, los cards aún no están en el DOM y `track.scrollWidth` es
+  // demasiado pequeño → el pin spacer se dimensiona mal y luego ni
+  // `ScrollTrigger.refresh()` lo arregla del todo. Diferimos el init
+  // hasta que ambas listas estén cargadas.
+  private projectsLoaded = false;
+  private experiencesLoaded = false;
+  private initPending = false;
+
   constructor(
     private projectService: ProjectService,
     private experienceService: ExperienceService,
@@ -115,11 +124,17 @@ export class HomeComponent implements OnInit, OnDestroy {
         if (isPlatformBrowser(this.platformId)) {
           ScrollTrigger.refresh();
         }
+        this.projectsLoaded = true;
+        this.tryDeferredInit();
       },
       error: (err) => {
         console.error('Error de red al cargar proyectos:', err);
         this.errorMessage = 'Error al cargar los proyectos.';
         this.cdr.detectChanges();
+        // Aunque haya fallado, marcamos como cargado para no bloquear
+        // indefinidamente el init de animaciones.
+        this.projectsLoaded = true;
+        this.tryDeferredInit();
       }
     });
 
@@ -132,10 +147,14 @@ export class HomeComponent implements OnInit, OnDestroy {
         if (isPlatformBrowser(this.platformId)) {
           ScrollTrigger.refresh();
         }
+        this.experiencesLoaded = true;
+        this.tryDeferredInit();
       },
       error: (err) => {
         console.error('Error de red al cargar experiencias:', err);
         this.cdr.detectChanges();
+        this.experiencesLoaded = true;
+        this.tryDeferredInit();
       }
     });
 
@@ -364,6 +383,18 @@ export class HomeComponent implements OnInit, OnDestroy {
     return this.projects.filter(p => this.getType(p) === id).length;
   }
 
+  /** Rango de años de los proyectos (del más antiguo al más reciente).
+   *  Devuelve '2024-2026' o '2025' si todos son del mismo año. */
+  get projectsYearRange(): string {
+    const years = this.projects
+      .map(p => p?.project_date ? this.toDate(p.project_date).getFullYear() : NaN)
+      .filter(y => Number.isFinite(y));
+    if (years.length === 0) return '';
+    const min = Math.min(...years);
+    const max = Math.max(...years);
+    return min === max ? `${min}` : `${min}-${max}`;
+  }
+
   /** Acorta una URL para mostrarla en la barra del mockup de navegador
    *  (sin protocolo y truncada). Vacía si no hay URL. */
   shortUrl(url?: string): string {
@@ -555,18 +586,24 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // ─── API pública — llamada por AppComponent tras la transición intro ───
 
-  /** Inicializa todas las animaciones scroll. Seguro llamar múltiples veces. */
+  /** Inicializa todas las animaciones scroll. Seguro llamar múltiples veces.
+   *
+   *  Si los datos del backend (proyectos y experiencias) aún no han llegado,
+   *  el pin horizontal de la sección Experiencia se calcularía sobre un
+   *  track casi vacío. En ese caso difiere la inicialización hasta que los
+   *  subscribers marquen los datos como cargados (ver `tryDeferredInit`).
+   */
   initAnimations(): void {
     if (this.animationsInitialized || !isPlatformBrowser(this.platformId)) return;
+    if (!this.projectsLoaded || !this.experiencesLoaded) {
+      this.initPending = true;
+      return;
+    }
     this.animationsInitialized = true;
 
     // Headers de sección — fade-up
-    // Omitimos el de la sección pineada de habilidades: al estar anclada
-    // dentro del scroll, cualquier animación de y daba sensación de que el
-    // título "se movía" con el scroll.
     this.cvSections.forEach((section) => {
       const el = section.nativeElement;
-      if (el.classList.contains('skills-showcase-section')) return;
       const header = el.querySelector('.section-header-cv');
       if (header) {
         gsap.from(header, {
@@ -665,112 +702,27 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     });
 
-    // Skills → Proyectos (solo desktop).
-    // Estrategia con DOS ScrollTriggers:
-    //   ST1 (entrada, sin pin): se activa cuando la sección asoma por la
-    //        parte baja del viewport y termina cuando su top llega arriba.
-    //        Durante ese recorrido (≈100vh de scroll) se animan en paralelo
-    //        — con solape — las dos capas:
-    //          · Fase A (0..0.5 del progreso): las columnas convergen.
-    //          · Fase B (0.3..1.0):            el telón de proyectos sube.
-    //        El solape (0.3..0.5) hace que el telón empiece a subir antes
-    //        de que terminen las columnas.
-    //   ST2 (pin + buffer): cuando el top toca el viewport, ancla sp-pin
-    //        para que el usuario explore la lista. La rueda sobre la lista
-    //        se queda dentro (wheel handler + overscroll-behavior: contain).
-    if (window.innerWidth > 850 && this.showcaseSection && this.spPin
-        && this.skillsColLeft && this.skillsColRight && this.projectsCurtain) {
-      const section   = this.showcaseSection.nativeElement;
-      const pin       = this.spPin.nativeElement;
-      const leftCol   = this.skillsColLeft.nativeElement;
-      const rightCol  = this.skillsColRight.nativeElement;
-      const curtain   = this.projectsCurtain.nativeElement;
-
-      const measureShifts = () => {
-        const savedL = leftCol.style.transform;
-        const savedR = rightCol.style.transform;
-        leftCol.style.transform = '';
-        rightCol.style.transform = '';
-        const lRect = leftCol.getBoundingClientRect();
-        const rRect = rightCol.getBoundingClientRect();
-        leftCol.style.transform = savedL;
-        rightCol.style.transform = savedR;
-        const vw = window.innerWidth;
-        return {
-          leftShift:  Math.max(0, lRect.left - 24),
-          rightShift: Math.max(0, vw - rRect.right - 24)
-        };
-      };
-
-      let { leftShift, rightShift } = measureShifts();
-
-      const setLeftX   = gsap.quickSetter(leftCol,  'x', 'px')   as (v: number) => void;
-      const setRightX  = gsap.quickSetter(rightCol, 'x', 'px')   as (v: number) => void;
-      const setCurtain = gsap.quickSetter(curtain,  'yPercent') as (v: number) => void;
-
-      setLeftX(-leftShift);
-      setRightX(rightShift);
-      setCurtain(100);
-
-      // ── ST1: Entrada (columnas + telón, sin pin) ────────────────────────
-      ScrollTrigger.create({
-        trigger: section,
-        start: 'top bottom',
-        // Extendemos la duración para que la Fase B (telón) se reparta
-        // sobre más scroll y suba más despacio.
-        end: () => `+=${window.innerHeight * 1.5}`,
-        scrub: 0.3,
-        invalidateOnRefresh: true,
-        onRefresh: () => {
-          ({ leftShift, rightShift } = measureShifts());
-        },
-        onUpdate: (self) => {
-          const p = self.progress;
-          // Fase A — columnas convergen (0..0.5 del trigger extendido,
-          // equivalente a los ~75vh originales).
-          const pA = Math.min(1, Math.max(0, p / 0.5));
-          setLeftX(-leftShift * (1 - pA));
-          setRightX(rightShift * (1 - pA));
-          // Fase B — telón sube (0.5..1.0 del trigger extendido = 75vh,
-          // 3× más lento que antes). El divisor debe ser (1 − inicio) para
-          // que pB llegue a 1 al final del trigger.
-          const pB = Math.min(1, Math.max(0, (p - 0.5) / 0.5));
-          setCurtain((1 - pB) * 100);
-          // is-unveiled cuando la cortina está esencialmente arriba
-          const unveiled = pB >= 0.95;
-          curtain.classList.toggle('is-unveiled', unveiled);
-        },
-      });
-
-      // ── ST2: Pin mientras dura la lectura de la lista ──────────────────
-      // El end se calcula a partir del scroll real de la lista: con menos
-      // proyectos el pin dura menos; con más, dura más. Sumamos un buffer
-      // mínimo (1vh) para cubrir la cola de ST1 cuando el listado cabe en
-      // pantalla. La rueda dentro de la lista se queda contenida gracias al
-      // `overscroll-behavior: contain` de .showcase-list — cuando el usuario
-      // toca el final, propaga al documento y ST2 progresa.
-      ScrollTrigger.create({
-        trigger: section,
-        start: 'top top',
-        end: () => {
-          const list = this.showcaseList?.nativeElement as HTMLElement | undefined;
-          const overflow = list ? Math.max(0, list.scrollHeight - list.clientHeight) : 0;
-          return `+=${overflow + window.innerHeight}`;
-        },
-        pin: pin,
-        pinType: 'fixed',
-        pinSpacing: true,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-        onEnter:     () => curtain.classList.add('is-unveiled'),
-        onEnterBack: () => curtain.classList.add('is-unveiled'),
-      });
-    } else if (this.projectsCurtain) {
-      // En móvil o si faltan refs, mostrar el telón en su sitio sin animación
-      gsap.set(this.projectsCurtain.nativeElement, { yPercent: 0, position: 'relative' });
+    // La sección skills + proyectos vive en flujo normal (igual que la
+    // versión móvil): sin pin, sin telón animado. Todos los proyectos del
+    // filtro activo se desplazan con el scroll de la página y el footer
+    // queda al final de la lista.
+    if (this.projectsCurtain) {
+      gsap.set(this.projectsCurtain.nativeElement, { clearProps: 'transform' });
     }
 
     ScrollTrigger.refresh();
+  }
+
+  /** Si había una llamada a `initAnimations()` esperando datos, ahora que
+   *  llegaron la disparamos. Aplaza una microtask para que detectChanges
+   *  ya haya pintado los nuevos cards en el DOM antes de que GSAP mida. */
+  private tryDeferredInit(): void {
+    if (!this.initPending) return;
+    if (!this.projectsLoaded || !this.experiencesLoaded) return;
+    this.initPending = false;
+    // requestAnimationFrame para asegurar que el layout post-detectChanges
+    // está aplicado antes de que ScrollTrigger lea getBoundingClientRect.
+    requestAnimationFrame(() => this.initAnimations());
   }
 
   /** Resetea animaciones para que puedan reproducirse de nuevo (al volver a la intro). */
