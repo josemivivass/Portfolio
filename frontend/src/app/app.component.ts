@@ -15,6 +15,7 @@ import { TranslationService } from './services/translation.service';
 import { AuthService } from './services/auth.service';
 import { TrackingService } from './services/tracking.service';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
+import { PreloaderComponent } from './components/preloader/preloader.component';
 
 @Component({
   selector: 'app-root',
@@ -26,7 +27,8 @@ import { ChatbotComponent } from './components/chatbot/chatbot.component';
     Hero3dComponent,
     HomeComponent,
     RevealComplexComponent,
-    ChatbotComponent
+    ChatbotComponent,
+    PreloaderComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
