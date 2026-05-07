@@ -27,7 +27,7 @@
   font-size: 1.8rem;
   color: var(--c-text-heading);
   margin-bottom: 8px;
-  font-family: 'Arial Black', 'Inter', sans-serif;
+  font-family: var(--ff-serif);
   letter-spacing: -0.5px;
 }
 
@@ -89,7 +89,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.25s ease;
-  font-family: 'Arial Black', 'Inter', sans-serif;
+  font-family: var(--ff-serif);
   letter-spacing: 0.5px;
 }
 

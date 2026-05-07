@@ -80,7 +80,7 @@ const ES: Record<string, string> = {
   'hero.cv.en': 'CV in English',
 
   // --- About ---
-  'about.title': 'Sobre Mí',
+  'about.title': 'Sobre <em>Mí</em>',
   'about': 'Especialista en <strong>Inteligencia Artificial y Big Data</strong> con trayectoria previa en <strong>Quality Assurance</strong>. Combino la disciplina de pruebas con conocimientos en modelos predictivos y gestión de datos para desarrollar soluciones de IA escalables y libres de errores. Actualmente trabajando como <strong>Desarrollador Full Stack</strong> en Fundación COMPUTAEX, modernizando aplicaciones web con Python y React. Con más de un año de experiencia en QA para el sector bancario en Viewnext.',
   'about.lang.es': 'Español',
   'about.lang.es.level': 'Nativo',
@@ -88,14 +88,14 @@ const ES: Record<string, string> = {
   'about.lang.en.level': 'Profesional completo',
 
   // --- Experience ---
-  'exp.title': 'Experiencia',
+  'exp.title': 'Mi <em>Experiencia</em>',
   'exp.scroll_hint': 'Desliza',
   'exp.badge.current': 'Actual',
   'exp.badge.internship': 'Prácticas',
   'exp.growing': 'En crecimiento continuo',
 
   // --- Education ---
-  'edu.title': 'Educación',
+  'edu.title': 'Mi <em>Educación</em>',
   'edu.1.name': 'Desarrollo de Aplicaciones Multiplataforma (DAM)',
   'edu.1.date': '2025 - 2026',
   'edu.2.name': 'Especialización en IA y Big Data',
@@ -104,14 +104,14 @@ const ES: Record<string, string> = {
   'edu.3.date': '2022 - 2024',
 
   // --- Skills ---
-  'skills.title': 'Habilidades Técnicas',
+  'skills.title': 'Habilidades <em>Técnicas</em>',
   'skills.ai': 'IA & Data Science',
   'skills.dev': 'Desarrollo Full Stack & Móvil',
   'skills.cloud': 'Cloud & DevOps',
   'skills.qa': 'QA & Testing',
 
   // --- Projects ---
-  'projects.title': 'Proyectos Destacados',
+  'projects.title': 'Proyectos <em>Destacados</em>',
   'projects.error': 'Error al cargar los proyectos.',
   'projects.none': 'No hay proyectos disponibles en este momento.',
   'projects.code': 'Código',
@@ -499,7 +499,7 @@ const EN: Record<string, string> = {
   'hero.cv.en': 'CV in English',
 
   // --- About ---
-  'about.title': 'About Me',
+  'about.title': 'About <em>Me</em>',
   'about': '<strong>Artificial Intelligence and Big Data</strong> specialist with a previous career in <strong>Quality Assurance</strong>. I combine testing discipline with predictive modeling and data management skills to develop scalable, error-free AI solutions. Currently working as a <strong>Full Stack Developer</strong> at Fundación COMPUTAEX, modernizing web applications with Python and React. With over a year of QA experience in the banking sector at Viewnext.',
   'about.lang.es': 'Spanish',
   'about.lang.es.level': 'Native',
@@ -507,14 +507,14 @@ const EN: Record<string, string> = {
   'about.lang.en.level': 'Full professional proficiency',
 
   // --- Experience ---
-  'exp.title': 'Experience',
+  'exp.title': 'My <em>Experience</em>',
   'exp.scroll_hint': 'Scroll',
   'exp.badge.current': 'Current',
   'exp.badge.internship': 'Internship',
   'exp.growing': 'Continuously growing',
 
   // --- Education ---
-  'edu.title': 'Education',
+  'edu.title': 'My <em>Education</em>',
   'edu.1.name': 'Cross-Platform Application Development',
   'edu.1.date': '2025 - 2026',
   'edu.2.name': 'AI and Big Data Specialization',
@@ -523,14 +523,14 @@ const EN: Record<string, string> = {
   'edu.3.date': '2022 - 2024',
 
   // --- Skills ---
-  'skills.title': 'Technical Skills',
+  'skills.title': 'Technical <em>Skills</em>',
   'skills.ai': 'AI & Data Science',
   'skills.dev': 'Full Stack & Mobile Development',
   'skills.cloud': 'Cloud & DevOps',
   'skills.qa': 'QA & Testing',
 
   // --- Projects ---
-  'projects.title': 'Featured Projects',
+  'projects.title': 'Featured <em>Projects</em>',
   'projects.error': 'Error loading projects.',
   'projects.none': 'No projects available at this time.',
   'projects.code': 'Code',

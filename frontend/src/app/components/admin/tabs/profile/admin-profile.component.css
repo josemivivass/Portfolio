@@ -211,7 +211,7 @@
   border-radius: 12px;
   background: var(--surface);
   color: var(--text);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: var(--ff-mono);
   font-size: 0.82rem;
   line-height: 1.4;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -232,7 +232,7 @@
   margin: 0;
 }
 .profile-model-current code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: var(--ff-mono);
   font-size: 0.75rem;
   color: var(--text);
   background: var(--accent-soft);
@@ -252,7 +252,7 @@
   border-radius: 12px;
   background: var(--surface-alt);
   color: var(--text-label);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: var(--ff-mono);
   font-size: 0.78rem;
   line-height: 1.55;
   max-height: 160px;

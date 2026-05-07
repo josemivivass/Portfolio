@@ -31,10 +31,10 @@
 .admin-shell .page-head h1 {
   margin: 0;
   font-size: 1.85rem;
-  font-weight: 800;
+  font-weight: 400;
   color: var(--brand);
   letter-spacing: -0.4px;
-  font-family: 'Arial Black', 'Inter', sans-serif;
+  font-family: var(--ff-serif);
 }
 .admin-shell .page-head h1::before {
   content: '';
@@ -139,7 +139,7 @@
 .admin-shell .data-table tr:last-child td { border-bottom: none; }
 .admin-shell .data-table tbody tr { transition: background 0.15s; }
 .admin-shell .data-table tbody tr:hover { background: var(--surface-alt); }
-.admin-shell .data-table .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--text-muted); }
+.admin-shell .data-table .mono { font-family: var(--ff-mono); font-size: 0.78rem; color: var(--text-muted); }
 
 .admin-shell .empty {
   text-align: center;
@@ -694,7 +694,7 @@
     font-size: 0.78rem;
     font-weight: 700;
     color: var(--brand);
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--ff-mono);
   }
   .admin-shell .log-email {
     font-size: 0.8rem;
@@ -731,7 +731,7 @@
     white-space: nowrap;
   }
   .admin-shell .log-grid dd.mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--ff-mono);
     font-size: 0.72rem;
     color: var(--text-muted);
   }

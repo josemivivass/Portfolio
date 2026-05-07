@@ -1,0 +1,21 @@
+/* ═══════════════════════════════════════════════════════════════
+   FAMILIAS TIPOGRAFICAS — fuente unica de verdad
+
+   - --ff-serif  Editorial / titulares / firma          (Newsreader)
+   - --ff-sans   Cuerpo, botones, datos planos          (Geist)
+   - --ff-mono   Metadatos tecnicos, eyebrows, code     (Geist Mono)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Tokens anteriores — consolidados a la triada serif/sans/mono:
+   --ff-base       'Segoe UI', Tahoma, Geneva, Verdana, sans-serif        -> --ff-sans
+   --ff-display    'Arial Black', 'Inter', sans-serif                     -> --ff-serif
+   --ff-admin      'Inter', -apple-system, BlinkMacSystemFont, sans-serif -> --ff-sans
+   --ff-accent     'Newsreader', 'Iowan Old Style', Georgia, serif        -> --ff-serif
+   --ff-mono-retro 'Courier New', Courier, monospace                      -> --ff-mono
+*/
+
+:root {
+  --ff-serif: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+  --ff-sans:  'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ff-mono:  'Geist Mono', 'IBM Plex Mono', 'Courier New', monospace;
+}

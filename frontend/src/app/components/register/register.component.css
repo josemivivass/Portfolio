@@ -84,7 +84,7 @@
   color: #ffffff;
   line-height: 1.1;
   letter-spacing: -1px;
-  font-family: 'Arial Black', 'Inter', sans-serif;
+  font-family: var(--ff-serif);
   margin-bottom: 28px;
 }
 
@@ -131,7 +131,7 @@
   color: var(--c-brand);
   letter-spacing: -0.5px;
   margin-bottom: 8px;
-  font-family: 'Arial Black', 'Inter', sans-serif;
+  font-family: var(--ff-serif);
 }
 
 .form-header p {
@@ -346,7 +346,7 @@
   color: var(--c-brand);
   letter-spacing: -0.5px;
   margin-bottom: 10px;
-  font-family: 'Arial Black', 'Inter', sans-serif;
+  font-family: var(--ff-serif);
 }
 
 .session-email {

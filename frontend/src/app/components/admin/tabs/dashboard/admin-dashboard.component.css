@@ -41,7 +41,7 @@
   color: var(--brand);
   letter-spacing: -0.04em;
   line-height: 1;
-  font-family: 'Arial Black', 'Inter', sans-serif;
+  font-family: var(--ff-serif);
 }
 .stat-foot {
   font-size: 0.74rem;

@@ -83,7 +83,7 @@
   display: inline-block;
   width: 0.3em;
   font-size: clamp(1.8rem, 5vw, 4.4rem);
-  font-family: 'Playfair Display', serif;
+  font-family: var(--ff-serif);
 }
 
 .char-wrapper {
@@ -97,7 +97,7 @@
   display: block;
   font-size: clamp(1.8rem, 5vw, 4.4rem);
   font-weight: 700;
-  font-family: 'Playfair Display', serif;
+  font-family: var(--ff-serif);
   text-transform: uppercase;
   visibility: hidden;
   white-space: pre;
@@ -118,7 +118,7 @@
   justify-content: center;
   font-size: clamp(1.8rem, 5vw, 4.4rem);
   font-weight: 700;
-  font-family: 'Playfair Display', serif;
+  font-family: var(--ff-serif);
   text-transform: uppercase;
   color: var(--c-reveal-text);
   white-space: pre;

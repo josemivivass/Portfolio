@@ -68,7 +68,7 @@
 <section #cvSection class="about-section">
   <div class="section-inner">
     <header class="section-header-cv">
-      <h2>{{ i18n.t('about.title') }}</h2>
+      <h2 [innerHTML]="i18n.t('about.title')"></h2>
       <div class="accent-line"></div>
     </header>
     <div class="about-card">
@@ -102,7 +102,7 @@
       <!-- ── PANEL TÍTULO ── -->
       <div class="exp-title-panel">
         <header class="section-header-cv">
-          <h2>{{ i18n.t('exp.title') }}</h2>
+          <h2 [innerHTML]="i18n.t('exp.title')"></h2>
           <div class="accent-line"></div>
         </header>
         <div class="exp-scroll-hint">
@@ -159,7 +159,7 @@
 <section #cvSection class="education-section">
   <div class="section-inner">
     <header class="section-header-cv">
-      <h2>{{ i18n.t('edu.title') }}</h2>
+      <h2 [innerHTML]="i18n.t('edu.title')"></h2>
       <div class="accent-line"></div>
     </header>
     <div class="edu-grid">
@@ -190,7 +190,7 @@
     <div class="sp-skills-layer">
       <div class="section-inner">
         <header class="section-header-cv">
-          <h2>{{ i18n.t('skills.title') }}</h2>
+          <h2 [innerHTML]="i18n.t('skills.title')"></h2>
           <div class="accent-line"></div>
         </header>
         <div class="skills-two-col">
@@ -255,7 +255,7 @@
           </a>
 
           <header class="showcase-header">
-            <h2 class="showcase-title">{{ i18n.t('projects.title') }}</h2>
+            <h2 class="showcase-title" [innerHTML]="i18n.t('projects.title')"></h2>
             <span class="showcase-sub" *ngIf="projectsYearRange">{{ projectsYearRange }}</span>
           </header>
 

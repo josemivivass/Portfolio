@@ -213,7 +213,7 @@
   padding: 2px 6px;
   background: var(--c-accent-bg);
   color: var(--c-primary);
-  font-family: 'Courier New', monospace;
+  font-family: var(--ff-mono);
   font-size: 0.72rem;
   font-weight: 800;
   border-radius: 4px;
@@ -256,9 +256,15 @@
 }
 
 .section-header-cv h2 {
+  font-family: var(--ff-serif);
+  font-weight: 300;
   font-size: 2rem;
   color: var(--c-text-heading);
   margin-bottom: 10px;
+}
+.section-header-cv h2 em,
+.showcase-title em {
+  color: var(--c-primary);
 }
 
 .accent-line {
@@ -311,9 +317,6 @@
   white-space: pre-wrap;
 }
 
-.about-text strong {
-  color: var(--c-text-heading);
-}
 
 .about-languages {
   display: flex;
@@ -513,6 +516,8 @@
 }
 
 .exp-card-body h3 {
+  font-family: var(--ff-serif);
+  font-weight: 400;
   font-size: 1.08rem;
   color: var(--c-text-heading);
   margin-bottom: 4px;
@@ -606,7 +611,7 @@
   background: var(--c-code-bg);
   border-radius: 10px;
   padding: 14px 18px;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--ff-mono);
   font-size: 0.76rem;
   line-height: 1.9;
   color: var(--c-code-text);
@@ -709,6 +714,8 @@
 }
 
 .edu-card h3 {
+  font-family: var(--ff-serif);
+  font-weight: 400;
   font-size: 1rem;
   color: var(--c-text-heading);
   margin-bottom: 6px;
@@ -783,6 +790,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  font-family: var(--ff-serif);
+  font-weight: 400;
   font-size: 1rem;
   color: var(--c-text-heading);
   margin-bottom: 14px;
@@ -835,7 +844,7 @@
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 600;
-  font-family: 'Arial Black', 'Inter', sans-serif;
+  font-family: var(--ff-serif);
   letter-spacing: 0.5px;
   transition: all 0.25s ease;
   align-self: flex-start;
@@ -903,8 +912,9 @@
 }
 
 .showcase-title {
+  font-family: var(--ff-serif);
   font-size: 1.9rem;
-  font-weight: 700;
+  font-weight: 300;
   color: var(--c-text-heading);
   letter-spacing: -0.5px;
   margin: 0;
@@ -973,7 +983,7 @@
   border-radius: 10px;
   font-size: 0.7rem;
   font-weight: 800;
-  font-family: 'Courier New', monospace;
+  font-family: var(--ff-mono);
 }
 
 .showcase-filter.is-active .showcase-filter-count {
@@ -1146,7 +1156,7 @@
   background: #ffffff;
   border: 1px solid #d1d5db;
   border-radius: 999px;
-  font-family: 'Courier New', monospace;
+  font-family: var(--ff-mono);
   font-size: 0.7rem;
   color: var(--c-text-muted);
   text-align: center;
@@ -1294,7 +1304,7 @@
 }
 
 .showcase-num-inline {
-  font-family: 'Courier New', monospace;
+  font-family: var(--ff-mono);
   color: var(--c-primary);
   font-size: 1.4rem;
   font-weight: 700;
@@ -1316,8 +1326,9 @@
 /* Título: protagonista de la tarjeta. Más grande, negrita fuerte y degradado
    sutil hacia el primary para darle identidad propia. */
 .showcase-card-title {
+  font-family: var(--ff-serif);
   font-size: 1.55rem;
-  font-weight: 800;
+  font-weight: 400;
   line-height: 1.1;
   letter-spacing: -0.7px;
   margin: 0;
@@ -1711,8 +1722,9 @@
 }
 
 .case-modal-title {
+  font-family: var(--ff-serif);
   font-size: 1.7rem;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--c-text-heading);
   line-height: 1.18;
   letter-spacing: -0.5px;
@@ -1869,7 +1881,7 @@
   background: rgba(17, 24, 39, 0.7);
   color: #ffffff;
   border-radius: 999px;
-  font-family: 'Courier New', monospace;
+  font-family: var(--ff-mono);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -2090,7 +2102,7 @@
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: #ffffff;
   border-radius: 999px;
-  font-family: 'Courier New', monospace;
+  font-family: var(--ff-mono);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 1px;
