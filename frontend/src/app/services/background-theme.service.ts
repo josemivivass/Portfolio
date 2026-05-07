@@ -3,7 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 
 /**
  * Progreso 0..1 que comparten el scroll horizontal (Home) y el canvas 3D
- * (Hero3d). 0 = tema claro (fondo claro, puntos oscuros). 1 = tema oscuro
+ * (Background). 0 = tema claro (fondo claro, puntos oscuros). 1 = tema oscuro
  * (fondo gris, puntos blancos). El valor se interpola linealmente.
  */
 @Injectable({ providedIn: 'root' })

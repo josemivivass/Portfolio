@@ -34,8 +34,8 @@
 
 .hero-avatar {
   position: relative;
-  width: 350px;
-  height: 350px;
+  width: 400px;
+  height: 400px;
   margin-bottom: 24px;
   border-radius: 50%;
   overflow: hidden;
@@ -745,15 +745,15 @@
   overflow: clip;
 }
 
-.sp-pin {
-  position: relative;
-  width: 100%;
-}
-
 /* ── Capa 1 — Habilidades en dos columnas (flujo normal) ─────────────── */
 .sp-skills-layer {
   position: relative;
-  padding: 80px 20px 60px;
+  /* Como esta sección es full-bleed (100vw) pero `.education-section`
+     vive dentro de `.main-content`, replicamos aquí el padding lateral
+     del padre (250/150/20 en cada breakpoint) más los 20 propios de la
+     sección "Educación" para que el `.section-inner` quede del mismo
+     ancho efectivo en todos los tamaños. */
+  padding: 80px 270px 60px;
   z-index: 1;
 }
 
@@ -761,6 +761,10 @@
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
+}
+
+@media (max-width: 1100px) {
+  .sp-skills-layer { padding: 80px 170px 60px; }
 }
 
 .skills-two-col {
@@ -774,7 +778,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  will-change: transform;
 }
 
 .skill-category {
@@ -789,16 +792,25 @@
 .skill-category h3 {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-family: var(--ff-serif);
-  font-weight: 400;
-  font-size: 1rem;
+  font-weight: 500;
+  font-size: 1.25rem;
+  line-height: 1.2;
   color: var(--c-text-heading);
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .skill-category h3 svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
   color: var(--c-primary);
+  /* `align-items: center` alinea por la caja del SVG, pero la métrica
+     del texto deja un descender que hace que el icono se vea bajado
+     respecto al baseline. Subimos 2px para que quede a la altura visual
+     del título. */
+  transform: translateY(-2px);
 }
 
 .skill-tags {
@@ -2193,7 +2205,7 @@
 /* Portátiles con poca altura — evita el solape entre botones y la flecha */
 @media (max-height: 820px) and (min-width: 851px) {
   .hero-content { gap: 18px; }
-  .hero-avatar { width: 260px; height: 260px; margin-bottom: 20px; border-width: 4px; }
+  .hero-avatar { width: 295px; height: 295px; margin-bottom: 20px; border-width: 4px; }
   .hero-tagline,
   .hero-typewriter { font-size: 0.92rem; letter-spacing: 1.8px; }
   .hero-typewriter { min-height: 1.4em; }
@@ -2267,7 +2279,7 @@
 
 @media (max-height: 680px) and (min-width: 851px) {
   .hero-content { gap: 14px; }
-  .hero-avatar { width: 190px; height: 190px; margin-bottom: 12px; border-width: 3px; }
+  .hero-avatar { width: 215px; height: 215px; margin-bottom: 12px; border-width: 3px; }
   .hero-tagline,
   .hero-typewriter { font-size: 0.82rem; letter-spacing: 1.4px; }
 
@@ -2294,7 +2306,7 @@
 }
 
 @media (max-width: 850px) {
-  .hero-avatar { width: 200px; height: 200px; margin-bottom: 14px; border-width: 4px; }
+  .hero-avatar { width: 230px; height: 230px; margin-bottom: 14px; border-width: 4px; }
   .hero-tagline { font-size: 0.86rem; letter-spacing: 1.6px; }
   .hero-typewriter { font-size: 0.86rem; letter-spacing: 1.6px; }
   .hero-links { flex-direction: column; align-items: center; }
@@ -2308,8 +2320,10 @@
 
   /* En móvil compactamos los paddings de skills/proyectos. Sin
      padding-bottom en el showcase-inner para que la última línea del
-     footer quede pegada al borde inferior, sin hueco extra. */
-  .sp-skills-layer { padding: 60px 20px 40px; }
+     footer quede pegada al borde inferior, sin hueco extra. El
+     padding lateral 40px = 20 (`.main-content`) + 20 (`.education-section`)
+     para igualar el ancho del bloque de educación. */
+  .sp-skills-layer { padding: 60px 40px 40px; }
   .showcase-inner { padding: 40px 20px 0; }
 
   /* Footer en móvil: misma fila si cabe, si no envuelve. Padding-bottom

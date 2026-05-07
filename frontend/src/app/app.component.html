@@ -1,8 +1,6 @@
 <app-preloader *ngIf="isHomeRoute && showPreloader"></app-preloader>
 
-<div class="global-geometric-background" *ngIf="isHomeRoute">
-  <app-hero3d></app-hero3d>
-</div>
+<app-background *ngIf="isHomeRoute"></app-background>
 
 <div *ngIf="isHomeRoute && showIntro"
      class="intro-fullscreen-overlay"

@@ -31,13 +31,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('expSection') expSection!: ElementRef;
   @ViewChild('expTrack')   expTrack!:   ElementRef;
 
-  // Telón skills → proyectos destacados
-  @ViewChild('showcaseSection') showcaseSection!: ElementRef;
-  @ViewChild('spPin')            spPin!:           ElementRef;
-  @ViewChild('skillsColLeft')    skillsColLeft!:   ElementRef;
-  @ViewChild('skillsColRight')   skillsColRight!:  ElementRef;
-  @ViewChild('projectsCurtain')  projectsCurtain!: ElementRef;
-  @ViewChild('showcaseList')     showcaseList!:    ElementRef;
+  // Lista interna de proyectos: la usamos para resetear su scroll al
+  // volver a la intro.
+  @ViewChild('showcaseList') showcaseList!: ElementRef;
 
   // --- Datos de proyectos ---
   projects: any[] = [];
@@ -702,13 +698,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     });
 
-    // La sección skills + proyectos vive en flujo normal (igual que la
-    // versión móvil): sin pin, sin telón animado. Todos los proyectos del
-    // filtro activo se desplazan con el scroll de la página y el footer
-    // queda al final de la lista.
-    if (this.projectsCurtain) {
-      gsap.set(this.projectsCurtain.nativeElement, { clearProps: 'transform' });
-    }
+    // La sección skills + proyectos vive en flujo normal: sin pin, sin
+    // telón animado. Los proyectos del filtro activo se desplazan con el
+    // scroll de la página y el footer queda al final de la lista.
 
     ScrollTrigger.refresh();
   }
@@ -738,14 +730,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.expSection.nativeElement.style.marginLeft = '';
       this.expSection.nativeElement.style.width = '';
     }
-    if (this.showcaseSection) {
-      this.showcaseSection.nativeElement.style.marginLeft = '';
-      this.showcaseSection.nativeElement.style.width = '';
-    }
-    if (this.skillsColLeft)   gsap.set(this.skillsColLeft.nativeElement,   { clearProps: 'all' });
-    if (this.skillsColRight)  gsap.set(this.skillsColRight.nativeElement,  { clearProps: 'all' });
-    if (this.projectsCurtain) gsap.set(this.projectsCurtain.nativeElement, { clearProps: 'all' });
-    if (this.showcaseList)    this.showcaseList.nativeElement.scrollTop = 0;
+    if (this.showcaseList) this.showcaseList.nativeElement.scrollTop = 0;
     this.theme.setProgress(0);
     if (isPlatformBrowser(this.platformId)) {
       document.documentElement.classList.remove('dark-scroll-active');

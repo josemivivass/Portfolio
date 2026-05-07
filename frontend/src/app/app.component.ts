@@ -8,7 +8,7 @@ import { filter, Subscription } from 'rxjs';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-import { Hero3dComponent } from './components/hero3d/hero3d.component';
+import { BackgroundComponent } from './components/background/background.component';
 import { HomeComponent } from './components/home/home.component';
 import { RevealComplexComponent } from './components/reveal-complex/reveal-complex.component';
 import { TranslationService } from './services/translation.service';
@@ -24,7 +24,7 @@ import { PreloaderComponent } from './components/preloader/preloader.component';
     RouterOutlet,
     RouterModule,
     CommonModule,
-    Hero3dComponent,
+    BackgroundComponent,
     HomeComponent,
     RevealComplexComponent,
     ChatbotComponent,
@@ -166,6 +166,32 @@ export class AppComponent implements OnInit, OnDestroy {
         html.style.scrollBehavior = '';
         window.scrollTo(0, 0);
       }
+      return;
+    }
+
+
+    const fromAdminFlag = sessionStorage.getItem('fromAdmin');
+    if (fromAdminFlag) {
+      sessionStorage.removeItem('fromAdmin');
+      this.showPreloader = false;
+      this.showIntro = false;
+      this.mainTranslateY = 0;
+      this.stopVirtualScroll();
+      this.scrollMode = 'main';
+      this.currentScrollY = 0;
+      this.targetScrollY = 0;
+      window.scrollTo(0, 0);
+      requestAnimationFrame(() => {
+        this.cdr.detectChanges();
+        requestAnimationFrame(() => {
+          window.scrollTo(0, 0);
+          this.homeComponent?.initAnimations();
+          setTimeout(() => {
+            window.scrollTo(0, 0);
+            ScrollTrigger.refresh();
+          }, 120);
+        });
+      });
       return;
     }
 
@@ -755,14 +781,24 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Sale del panel de admin. La recarga + scroll al avatar la fuerza el
-   * `adminExitGuard` (CanDeactivate) — así cubrimos también la salida por
-   * botón atrás del navegador, swipe atrás en móvil, o cualquier otra
-   * navegación, no solo el clic en el botón ← de la página.
+   * Sale del panel de admin con un hard reload directo a `/`. No usamos
+   * `router.navigateByUrl` porque la navegación SPA dejaba ScrollTriggers
+   * huérfanos y métricas obsoletas del pin horizontal de Experiencia (el
+   * usuario podía haber estado scrolleando en cualquier pestaña del admin).
+   * Recargar la página garantiza que el home se reconstruya desde cero.
+   *
+   * El `adminExitGuard` cubre el resto de salidas (botón atrás del
+   * navegador, swipe atrás en móvil) seteando el mismo flag.
    */
   exitAdmin(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    this.router.navigateByUrl('/');
+    sessionStorage.removeItem('preAdminState');
+    sessionStorage.removeItem('preAuthState');
+    sessionStorage.removeItem('authReturn');
+    sessionStorage.removeItem('scrollToCv');
+    sessionStorage.removeItem('scrollToProjects');
+    sessionStorage.setItem('fromAdmin', '1');
+    window.location.href = '/';
   }
 
   /**
