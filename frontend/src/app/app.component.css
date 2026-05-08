@@ -46,7 +46,7 @@
   pointer-events: none;
 }
 
-/* ─── Firma SVG ─── */
+/* Firma SVG */
 .firma-wrapper {
   position: absolute;
   bottom: 0;
@@ -210,7 +210,7 @@
   .main-content { padding-left: 20px; padding-right: 20px; }
 }
 
-/* ─── Mobile hamburger menu ─── */
+/* Menu hamburguesa de movil */
 .mobile-menu-toggle {
   display: none;
   position: fixed;
@@ -316,7 +316,7 @@
   .mobile-menu-panel { display: flex; }
 }
 
-/* ─── Standalone route: back arrow + full-width content ─── */
+/* Standalone route: back arrow + full-width content */
 .page-back-arrow {
   position: fixed;
   top: 40px;

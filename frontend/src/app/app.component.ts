@@ -54,13 +54,13 @@ export class AppComponent implements OnInit, OnDestroy {
   menuTranslateY = 0;
   introBorderRadius = 0;
 
-  // ─── Fade de imágenes y firma ───
-  imageOpacity   = 1;    // mantenido por compatibilidad con RevealComplexComponent
-  firmaOpacity   = 0;    // opacidad de la firma (0→1, sincronizada con scroll)
-  firmaClipRight = 100;  // clip-path inset desde la derecha (100=oculta, 0=revelada)
-  hoverIntensity = 1;    // intensidad del efecto hover (1=pleno, 0=ninguno al mínimo)
+  //FADE DE IMÁGENES Y FIRMA
+  imageOpacity   = 1;
+  firmaOpacity   = 0;
+  firmaClipRight = 100;
+  hoverIntensity = 1;
 
-  // Contador de ticks de scroll: la firma solo aparece pasados 6 ticks (~100ms)
+  //La firma solo aparece pasados 6 ticks de scroll (~100ms)
   private firmaScrollTicks = 0;
   private chatbotWasOpen = false;
 
@@ -68,17 +68,17 @@ export class AppComponent implements OnInit, OnDestroy {
   private isTransitioning = false;
   private routerSub!: Subscription;
 
-  // ─── Virtual smooth scroll system ───
+  //SISTEMA DE SCROLL VIRTUAL (lerp + cap)
   private virtualScrollEnabled = false;
   private scrollMode: 'intro' | 'main' = 'intro';
   private targetScrollY = 0;
   private currentScrollY = 0;
   private scrollRafId: number | null = null;
-  private readonly SCROLL_LERP = 0.08;        // intro lerp speed
-  private readonly SCROLL_SNAP_THRESHOLD = 0.5; // px threshold to snap to target
-  private readonly INTRO_MIN_DURATION_FRAMES = 90; // ~1.5s @60fps for full 2*vh traversal
-  private readonly MAIN_SCROLL_LERP = 0.18;   // snappier catch-up for the main page
-  private readonly MAIN_SCROLL_MAX_PX_PER_FRAME = 42; // ~2520 px/s cap — fast but prevents skipping
+  private readonly SCROLL_LERP = 0.08;
+  private readonly SCROLL_SNAP_THRESHOLD = 0.5;
+  private readonly INTRO_MIN_DURATION_FRAMES = 90;
+  private readonly MAIN_SCROLL_LERP = 0.18;
+  private readonly MAIN_SCROLL_MAX_PX_PER_FRAME = 42;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -99,7 +99,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    // Register wheel & touchmove with { passive: false } so we can preventDefault during intro
+    //{ passive: false } para poder hacer preventDefault durante la intro
     window.addEventListener('wheel', this.wheelHandler, { passive: false });
     window.addEventListener('touchmove', this.touchMoveHandler, { passive: false });
 
@@ -138,21 +138,20 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private applyRoute(url: string): void {
-    this.isHomeRoute = url === '/' || url === '';
-    this.isAdminRoute = url.startsWith('/admin');
+    const pathOnly = url.split(/[?#]/)[0];
+    //`/experiencia` y `/proyectos` comparten vista con `/`; solo cambia el scroll inicial
+    const isHomeAlias = pathOnly === '/experiencia' || pathOnly === '/proyectos';
+    this.isHomeRoute = pathOnly === '/' || pathOnly === '' || isHomeAlias;
+    this.isAdminRoute = pathOnly.startsWith('/admin');
 
     if (!this.isHomeRoute) {
       this.showPreloader  = false;
       this.showIntro      = false;
       this.mainTranslateY = 0;
       if (isPlatformBrowser(this.platformId)) {
-        // Parar cualquier estado residual del sistema de scroll virtual
-        // y de las transiciones de intro para que la nueva ruta (p.ej. /admin)
-        // pueda hacer scroll libremente.
+        //Limpia estado residual de scroll virtual e intro para que la nueva ruta scrollee libre
         this.stopVirtualScroll();
         this.isTransitioning = false;
-        // Matar ScrollTriggers activos y limpiar estilos inline que GSAP pin
-        // pudiera haber dejado en body/html, causando el bloqueo de scroll.
         ScrollTrigger.getAll().forEach(t => t.kill(true));
         const body = document.body;
         const html = document.documentElement;
@@ -168,7 +167,6 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       return;
     }
-
 
     const fromAdminFlag = sessionStorage.getItem('fromAdmin');
     if (fromAdminFlag) {
@@ -241,6 +239,28 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
+    //Entrada directa por URL a `/experiencia` o `/proyectos`: salta intro y aterriza en la sección
+    if (isHomeAlias) {
+      this.showPreloader = false;
+      this.showIntro = false;
+      this.mainTranslateY = 0;
+      const computeY = pathOnly === '/proyectos'
+        ? () => this.computeProjectsTargetY()
+        : () => this.computeExperienceTargetY();
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        this.homeComponent?.initAnimations();
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          ScrollTrigger.refresh();
+          this.stopVirtualScroll();
+          const targetY = computeY();
+          window.scrollTo(0, targetY);
+        }, 150);
+      }, 100);
+      return;
+    }
+
     const returnFlag = sessionStorage.getItem('authReturn');
     if (returnFlag) {
       sessionStorage.removeItem('authReturn');
@@ -255,8 +275,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.showIntro      = false;
           this.mainTranslateY = 0;
           setTimeout(() => {
-            // Registrar los ScrollTrigger con el viewport en 0 para que GSAP
-            // capture el pinSpacing correcto del scroll horizontal de experiencia.
+            //Registramos los ScrollTrigger con el viewport en 0 para capturar el pinSpacing correcto
             window.scrollTo(0, 0);
             this.homeComponent?.initAnimations();
             this.cdr.detectChanges();
@@ -287,8 +306,6 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.showPreloader) {
       setTimeout(() => {
         this.showPreloader = false;
-        // Reset any native scroll that may have leaked before listeners attached,
-        // so the intro virtual scroll starts from a clean 0.
         window.scrollTo(0, 0);
         this.cdr.detectChanges();
       }, 3200);
@@ -304,7 +321,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ─── Virtual smooth scroll system ───
+  //SCROLL VIRTUAL — lerp + cap por frame
 
   private startVirtualScroll(seedFromWindow = true): void {
     if (this.virtualScrollEnabled) return;
@@ -327,8 +344,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private tickVirtualScroll(): void {
     if (!this.virtualScrollEnabled) return;
 
-    // Re-clamp the main-mode target every frame — the document height can
-    // change while ScrollTrigger pins/unpins sections.
+    //Re-clamp el target en main: el alto del documento cambia con pins/unpins de ScrollTrigger
     if (this.scrollMode === 'main') {
       const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
       if (this.targetScrollY > maxY) this.targetScrollY = maxY;
@@ -389,25 +405,22 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     this.introScale        = 1 - (0.55 * phase1);
-    this.introBorderRadius = Math.min(phase1 * 2.5, 1) * 20; // 0px → 20px, reaches max at 40% scroll
+    this.introBorderRadius = Math.min(phase1 * 2.5, 1) * 20;
     this.overlayOpacity  = Math.min(phase1 * 1.5, 1);
     this.introTranslateY = -(phase2 * 100);
     this.introOpacity    = 1;
     this.mainTranslateY  = 100 - (phase2 * 100);
 
-    // ── Hover: se atenúa linealmente con el scroll (pleno al inicio, cero al mínimo) ──
-    // phase1 va de 0 (sin scroll) a 1 (intro en escala mínima)
+    //Hover se atenúa linealmente con el scroll de la intro
     this.hoverIntensity = Math.max(0, 1 - phase1);
 
-    // ── Firma: espera 6 ticks de scroll (~100ms) antes de aparecer ──
     if (scrollY > 0) {
       this.firmaScrollTicks = Math.min(this.firmaScrollTicks + 1, 100);
     } else {
       this.firmaScrollTicks = 0;
     }
 
-    // La animación de trazo se sincroniza con el progreso de scroll
-    // Rango: phase1 de 0.10 a 0.70 (60% del recorrido total)
+    //Trazo de la firma sincronizado con el scroll (rango phase1 0.10 → 0.70)
     const firmaPhase = this.firmaScrollTicks >= 6
       ? Math.max(0, Math.min(1, (phase1 - 0.10) / 0.60))
       : 0;
@@ -418,7 +431,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // ─── Scroll & touch handlers ───
+  //SCROLL & TOUCH HANDLERS
 
   @HostListener('window:scroll')
   onScroll(): void {
@@ -426,15 +439,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const scrollY = window.scrollY;
 
-    // When intro is NOT active, handle menu parallax normally
+    //Sin intro: parallax del menú lateral
     if (!this.showIntro) {
       this.menuTranslateY = -scrollY;
       this.cdr.detectChanges();
       return;
     }
-
-    // During intro, the virtual scroll system handles everything via applyIntroScroll
-    // so we do NOT process raw scroll events here
+    //Durante la intro, el scroll virtual se encarga via applyIntroScroll
   }
 
   @HostListener('window:scrollToTop')
@@ -449,11 +460,10 @@ export class AppComponent implements OnInit, OnDestroy {
   onWheel(event: WheelEvent): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
 
-    // Ignore wheel events when cursor is inside the chatbot
+    //Wheel sobre el chatbot: redirigir al panel de mensajes
     if (this.isCursorInsideChatbot(event)) {
       event.preventDefault();
       event.stopPropagation();
-      // Only forward scroll to chat messages, not when over the input area
       const target = event.target as HTMLElement;
       if (!target.closest('.chatbot-input-area')) {
         const msgContainer = document.querySelector('.chatbot-messages') as HTMLElement;
@@ -465,33 +475,30 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Resync virtual scroll after chatbot was open
+    //Resync del scroll virtual al cerrar el chatbot
     if (this.chatbotWasOpen) {
       this.chatbotWasOpen = false;
       this.currentScrollY = window.scrollY;
       this.targetScrollY = window.scrollY;
     }
 
-    // Block native scroll during preloader so window.scrollY can't accumulate
-    // past the intro trigger before the virtual scroll system takes over.
+    //Bloquear scroll nativo durante el preloader
     if (this.showPreloader) {
       event.preventDefault();
       return;
     }
 
-    // Return-to-intro: when main content is active and user scrolls up at top
+    //Return-to-intro: scroll up en el top de la home
     if (!this.showIntro && this.currentScrollY <= 0 && event.deltaY < -40 && !this.isTransitioning) {
       event.preventDefault();
       this.returnToIntro();
-      // Seed the reverse animation with the triggering wheel's deltaY so the
-      // virtual scroll immediately starts moving without a dead frame.
       const vh = window.innerHeight;
       const maxScroll = 2 * vh + 10;
       this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + event.deltaY, maxScroll));
       return;
     }
 
-    // Intro: always block native scroll while the overlay is mounted.
+    //Intro: scroll virtual obligatorio
     if (this.showIntro) {
       event.preventDefault();
       if (!this.isTransitioning) {
@@ -506,13 +513,7 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Main page: intercept wheel and feed velocity-limited virtual scroll
-    // so fast wheel bursts can't skip past sections.
-
-    // Excepción: si el cursor está sobre la lista de proyectos y aún tiene
-    // scroll por consumir en la dirección del wheel, lo absorbe ella en vez
-    // del doc. Así el usuario puede recorrer las cards sin que el documento
-    // avance ni un píxel hasta llegar al fin/inicio de la lista.
+    //Excepción: lista interna de proyectos absorbe el delta antes de mover el documento
     if (this.scrollableContainerAbsorbs(event.target as HTMLElement, event.deltaY)) {
       event.preventDefault();
       return;
@@ -531,10 +532,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + event.deltaY, maxY));
   }
 
-  /** Si el target está dentro de un contenedor con scroll interno (hoy:
-   *  `.showcase-list`) y todavía puede consumir delta en esa dirección,
-   *  scrollea ese contenedor y devuelve true. El caller debe entonces
-   *  preventDefault y NO tocar el virtual scroll del documento. */
+  //Si el target está sobre `.showcase-list` y aún hay scroll interno, lo absorbe ahí
   private scrollableContainerAbsorbs(target: HTMLElement | null, deltaY: number): boolean {
     if (!target || deltaY === 0) return false;
     const list = target.closest('.showcase-list') as HTMLElement | null;
@@ -556,42 +554,37 @@ export class AppComponent implements OnInit, OnDestroy {
   onTouchMove(event: TouchEvent): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
 
-    // Ignore touch events from within the chatbot
     if ((event.target as HTMLElement)?.closest('.chatbot-panel, .chatbot-toggle')) {
       this.chatbotWasOpen = true;
       return;
     }
 
-    // Resync virtual scroll after chatbot was open
     if (this.chatbotWasOpen) {
       this.chatbotWasOpen = false;
       this.currentScrollY = window.scrollY;
       this.targetScrollY = window.scrollY;
     }
 
-    // Block native scroll during preloader to avoid skipping the intro.
     if (this.showPreloader) {
       event.preventDefault();
       return;
     }
 
-    // Return-to-intro via swipe down
+    //Return-to-intro vía swipe down en el top
     if (!this.showIntro && this.currentScrollY <= 0 && event.touches.length > 0 && !this.isTransitioning) {
       const touchEndY = event.touches[0].clientY;
       if (touchEndY - this.touchStartY > 80) {
         event.preventDefault();
         this.returnToIntro();
-        // Seed reverse animation with the swipe delta so it starts moving at once.
         const vh = window.innerHeight;
         const maxScroll = 2 * vh + 10;
-        const delta = this.touchStartY - touchEndY; // negative (user swiped down)
+        const delta = this.touchStartY - touchEndY;
         this.touchStartY = touchEndY;
         this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + delta * 2, maxScroll));
         return;
       }
     }
 
-    // Intro: block native scroll while the overlay is mounted.
     if (this.showIntro) {
       event.preventDefault();
       if (!this.isTransitioning && event.touches.length > 0) {
@@ -611,7 +604,6 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Main page: intercept touch and feed velocity-limited virtual scroll.
     if (this.isTransitioning || event.touches.length === 0) {
       event.preventDefault();
       return;
@@ -621,9 +613,6 @@ export class AppComponent implements OnInit, OnDestroy {
     const delta = this.touchStartY - touchCurrentY;
     this.touchStartY = touchCurrentY;
 
-    // Igual que con la rueda: si el dedo arrastra sobre la lista de
-    // proyectos y aún hay scroll por consumir en esa dirección, absórbelo
-    // ahí en vez del doc.
     if (this.scrollableContainerAbsorbs(event.target as HTMLElement, delta * 2)) {
       event.preventDefault();
       return;
@@ -651,11 +640,10 @@ export class AppComponent implements OnInit, OnDestroy {
   private returnToIntro(): void {
     if (this.isTransitioning || !isPlatformBrowser(this.platformId) || this.showIntro) return;
     this.menuTranslateY  = 0;
-    this.firmaScrollTicks = 0; // resetear contador para la próxima visita
+    this.firmaScrollTicks = 0;
 
     this.homeComponent?.resetAnimations();
 
-    // Switch virtual scroll back into intro mode so caps/lerp match the entry.
     this.stopVirtualScroll();
     this.scrollMode = 'intro';
 
@@ -666,13 +654,10 @@ export class AppComponent implements OnInit, OnDestroy {
     const startPos = Math.floor(2 * vh) - 50;
     window.scrollTo(0, startPos);
 
-    // Initialize virtual scroll at the return position so it can animate back smoothly
     this.currentScrollY = startPos;
     this.targetScrollY = startPos;
     this.applyIntroScroll(startPos);
 
-    // Start virtual scroll immediately — caller seeds targetScrollY right
-    // after this returns, so the reverse animation begins on the next tick.
     this.startVirtualScroll(false);
   }
 
@@ -780,16 +765,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl('/admin');
   }
 
-  /**
-   * Sale del panel de admin con un hard reload directo a `/`. No usamos
-   * `router.navigateByUrl` porque la navegación SPA dejaba ScrollTriggers
-   * huérfanos y métricas obsoletas del pin horizontal de Experiencia (el
-   * usuario podía haber estado scrolleando en cualquier pestaña del admin).
-   * Recargar la página garantiza que el home se reconstruya desde cero.
-   *
-   * El `adminExitGuard` cubre el resto de salidas (botón atrás del
-   * navegador, swipe atrás en móvil) seteando el mismo flag.
-   */
+  //Hard reload directo a `/` para que el home se reconstruya desde cero al salir del admin
   exitAdmin(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     sessionStorage.removeItem('preAdminState');
@@ -801,12 +777,7 @@ export class AppComponent implements OnInit, OnDestroy {
     window.location.href = '/';
   }
 
-  /**
-   * Centra el `.hero-avatar` (foto de perfil) en el viewport. La sección
-   * hero ocupa 100vh con la foto centrada, así que normalmente el resultado
-   * será cercano a 0; lo calculamos contra el rect real para tolerar
-   * variaciones (safe areas móviles, márgenes, etc.).
-   */
+  //Centra el `.hero-avatar` en el viewport (resultado típicamente cercano a 0)
   private computeCvTargetY(): number {
     if (!isPlatformBrowser(this.platformId)) return 0;
     const avatar = document.querySelector('.hero-avatar') as HTMLElement | null;
@@ -818,11 +789,7 @@ export class AppComponent implements OnInit, OnDestroy {
     return 0;
   }
 
-  /**
-   * Calcula la coordenada Y a la que hay que desplazarse para mostrar los
-   * proyectos. La sección de skills + proyectos vive en flujo normal en
-   * todas las anchuras, así que apuntamos al top del telón directamente.
-   */
+  //Top del telón de proyectos (la lista vive en flujo normal en todas las anchuras)
   private computeProjectsTargetY(): number {
     if (!isPlatformBrowser(this.platformId)) return 0;
     const curtain = document.querySelector('.sp-projects-curtain') as HTMLElement | null;
@@ -834,6 +801,16 @@ export class AppComponent implements OnInit, OnDestroy {
       return showcaseSection.getBoundingClientRect().top + window.scrollY;
     }
     return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  //Top de la `.exp-scroll-section` para que el pin horizontal arranque desde el principio
+  private computeExperienceTargetY(): number {
+    if (!isPlatformBrowser(this.platformId)) return 0;
+    const expSection = document.querySelector('.exp-scroll-section') as HTMLElement | null;
+    if (expSection) {
+      return expSection.getBoundingClientRect().top + window.scrollY;
+    }
+    return 0;
   }
 
   toggleMobileMenu(): void {

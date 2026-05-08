@@ -6,10 +6,9 @@ import { adminGuard } from './guards/admin.guard';
 import { adminExitGuard } from './guards/admin-exit.guard';
 
 export const routes: Routes = [
-  // Ruta raíz: el contenido home se renderiza directamente desde AppComponent (<app-home>)
-  // por lo que '/' y '/proyectos' no necesitan componente en el outlet.
   { path: '', children: [] },
-  { path: 'proyectos', redirectTo: '' },
+  { path: 'experiencia', children: [] },
+  { path: 'proyectos', children: [] },
   { path: 'contacto', component: ContactComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },

@@ -1,0 +1,54 @@
+<section #expSection class="exp-scroll-section">
+  <div class="exp-track-wrapper">
+    <div class="exp-horizontal-track" #expTrack>
+
+      <div class="exp-title-panel">
+        <header class="section-header-cv">
+          <h2 [innerHTML]="i18n.t('exp.title')"></h2>
+          <div class="accent-line"></div>
+        </header>
+        <div class="exp-scroll-hint">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+          </svg>
+          <span>{{ i18n.t('exp.scroll_hint') }}</span>
+        </div>
+      </div>
+
+      <div class="exp-divider"></div>
+
+      <ng-container *ngFor="let exp of experiences; let i = index">
+
+        <div class="exp-year-marker" *ngIf="showYearMarker(i)">
+          <span class="exp-year-num">{{ getYear(exp) }}</span>
+          <div class="exp-year-bar"></div>
+        </div>
+
+        <div [class]="getCardClasses(exp, i)">
+          <div [class]="getBarClass(exp)"></div>
+          <div class="exp-card-body">
+            <p class="exp-date">{{ getDateRange(exp) }}</p>
+            <h3>{{ i18n.lang === 'en' && exp.title_en ? exp.title_en : exp.title }}</h3>
+            <p class="exp-company">{{ getCompanyDisplay(exp) }}</p>
+            <p class="exp-desc">{{ i18n.lang === 'en' && exp.description_en ? exp.description_en : exp.description }}</p>
+            <div class="timeline-tags" *ngIf="exp.tags">
+              <span class="t-tag" *ngFor="let tag of exp.tags.split(',')">{{ tag.trim() }}</span>
+            </div>
+          </div>
+          <span class="exp-intern-badge exp-badge--current" *ngIf="!exp.end_date">{{ i18n.t('exp.badge.current') }}</span>
+          <span class="exp-intern-badge" *ngIf="exp.end_date && isInternship(exp)">{{ i18n.t('exp.badge.internship') }}</span>
+        </div>
+
+      </ng-container>
+
+      <div class="exp-end-panel">
+        <div class="exp-end-orbit">
+          <div class="exp-end-ring"></div>
+          <div class="exp-end-dot"></div>
+        </div>
+        <p>{{ i18n.t('exp.growing') }}</p>
+      </div>
+
+    </div>
+  </div>
+</section>
