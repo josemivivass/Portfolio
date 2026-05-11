@@ -150,14 +150,14 @@
             <!-- HEADER: nº · título · fecha en la misma línea horizontal -->
             <header class="showcase-card-header">
               <span class="showcase-num-inline">{{ i + 1 | number:'2.0-0' }}</span>
-              <h3 class="showcase-card-title">
-                {{ i18n.lang === 'en' && project.title_en ? project.title_en : project.title }}
+              <h3 class="showcase-card-title"
+                  [innerHTML]="i18n.lang === 'en' && project.title_en ? project.title_en : project.title">
               </h3>
               <span class="showcase-date">{{ project.project_date | date:'MMM yyyy' }}</span>
             </header>
 
-            <p class="showcase-desc">
-              {{ i18n.lang === 'en' && project.description_en ? project.description_en : project.description }}
+            <p class="showcase-desc"
+               [innerHTML]="i18n.lang === 'en' && project.description_en ? project.description_en : project.description">
             </p>
 
             <!-- FOOTER: abajo-izquierda tags+botones · abajo-derecha QR -->
@@ -352,11 +352,11 @@
           {{ i18n.t('projects.status.' + caseProject.status) }}
         </span>
       </div>
-      <h3 class="case-modal-title">
-        {{ i18n.lang === 'en' && caseProject.title_en ? caseProject.title_en : caseProject.title }}
+      <h3 class="case-modal-title"
+          [innerHTML]="i18n.lang === 'en' && caseProject.title_en ? caseProject.title_en : caseProject.title">
       </h3>
-      <p class="case-modal-desc">
-        {{ i18n.lang === 'en' && caseProject.description_en ? caseProject.description_en : caseProject.description }}
+      <p class="case-modal-desc"
+         [innerHTML]="i18n.lang === 'en' && caseProject.description_en ? caseProject.description_en : caseProject.description">
       </p>
 
       <div class="case-modal-tech" *ngIf="caseProject.tags">
