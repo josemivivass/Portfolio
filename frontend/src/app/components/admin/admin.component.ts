@@ -12,11 +12,13 @@ import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, Ro
 import { filter } from 'rxjs/operators';
 import { AdminStateService, AdminTab } from '../../services/admin-state.service';
 import { resolveApiAssetUrl } from '../../services/project.service';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
+import { QuillModule } from 'ngx-quill';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [FormsModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [FormsModule, RouterOutlet, RouterLink, RouterLinkActive, DragDropModule, QuillModule],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -26,6 +28,22 @@ export class AdminComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+
+  quillConfigTitle = {
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      ['clean']
+    ]
+  };
+
+  quillConfigDesc = {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'header': [1, 2, 3, false] }],
+      ['link', 'clean']
+    ]
+  };
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -65,5 +83,10 @@ export class AdminComponent implements OnInit {
     if (!el) return;
     el.style.display = 'none';
     el.closest('.project-gallery-card')?.classList.add('is-broken');
+  }
+
+  // Nueva función para manejar el drop
+  dropImage(event: CdkDragDrop<any[]>): void {
+    this.state.reorderProjectImages(event.previousIndex, event.currentIndex);
   }
 }

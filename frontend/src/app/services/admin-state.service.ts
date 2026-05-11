@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AdminService, AdminUser, ProfileData } from './admin.service';
 import { AuthService } from './auth.service';
 import { TranslationService } from './translation.service';
+import { moveItemInArray } from '@angular/cdk/drag-drop';
 
 export type AdminTab = 'dashboard' | 'users' | 'projects' | 'experience' | 'visitors' | 'logins' | 'messages' | 'chatbot' | 'profile';
 type SortDir = 'asc' | 'desc';
@@ -91,8 +92,6 @@ export class AdminStateService {
   readonly projectImagesUploading = signal(0);
   readonly projectImagesUploadError = signal('');
   readonly galleryDragOver = signal(false);
-  readonly galleryDraggedIndex = signal<number | null>(null);
-  readonly galleryDragOverIndex = signal<number | null>(null);
   private static readonly PROJECT_IMG_MAX_BYTES = 5 * 1024 * 1024;
   private static readonly PROJECT_IMG_MIME_RE = /^image\/(jpe?g|png|webp|gif)$/i;
 
@@ -1024,9 +1023,6 @@ export class AdminStateService {
   }
 
   editProject(p: any): void {
-    // Clonamos el array de imágenes (los objetos también) para que las
-    // ediciones en el modal no muten la copia que tenemos en projects()
-    // hasta que el usuario pulse Guardar.
     const images = Array.isArray(p.images) ? p.images.map((img: any) => ({ ...img })) : [];
     this.editingProject.set({
       ...p,
@@ -1038,9 +1034,6 @@ export class AdminStateService {
   }
 
   // ─── Galería del proyecto en edición ───
-  /** Sube los archivos seleccionados desde el equipo. Cada archivo se valida
-   *  (formato y tamaño), se sube y se añade al final de la galería. El orden
-   *  visual coincide con el orden de selección porque procesamos uno a uno. */
   onProjectImagesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const files = input.files;
@@ -1050,25 +1043,15 @@ export class AdminStateService {
     this.processProjectImageFiles(list);
   }
 
-  /** Drop de archivos sobre la zona de subida — comparte la cola de subida
-   *  con el selector. */
   onProjectGalleryDrop(event: DragEvent): void {
     event.preventDefault();
     this.galleryDragOver.set(false);
-    // Si lo que se está arrastrando es una miniatura interna (reorden), el
-    // navegador dispara también drop sobre la zona; lo ignoramos.
-    if (this.galleryDraggedIndex() !== null) {
-      this.galleryDraggedIndex.set(null);
-      this.galleryDragOverIndex.set(null);
-      return;
-    }
     const files = event.dataTransfer?.files;
     if (!files || files.length === 0) return;
     this.processProjectImageFiles(Array.from(files));
   }
 
   onProjectGalleryDragOver(event: DragEvent): void {
-    if (this.galleryDraggedIndex() !== null) return;
     event.preventDefault();
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
     this.galleryDragOver.set(true);
@@ -1076,46 +1059,6 @@ export class AdminStateService {
 
   onProjectGalleryDragLeave(): void {
     this.galleryDragOver.set(false);
-  }
-
-  onImageDragStart(i: number, event: DragEvent): void {
-    this.galleryDraggedIndex.set(i);
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', String(i));
-    }
-  }
-
-  onImageDragOverCard(i: number, event: DragEvent): void {
-    if (this.galleryDraggedIndex() === null) return;
-    event.preventDefault();
-    event.stopPropagation();
-    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-    if (this.galleryDragOverIndex() !== i) {
-      this.galleryDragOverIndex.set(i);
-    }
-  }
-
-  onImageDropCard(targetIndex: number, event: DragEvent): void {
-    event.preventDefault();
-    event.stopPropagation();
-    const src = this.galleryDraggedIndex();
-    this.galleryDraggedIndex.set(null);
-    this.galleryDragOverIndex.set(null);
-    if (src === null || src === targetIndex) return;
-    const editing = this.editingProject();
-    if (!editing || !Array.isArray(editing.images)) return;
-    const arr = editing.images;
-    const [item] = arr.splice(src, 1);
-    arr.splice(targetIndex, 0, item);
-    this.reindexImagePositions();
-    // Trigger change en el signal manteniendo la misma referencia de objeto.
-    this.editingProject.set({ ...editing });
-  }
-
-  onImageDragEnd(): void {
-    this.galleryDraggedIndex.set(null);
-    this.galleryDragOverIndex.set(null);
   }
 
   private processProjectImageFiles(files: File[]): void {
@@ -1182,15 +1125,11 @@ export class AdminStateService {
     this.editingProject.set({ ...editing });
   }
 
-  /** Reasigna position 0..N-1 según orden actual. Llamado tras cualquier
-   *  cambio de orden o eliminación. */
   private reindexImagePositions(): void {
     const arr = this.editingProject()?.images;
     if (!Array.isArray(arr)) return;
     arr.forEach((img: any, idx: number) => { img.position = idx; });
   }
-
-  trackImageIndex(index: number): number { return index; }
 
   saveProject(): void {
     const p = this.editingProject();
@@ -1254,6 +1193,18 @@ export class AdminStateService {
         });
       }
     );
+  }
+
+  reorderProjectImages(previousIndex: number, currentIndex: number): void {
+    const project = this.editingProject();
+    if (!project || !project.images) return;
+    const newImages = [...project.images];
+    moveItemInArray(newImages, previousIndex, currentIndex);
+    this.editingProject.set({
+      ...project,
+      images: newImages
+    });
+    this.reindexImagePositions();
   }
 
   // ═══════════════════════════════════════════════════════

@@ -122,11 +122,11 @@
               <div class="profile-text-cols">
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
-                  <input [(ngModel)]="editingProject.title" name="title" required />
+                  <quill-editor class="editor-title" [(ngModel)]="editingProject.title" name="title" [modules]="quillConfigTitle" required></quill-editor>
                 </div>
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
-                  <input [(ngModel)]="editingProject.title_en" name="title_en" />
+                  <quill-editor class="editor-title" [(ngModel)]="editingProject.title_en" name="title_en" [modules]="quillConfigTitle"></quill-editor>
                 </div>
               </div>
             </div>
@@ -135,11 +135,11 @@
               <div class="profile-text-cols">
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
-                  <textarea [(ngModel)]="editingProject.description" name="description"></textarea>
+                  <quill-editor class="editor-desc" [(ngModel)]="editingProject.description" name="description" [modules]="quillConfigDesc"></quill-editor>
                 </div>
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
-                  <textarea [(ngModel)]="editingProject.description_en" name="description_en"></textarea>
+                  <quill-editor class="editor-desc" [(ngModel)]="editingProject.description_en" name="description_en" [modules]="quillConfigDesc"></quill-editor>
                 </div>
               </div>
             </div>
@@ -172,18 +172,17 @@
                 <p class="project-gallery-sub">{{ state.i18n.t('admin.projects.gallery.sub') }}</p>
               </div>
 
-              <!-- Zona de subida: clic o drag&drop de archivos. -->
               <label class="project-gallery-dropzone"
-                     [class.is-over]="state.galleryDragOver()"
-                     [class.is-uploading]="state.projectImagesUploading() > 0"
-                     (dragover)="state.onProjectGalleryDragOver($event)"
-                     (dragleave)="state.onProjectGalleryDragLeave()"
-                     (drop)="state.onProjectGalleryDrop($event)">
+                    [class.is-over]="state.galleryDragOver()"
+                    [class.is-uploading]="state.projectImagesUploading() > 0"
+                    (dragover)="state.onProjectGalleryDragOver($event)"
+                    (dragleave)="state.onProjectGalleryDragLeave()"
+                    (drop)="state.onProjectGalleryDrop($event)">
                 <input type="file"
-                       accept="image/png,image/jpeg,image/webp,image/gif"
-                       multiple
-                       (change)="state.onProjectImagesSelected($event)"
-                       hidden />
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      multiple
+                      (change)="state.onProjectImagesSelected($event)"
+                      hidden />
                 <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                   <polyline points="17 8 12 3 7 8"/>
@@ -198,11 +197,6 @@
                   {{ state.i18n.t('admin.projects.gallery.uploading', { n: state.projectImagesUploading() }) }}
                 </p>
               }
-              @if (state.projectImagesUploadError()) {
-                <p class="project-gallery-error">
-                  {{ state.projectImagesUploadError() }}
-                </p>
-              }
 
               @if (!editingProject.images || editingProject.images.length === 0) {
                 <p class="project-gallery-empty">
@@ -210,25 +204,29 @@
                 </p>
               }
 
-              <!-- Rejilla de miniaturas — arrastra una sobre otra para reordenar. -->
+              <!-- REJILLA CON CDK DRAG & DROP -->
               @if (editingProject.images && editingProject.images.length > 0) {
-                <div class="project-gallery-grid">
-                  @for (img of editingProject.images; track $index; let i = $index) {
-                    <div class="project-gallery-card"
-                         draggable="true"
-                         [class.is-dragging]="state.galleryDraggedIndex() === i"
-                         [class.is-drop-target]="state.galleryDragOverIndex() === i && state.galleryDraggedIndex() !== null && state.galleryDraggedIndex() !== i"
-                         (dragstart)="state.onImageDragStart(i, $event)"
-                         (dragover)="state.onImageDragOverCard(i, $event)"
-                         (drop)="state.onImageDropCard(i, $event)"
-                         (dragend)="state.onImageDragEnd()">
+                <div class="project-gallery-grid" 
+                    cdkDropList 
+                    cdkDropListOrientation="mixed" 
+                    (cdkDropListDropped)="dropImage($event)">
+                  
+                  @for (img of editingProject.images; track img.url; let i = $index) {
+                    <div class="project-gallery-card" cdkDrag>
+                      
+                      <!-- Placeholder mientras se arrastra -->
+                      <div class="cdk-drag-placeholder" *cdkDragPlaceholder></div>
+
                       <span class="card-position">{{ i + 1 }}</span>
                       <button type="button"
                               class="card-remove"
                               (click)="state.removeProjectImage(i)"
                               [attr.aria-label]="state.i18n.t('admin.projects.gallery.delete')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
                       </button>
+                      
                       <div class="card-thumb">
                         <img [src]="imagePreviewUrl(img.url)" [alt]="state.i18n.t('admin.projects.gallery.preview')" (error)="onImagePreviewError($event)" />
                         <span class="card-thumb-placeholder">{{ state.i18n.t('admin.projects.gallery.preview') }}</span>
@@ -276,11 +274,11 @@
               <div class="profile-text-cols">
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
-                  <input [(ngModel)]="editingExperience.title" name="title" required />
+                  <quill-editor class="editor-title" [(ngModel)]="editingExperience.title" name="title" [modules]="quillConfigTitle" required></quill-editor>
                 </div>
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
-                  <input [(ngModel)]="editingExperience.title_en" name="title_en" />
+                  <quill-editor class="editor-title" [(ngModel)]="editingExperience.title_en" name="title_en" [modules]="quillConfigTitle"></quill-editor>
                 </div>
               </div>
             </div>
@@ -318,11 +316,11 @@
               <div class="profile-text-cols">
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
-                  <textarea [(ngModel)]="editingExperience.description" name="description"></textarea>
+                  <quill-editor class="editor-desc" [(ngModel)]="editingExperience.description" name="description" [modules]="quillConfigDesc"></quill-editor>
                 </div>
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
-                  <textarea [(ngModel)]="editingExperience.description_en" name="description_en"></textarea>
+                  <quill-editor class="editor-desc" [(ngModel)]="editingExperience.description_en" name="description_en" [modules]="quillConfigDesc"></quill-editor>
                 </div>
               </div>
             </div>

@@ -415,6 +415,118 @@
 .admin-shell .mobile-list,
 .admin-shell .mobile-toolbar { display: none; }
 
+/* ESTILOS DEL EDITOR QUILL  */
+quill-editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+quill-editor:focus-within {
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  border-radius: 10px;
+}
+
+.ql-toolbar.ql-snow {
+  box-sizing: border-box !important;
+  border: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 10px 10px 0 0 !important;
+  background: var(--surface-alt) !important;
+  font-family: inherit !important;
+  padding: 8px 66px 8px 12px !important; 
+  transition: border-color 0.15s;
+}
+
+.ql-container.ql-snow {
+  box-sizing: border-box !important;
+  border: 1px solid var(--border) !important;
+  border-top: none !important;
+  border-radius: 0 0 10px 10px !important;
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+  height: auto !important; 
+}
+
+.ql-editor {
+  padding: 12px 14px !important;
+  line-height: 1.5;
+  height: auto !important;
+}
+
+quill-editor.editor-title .ql-editor {
+  min-height: 46px;
+}
+
+quill-editor.editor-desc .ql-editor {
+  min-height: 96px;
+}
+
+quill-editor:focus-within .ql-toolbar.ql-snow,
+quill-editor:focus-within .ql-container.ql-snow {
+  border-color: var(--accent) !important;
+}
+
+/* Ajuste compacto de botones */
+.ql-toolbar.ql-snow button {
+  width: 22px !important;
+  height: 22px !important;
+  padding: 2px !important;
+}
+
+.ql-toolbar.ql-snow button svg {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.ql-toolbar.ql-snow .ql-formats {
+  margin-right: 8px !important;
+}
+
+.ql-toolbar.ql-snow .ql-picker {
+  height: 22px !important;
+  line-height: 22px !important;
+}
+
+.ql-toolbar.ql-snow .ql-picker-label {
+  padding-left: 4px !important;
+  padding-right: 14px !important;
+  font-size: 0.75rem !important;
+}
+
+.ql-toolbar.ql-snow .ql-picker-label svg {
+  right: 0 !important;
+  width: 12px !important;
+  height: 12px !important;
+  margin-top: -6px !important;
+}
+
+/* ESTILOS PARA HTML INYECTADO*/
+.rich-text-cell b,
+.rich-text-cell strong,
+.rich-text-title b,
+.rich-text-title strong {
+  font-weight: bold !important;
+}
+
+.rich-text-cell i,
+.rich-text-cell em,
+.rich-text-title i,
+.rich-text-title em {
+  font-style: italic !important;
+}
+
+.rich-text-cell p,
+.rich-text-title p {
+  margin: 0;
+  padding: 0;
+  display: inline;
+}
+
 /* ─── Responsive ──────────────────────────────────── */
 @media (max-width: 1100px) {
   .admin-shell .chart-grid { grid-template-columns: 1fr; }

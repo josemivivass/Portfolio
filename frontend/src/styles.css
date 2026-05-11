@@ -1,20 +1,76 @@
 @import 'colors.css';
 @import 'fonts.css';
+@import "quill/dist/quill.snow.css";
 
-/* Ocultar barra de desplazamiento en Chrome, Safari y Opera */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-primary) transparent;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--c-bg);
+  color: var(--c-text-body);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Webkit: Chrome, Safari, Edge */
 ::-webkit-scrollbar {
+  width: 6px;
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--c-primary);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--c-primary) 80%, black);
+}
+
+/* Ocultar flechas de arriba/abajo de forma forzada */
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-button:start,
+::-webkit-scrollbar-button:end,
+::-webkit-scrollbar-button:single-button {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
 }
 
-/* Ocultar barra de desplazamiento y fijar el fondo en elementos principales */
-html, body {
-  -ms-overflow-style: none !important;  /* IE y Edge */
-  scrollbar-width: none !important;  /* Firefox */
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+
+/* CORRECCIÓN DEL HTML INYECTADO POR EL EDITOR */
+
+/* Forzar que CUALQUIER etiqueta inyectada herede la fuente y color correctos */
+.showcase-card-title *,
+.showcase-desc *,
+.case-modal-title *,
+.case-modal-desc * {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Quitar saltos de línea a los párrafos para que no rompan el grid/truncado */
+.showcase-card-title p,
+.showcase-desc p,
+.case-modal-title p,
+.case-modal-desc p {
   margin: 0;
   padding: 0;
-  background-color: var(--c-bg);
+  display: inline;
 }
 
 /* Escalado global en móvil: reducir la base de rem para encoger texto y espacios */
@@ -26,19 +82,10 @@ html, body {
 }
 
 * {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
-}
-
-*::-webkit-scrollbar {
-  display: none !important;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: var(--ff-sans);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--ff-sans);
 }
 
 /* Enfasis editorial — patron de la maqueta Proyectos Destacados:
@@ -46,104 +93,118 @@ html, body {
    <strong> = peso 600 (semibold) + color texto (NO italic, NO 700+)
    Nunca se combinan italic y bold a la vez. */
 em, strong {
-    font-family: var(--ff-serif);
+  font-family: var(--ff-serif);
 }
 em {
-    font-style: italic;
-    font-weight: 300;
+  font-style: italic;
+  font-weight: 300;
 }
 strong {
-    font-style: normal;
-    font-weight: 500;
+  font-style: normal;
+  font-weight: 500;
 }
 
 /* Excepcion: en el panel admin se trabaja con datos planos (emails,
    contadores, IDs), donde el enfasis editorial queda incongruente. */
 .admin-shell em,
 .admin-shell strong {
-    font-family: inherit;
-    font-style: inherit;
-    font-weight: inherit;
-}
-
-body {
-    background-color: transparent;
-    color: var(--c-text-body);
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  font-family: inherit;
+  font-style: inherit;
+  font-weight: inherit;
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
 }
 
 .card {
-    background: var(--c-surface);
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    padding: 30px;
-    max-width: 400px;
-    margin: 40px auto;
+  background: var(--c-surface);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 30px;
+  max-width: 400px;
+  margin: 40px auto;
 }
 
 .form-group {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .form-control {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--c-border-form);
-    border-radius: 4px;
-    font-size: 16px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--c-border-form);
+  border-radius: 4px;
+  font-size: 16px;
 }
 
 .form-control.is-invalid {
-    border-color: var(--c-danger);
+  border-color: var(--c-danger);
 }
 
 .text-danger {
-    color: var(--c-danger);
-    font-size: 14px;
-    margin-top: 5px;
-    display: block;
+  color: var(--c-danger);
+  font-size: 14px;
+  margin-top: 5px;
+  display: block;
 }
 
 .btn {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 4px;
-    background-color: var(--c-primary);
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: var(--c-primary);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
 .btn:hover {
-    background-color: var(--c-primary-hover);
+  background-color: var(--c-primary-hover);
 }
 
 .btn:disabled {
-    background-color: var(--c-primary-disabled);
-    cursor: not-allowed;
+  background-color: var(--c-primary-disabled);
+  cursor: not-allowed;
 }
 
 .text-center {
-    text-align: center;
+  text-align: center;
 }
 
 .mt-3 {
-    margin-top: 15px;
+  margin-top: 15px;
+}
+
+/* Restaurar negrita y cursiva dentro del editor Quill */
+.ql-editor b,
+.ql-editor strong {
+  font-weight: bold !important;
+}
+
+.ql-editor i,
+.ql-editor em {
+  font-style: italic !important;
+}
+
+/* Restaurar negrita y cursiva en las tablas o tarjetas donde usas [innerHTML] */
+[innerHTML] b,
+[innerHTML] strong {
+  font-weight: bold !important;
+}
+
+[innerHTML] i,
+[innerHTML] em {
+  font-style: italic !important;
 }

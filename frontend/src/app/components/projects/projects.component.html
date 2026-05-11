@@ -156,9 +156,9 @@
               <span class="showcase-date">{{ project.project_date | date:'MMM yyyy' }}</span>
             </header>
 
-            <p class="showcase-desc"
+            <div class="showcase-desc"
                [innerHTML]="i18n.lang === 'en' && project.description_en ? project.description_en : project.description">
-            </p>
+            </div>
 
             <!-- FOOTER: abajo-izquierda tags+botones · abajo-derecha QR -->
             <div class="showcase-card-footer">
@@ -355,9 +355,9 @@
       <h3 class="case-modal-title"
           [innerHTML]="i18n.lang === 'en' && caseProject.title_en ? caseProject.title_en : caseProject.title">
       </h3>
-      <p class="case-modal-desc"
-         [innerHTML]="i18n.lang === 'en' && caseProject.description_en ? caseProject.description_en : caseProject.description">
-      </p>
+      <div class="case-modal-desc"
+          [innerHTML]="i18n.lang === 'en' && caseProject.description_en ? caseProject.description_en : caseProject.description">
+      </div>
 
       <div class="case-modal-tech" *ngIf="caseProject.tags">
         <span class="case-modal-tech-label">{{ i18n.t('projects.modal.tech') }}</span>

@@ -333,7 +333,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: linear-gradient(180deg, #f3f4f6, #e5e7eb);
+  background: linear-gradient(180deg, #24292b, #24292b);
   border-bottom: 1px solid var(--pj-rule);
 }
 
@@ -352,13 +352,12 @@
   flex: 1;
   margin-left: 12px;
   padding: 4px 14px;
-  background: #ffffff;
-  border: 1px solid var(--c-border-input);
+  background: #818486;
   border-radius: 999px;
   font-family: var(--pj-mono);
   font-size: 0.74rem;
   letter-spacing: 0.02em;
-  color: var(--pj-ink-mute);
+  color: var(--c-accent-bg);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;

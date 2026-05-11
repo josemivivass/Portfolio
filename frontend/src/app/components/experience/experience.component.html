@@ -28,9 +28,9 @@
           <div [class]="getBarClass(exp)"></div>
           <div class="exp-card-body">
             <p class="exp-date">{{ getDateRange(exp) }}</p>
-            <h3>{{ i18n.lang === 'en' && exp.title_en ? exp.title_en : exp.title }}</h3>
+            <h3 [innerHTML]="i18n.lang === 'en' && exp.title_en ? exp.title_en : exp.title"></h3>
             <p class="exp-company">{{ getCompanyDisplay(exp) }}</p>
-            <p class="exp-desc">{{ i18n.lang === 'en' && exp.description_en ? exp.description_en : exp.description }}</p>
+            <p class="exp-desc" [innerHTML]="i18n.lang === 'en' && exp.description_en ? exp.description_en : exp.description"></p>
             <div class="timeline-tags" *ngIf="exp.tags">
               <span class="t-tag" *ngFor="let tag of exp.tags.split(',')">{{ tag.trim() }}</span>
             </div>

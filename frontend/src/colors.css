@@ -114,13 +114,6 @@
   --c-chat-input-bg:         #ffffff;
   --c-chat-send-text:        #ffffff;
 
-  /* ── Reveal / Matrix ── */
-  --c-reveal-bg:            #060a14;
-  --c-reveal-fade:          rgba(6, 10, 20, 0.05);
-  --c-reveal-char:          #4da3ff;
-  --c-reveal-text:          #ffffff;
-  --c-reveal-vignette-mid:  rgba(6, 10, 20, 0.55);
-  --c-reveal-vignette-edge: rgba(6, 10, 20, 0.88);
 
   /* ── Projects showcase (telón) ── */
   --c-projects-bg:             linear-gradient(160deg, #f8f9fa 0%, #eef3f9 55%, #e7edf3 100%);
