@@ -2,45 +2,8 @@
 
 <app-background *ngIf="isHomeRoute"></app-background>
 
-<div *ngIf="isHomeRoute && showIntro"
-     class="intro-fullscreen-overlay"
-     [style.transform]="'translateY(' + introTranslateY + 'vh)'"
-     [style.opacity]="introOpacity">
-
-  <div class="intro-scaling-box"
-       [style.transform]="'scale(' + introScale + ')'"
-       [style.borderRadius]="introBorderRadius + 'px'"
-       [style.pointer-events]="disableReveal ? 'none' : 'auto'">
-
-    <div class="intro-content-clip"
-         [style.borderRadius]="introBorderRadius + 'px'">
-      <div class="dark-tint" [style.opacity]="overlayOpacity"></div>
-      <app-reveal-complex
-        [imageOpacity]="imageOpacity"
-        [hoverIntensity]="hoverIntensity">
-      </app-reveal-complex>
-    </div>
-
-    <!-- Firma SVG: aparece gradualmente con scroll, nunca desaparece -->
-    <div class="firma-wrapper" [style.opacity]="firmaOpacity">
-      <svg class="firma-svg"
-           viewBox="0 0 751 332"
-           xmlns="http://www.w3.org/2000/svg"
-           [style.clip-path]="'inset(0 ' + firmaClipRight + '% 0 0)'">
-        <g transform="translate(0,332) scale(0.1,-0.1)" fill="#000000" stroke="none">
-          <path d="M7245 3194 c-88 -24 -234 -65 -325 -90 -847 -234 -1881 -574 -3060 -1007 -284 -104 -908 -347 -1131 -440 l-107 -44 -7 120 c-4 65 -4 176 0 246 l7 126 73 85 c92 108 151 200 170 263 38 128 27 267 -25 319 -38 37 -100 39 -135 4 -70 -70 -143 -311 -161 -537 l-7 -84 -125 -130 c-280 -293 -364 -468 -298 -626 6 -13 -18 -30 -117 -82 l-124 -66 -174 115 c-96 64 -264 173 -374 243 -475 304 -652 408 -668 392 -7 -7 -6 -15 4 -27 25 -30 283 -218 431 -314 81 -52 271 -176 423 -276 l276 -180 -103 -69 c-57 -37 -157 -106 -223 -153 -66 -47 -169 -121 -230 -164 -60 -42 -132 -93 -158 -111 -28 -21 -104 -54 -185 -82 -417 -146 -659 -255 -749 -341 -61 -58 -56 -111 12 -134 46 -15 98 -6 205 35 157 60 307 143 575 321 161 106 140 98 845 299 206 58 382 108 392 111 33 10 409 -313 587 -505 108 -116 138 -133 161 -90 9 16 7 29 -10 62 -43 85 -113 255 -145 352 -47 143 -85 318 -71 326 6 4 141 41 301 84 159 42 295 81 302 87 19 16 16 56 -6 68 -12 6 -112 10 -248 11 -125 1 -266 4 -313 7 l-85 7 -9 98 c-7 78 -6 101 4 107 12 7 214 88 665 265 374 148 865 329 1300 480 116 40 329 114 474 165 370 129 746 250 1161 375 572 172 1124 366 1170 411 20 19 16 19 -165 -32z m-4447 -604 c-3 -84 -7 -102 -36 -155 -34 -63 -113 -175 -123 -175 -7 0 -6 9 16 139 25 146 64 259 103 304 16 18 17 18 30 0 10 -13 13 -43 10 -113z m-268 -798 l0 -218 -162 -76 c-149 -70 -164 -75 -176 -60 -38 48 17 214 110 334 54 68 210 238 221 238 4 0 7 -98 7 -218z m15 -359 c3 -27 7 -58 9 -71 2 -12 0 -24 -4 -27 -9 -5 -195 24 -224 35 -18 7 -10 13 49 39 39 18 88 40 110 51 22 10 43 19 47 20 4 0 9 -21 13 -47z m-290 -132 c48 -18 203 -48 275 -53 35 -3 35 -4 44 -61 4 -32 6 -61 3 -64 -7 -7 -346 -103 -365 -103 -14 0 -252 168 -252 179 0 7 219 119 235 120 6 1 33 -7 60 -18z m580 -71 c60 0 95 -4 90 -9 -6 -5 -63 -24 -128 -42 -132 -35 -137 -34 -137 30 0 33 0 34 38 27 20 -3 82 -6 137 -6z m-865 -152 c47 -32 96 -66 109 -76 l23 -19 -153 -42 c-134 -38 -460 -132 -601 -175 -27 -8 -46 -10 -43 -6 7 11 413 297 495 348 35 22 69 38 75 35 5 -4 48 -33 95 -65z m663 -188 c20 -80 49 -182 65 -227 16 -46 26 -83 22 -83 -3 0 -19 14 -36 31 -41 43 -300 267 -351 303 -24 16 -41 32 -38 34 4 4 298 90 301 88 1 -1 18 -66 37 -146z m-1956 -451 c-145 -91 -407 -210 -459 -209 -39 1 215 134 377 196 132 51 145 53 82 13z"/>
-        </g>
-      </svg>
-    </div>
-  </div>
-</div>
-
-<div *ngIf="isHomeRoute && showIntro" class="scroll-forced-spacer"></div>
-
 <div class="main-app-container"
-     [class.is-intro-active]="showIntro"
-     [class.is-standalone-route]="!isHomeRoute"
-     [style.transform]="showIntro ? 'translateY(' + mainTranslateY + 'vh)' : 'none'">
+     [class.is-standalone-route]="!isHomeRoute">
 
   <a *ngIf="!isHomeRoute" href="javascript:void(0)" (click)="returnToHome()" class="page-back-arrow" aria-label="Volver al inicio">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -1,94 +1,9 @@
-.intro-fullscreen-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  will-change: transform, opacity;
-  background-color: transparent;
-}
-
-.intro-scaling-box {
-  position: relative;
-  z-index: 2;
-  width: 100vw;
-  height: 100vh;
-  transform-origin: center center;
-  will-change: transform;
-  overflow: visible;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-  pointer-events: auto;
-  background-color: transparent;
-}
-
-/* Wrapper que recorta el canvas y el tinte con border-radius */
-.intro-content-clip {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
-  background-color: var(--c-bg);
-}
-
-.dark-tint {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: var(--c-tint);
-  z-index: 10;
-  pointer-events: none;
-}
-
-/* Firma SVG */
-.firma-wrapper {
-  position: absolute;
-  bottom: 0;
-  left: calc(50% + 30px + 10vw);
-  transform: translateX(-50%) translateY(60%);
-  z-index: 15;
-  pointer-events: none;
-  will-change: opacity;
-}
-
-.firma-svg {
-  width: 80vw;
-  height: auto;
-  display: block;
-  overflow: visible;
-}
-
-@media (max-width: 768px) {
-  .firma-wrapper { left: calc(50% + 15px + 10vw); }
-}
-
-.scroll-forced-spacer {
-  height: 400vh;
-  width: 100%;
-}
-
 .main-app-container {
   width: 100%;
   min-height: 100vh;
   position: relative;
   z-index: 1;
   background-color: transparent;
-}
-
-.main-app-container.is-intro-active {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-  will-change: transform;
 }
 
 .side-menu {

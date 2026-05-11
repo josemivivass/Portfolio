@@ -20,6 +20,10 @@
   -webkit-backdrop-filter: invert(1) hue-rotate(180deg);
   backdrop-filter: invert(1) hue-rotate(180deg);
   color: var(--pj-ink);
+  isolation: isolate;
+  transform: translateZ(0);
+  will-change: transform;
+  contain: layout style;
 }
 
 .sp-projects-curtain::before {
