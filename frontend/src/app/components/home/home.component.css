@@ -470,12 +470,22 @@
 }
 
 .skill-tags span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: var(--c-accent-bg);
   color: var(--c-primary);
   padding: 5px 12px;
   border-radius: 15px;
   font-size: 0.82rem;
   font-weight: 600;
+}
+
+.skill-tag-icon {
+  width: 14px;
+  height: 14px;
+  display: block;
+  flex-shrink: 0;
 }
 
 /*RESPONSIVE*/

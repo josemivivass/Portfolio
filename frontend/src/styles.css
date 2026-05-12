@@ -3,8 +3,7 @@
 @import "quill/dist/quill.snow.css";
 
 html {
-  scrollbar-width: thin;
-  scrollbar-color: var(--c-primary) transparent;
+  background-color: var(--c-bg);
 }
 
 body {
@@ -18,43 +17,87 @@ body {
   overflow-x: hidden;
 }
 
-/* Webkit: Chrome, Safari, Edge */
-::-webkit-scrollbar {
-  width: 6px;
-  background-color: transparent;
+body,
+body * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+body::-webkit-scrollbar,
+body *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+body::-webkit-scrollbar-button,
+body *::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
-::-webkit-scrollbar-track {
-  background-color: transparent;
+html::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+html::-webkit-scrollbar-track,
+html::-webkit-scrollbar-thumb,
+html::-webkit-scrollbar-corner {
+  background: transparent;
+}
+html::-webkit-scrollbar-button,
+html::-webkit-scrollbar-button:start,
+html::-webkit-scrollbar-button:end,
+html::-webkit-scrollbar-button:single-button {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
+html.home-route::-webkit-scrollbar {
+  width: 8px;
+  height: 0;
+  background: transparent;
+}
+html.home-route::-webkit-scrollbar-track,
+html.home-route::-webkit-scrollbar-track-piece {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+html.home-route::-webkit-scrollbar-thumb {
   background-color: var(--c-primary);
   border-radius: 10px;
+  border: none;
+  min-height: 40px;
 }
-
-::-webkit-scrollbar-thumb:hover {
+html.home-route::-webkit-scrollbar-thumb:hover {
   background-color: color-mix(in srgb, var(--c-primary) 80%, black);
 }
-
-/* Ocultar flechas de arriba/abajo de forma forzada */
-::-webkit-scrollbar-button,
-::-webkit-scrollbar-button:start,
-::-webkit-scrollbar-button:end,
-::-webkit-scrollbar-button:single-button {
+html.home-route::-webkit-scrollbar-button,
+html.home-route::-webkit-scrollbar-button:start,
+html.home-route::-webkit-scrollbar-button:end,
+html.home-route::-webkit-scrollbar-button:single-button {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
+  background: transparent !important;
+}
+html.home-route::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
-::-webkit-scrollbar-corner {
-  background-color: transparent;
+@-moz-document url-prefix() {
+  html {
+    scrollbar-width: none;
+  }
+  html.home-route {
+    scrollbar-width: thin;
+    scrollbar-color: var(--c-primary) transparent;
+  }
 }
 
-
-/* CORRECCIÓN DEL HTML INYECTADO POR EL EDITOR */
-
-/* Forzar que CUALQUIER etiqueta inyectada herede la fuente y color correctos */
 .showcase-card-title *,
 .showcase-desc *,
 .case-modal-title *,
@@ -63,7 +106,6 @@ body {
   color: inherit;
 }
 
-/* Quitar saltos de línea a los párrafos para que no rompan el grid/truncado */
 .showcase-card-title p,
 .showcase-desc p,
 .case-modal-title p,
@@ -73,7 +115,6 @@ body {
   display: inline;
 }
 
-/* Escalado global en móvil: reducir la base de rem para encoger texto y espacios */
 @media (max-width: 768px) {
   html { font-size: 15px; }
 }
@@ -88,10 +129,6 @@ body {
   font-family: var(--ff-sans);
 }
 
-/* Enfasis editorial — patron de la maqueta Proyectos Destacados:
-   <em>     = italic + peso 400 + color acento (NO bold)
-   <strong> = peso 600 (semibold) + color texto (NO italic, NO 700+)
-   Nunca se combinan italic y bold a la vez. */
 em, strong {
   font-family: var(--ff-serif);
 }
@@ -104,8 +141,6 @@ strong {
   font-weight: 500;
 }
 
-/* Excepcion: en el panel admin se trabaja con datos planos (emails,
-   contadores, IDs), donde el enfasis editorial queda incongruente. */
 .admin-shell em,
 .admin-shell strong {
   font-family: inherit;
@@ -187,7 +222,6 @@ strong {
   margin-top: 15px;
 }
 
-/* Restaurar negrita y cursiva dentro del editor Quill */
 .ql-editor b,
 .ql-editor strong {
   font-weight: bold !important;
@@ -198,7 +232,6 @@ strong {
   font-style: italic !important;
 }
 
-/* Restaurar negrita y cursiva en las tablas o tarjetas donde usas [innerHTML] */
 [innerHTML] b,
 [innerHTML] strong {
   font-weight: bold !important;

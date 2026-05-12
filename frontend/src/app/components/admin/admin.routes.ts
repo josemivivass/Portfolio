@@ -23,6 +23,11 @@ export const adminRoutes: Routes = [
     data: { tab: 'experience' }
   },
   {
+    path: 'education',
+    loadComponent: () => import('./tabs/education/admin-education.component').then(m => m.AdminEducationComponent),
+    data: { tab: 'education' }
+  },
+  {
     path: 'visitors',
     loadComponent: () => import('./tabs/visitors/admin-visitors.component').then(m => m.AdminVisitorsComponent),
     data: { tab: 'visitors' }

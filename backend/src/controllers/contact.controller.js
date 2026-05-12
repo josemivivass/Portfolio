@@ -20,7 +20,6 @@ exports.sendMessage = async (req, res) => {
       [name, email, message]
     );
 
-    // Enviamos el correo de notificación sin esperar a que termine (fire-and-forget)
     sendContactNotification({ name, email, message });
 
     res.status(201).json({ message: 'Mensaje guardado correctamente.' });

@@ -9,11 +9,6 @@ const ANON_IP_TOKEN_LIMIT = 400000;
 const GLOBAL_TOKEN_LIMIT = 500000;
 const SESSION_ID_REGEX = /^[0-9a-fA-F-]{8,64}$/;
 
-// El prompt por defecto vive en profile.controller.js (DEFAULT_CHATBOT_PROMPT).
-// En cada petición leemos el valor actual (editable desde el panel admin)
-// mediante loadSystemPrompt(), que cae al default si no hay override.
-
-// Helper: get the last clear timestamp for a user
 async function getLastClear(userId) {
   const [rows] = await pool.query(
     `SELECT cleared_at FROM chatbot_clears
@@ -34,7 +29,6 @@ exports.sendMessage = async (req, res) => {
   }
 
   try {
-    // Check per-user daily token limit
     const [userTokenRows] = await pool.query(
       `SELECT COALESCE(SUM(tokens_used), 0) AS total_tokens FROM chatbot_messages
        WHERE user_id = ? AND DATE(created_at) = CURDATE()`,
@@ -46,7 +40,6 @@ exports.sendMessage = async (req, res) => {
       });
     }
 
-    // Check global daily token limit (all users combined)
     const [globalTokenRows] = await pool.query(
       `SELECT COALESCE(SUM(tokens_used), 0) AS total_tokens FROM chatbot_messages
        WHERE DATE(created_at) = CURDATE()`
@@ -57,7 +50,6 @@ exports.sendMessage = async (req, res) => {
       });
     }
 
-    // Get conversation history (only after last clear)
     const lastClear = await getLastClear(userId);
     const historyQuery = lastClear
       ? `SELECT role, message FROM chatbot_messages
@@ -83,7 +75,6 @@ exports.sendMessage = async (req, res) => {
     }
     messages.push({ role: 'user', content: message });
 
-    // Single API call to Groq
     const result = await groq.chat.completions.create({
       model,
       messages,
@@ -93,14 +84,12 @@ exports.sendMessage = async (req, res) => {
     const reply = result.choices[0]?.message?.content || '';
     const tokensUsed = result.usage?.total_tokens || 0;
 
-    // Save user message
     await pool.query(
       `INSERT INTO chatbot_messages (user_id, role, message, tokens_used, model, ip_address, user_agent)
        VALUES (?, 'user', ?, 0, ?, ?, ?)`,
       [userId, message, model, ip, userAgent]
     );
 
-    // Save assistant reply
     await pool.query(
       `INSERT INTO chatbot_messages (user_id, role, message, tokens_used, model, ip_address, user_agent)
        VALUES (?, 'assistant', ?, ?, ?, ?, ?)`,
@@ -164,7 +153,6 @@ exports.sendAnonymousMessage = async (req, res) => {
   }
 
   try {
-    // Per-IP daily token limit for anonymous users
     const [ipTokenRows] = await pool.query(
       `SELECT COALESCE(SUM(tokens_used), 0) AS total_tokens FROM chatbot_messages
        WHERE user_id IS NULL AND ip_address = ? AND DATE(created_at) = CURDATE()`,
@@ -176,7 +164,6 @@ exports.sendAnonymousMessage = async (req, res) => {
       });
     }
 
-    // Global daily limit shared with logged-in users
     const [globalTokenRows] = await pool.query(
       `SELECT COALESCE(SUM(tokens_used), 0) AS total_tokens FROM chatbot_messages
        WHERE DATE(created_at) = CURDATE()`
@@ -187,7 +174,6 @@ exports.sendAnonymousMessage = async (req, res) => {
       });
     }
 
-    // Session-scoped history (no clears for anon — session ends on reload)
     const [history] = await pool.query(
       `SELECT role, message FROM chatbot_messages
        WHERE user_id IS NULL AND session_id = ?

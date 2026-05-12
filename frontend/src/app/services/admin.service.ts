@@ -81,6 +81,34 @@ export class AdminService {
     return this.http.delete(`${this.apiUrl}/admin/experience/${id}`, { headers: this.headers() });
   }
 
+  // Education
+  listEducation(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/education`);
+  }
+  createEducation(e: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/education`, e, { headers: this.headers() });
+  }
+  updateEducation(id: number, e: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/admin/education/${id}`, e, { headers: this.headers() });
+  }
+  deleteEducation(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/admin/education/${id}`, { headers: this.headers() });
+  }
+
+  // Skills
+  listSkills(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/skills`);
+  }
+  createSkill(s: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/skills`, s, { headers: this.headers() });
+  }
+  updateSkill(id: number, s: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/admin/skills/${id}`, s, { headers: this.headers() });
+  }
+  deleteSkill(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/admin/skills/${id}`, { headers: this.headers() });
+  }
+
   // Logs / messages
   listVisitorLogs(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/admin/visitor-logs`, { headers: this.headers() });

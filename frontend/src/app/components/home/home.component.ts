@@ -4,6 +4,7 @@ import {
   HostListener
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -12,6 +13,7 @@ import { BackgroundThemeService } from '../../services/background-theme.service'
 import { ProfileService } from '../../services/profile.service';
 import { ProjectsComponent } from '../projects/projects.component';
 import { ExperienceComponent } from '../experience/experience.component';
+import { techIcon, hideIconOnError } from '../../utils/tech-icons';
 
 @Component({
   selector: 'app-home',
@@ -24,6 +26,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   @ViewChildren('cvSection') cvSections!: QueryList<ElementRef>;
   @ViewChildren('eduEl')     eduEls!:     QueryList<ElementRef>;
   @ViewChild(ExperienceComponent) experienceComponent?: ExperienceComponent;
+
+  // Listas públicas
+  educations: any[] = [];
+  skills: any[] = [];
 
   //Listas alimentadas por los sub-componentes — solo para el typewriter del hero
   private projects: any[] = [];
@@ -42,10 +48,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   private animationsInitialized = false;
   private langSub!: Subscription;
 
-  //SINCRONIZACIÓN URL ↔ SCROLL
-  private currentRouteSegment = '/';
-  private routeSyncRaf: number | null = null;
-
   private projectsLoaded = false;
   private experiencesLoaded = false;
   private initPending = false;
@@ -55,7 +57,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     @Inject(PLATFORM_ID) private platformId: Object,
     public i18n: TranslationService,
     private theme: BackgroundThemeService,
-    public profile: ProfileService
+    public profile: ProfileService,
+    private http: HttpClient
   ) {
     if (isPlatformBrowser(this.platformId)) {
       gsap.registerPlugin(ScrollTrigger);
@@ -72,6 +75,16 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }, 0);
     });
+
+    // Peticiones para la home
+    this.http.get<any[]>('http://127.0.0.1:3000/api/education').subscribe(res => {
+      this.educations = res;
+      this.cdr.detectChanges();
+    });
+    this.http.get<any[]>('http://127.0.0.1:3000/api/skills').subscribe(res => {
+      this.skills = res;
+      this.cdr.detectChanges();
+    });
   }
 
   //Cierra el menú del CV al hacer click fuera
@@ -80,39 +93,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.cvMenuOpen) {
       this.cvMenuOpen = false;
       this.cdr.detectChanges();
-    }
-  }
-
-  //Sincroniza URL con la sección visible (throttle por RAF)
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    if (this.routeSyncRaf !== null) return;
-    this.routeSyncRaf = requestAnimationFrame(() => {
-      this.routeSyncRaf = null;
-      this.syncRouteFromScroll();
-    });
-  }
-
-  private syncRouteFromScroll(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const expEl  = document.querySelector('.exp-scroll-section')  as HTMLElement | null;
-    const projEl = document.querySelector('.sp-projects-curtain') as HTMLElement | null;
-    const probe = window.innerHeight / 2;
-    let target = '/';
-    if (projEl) {
-      const r = projEl.getBoundingClientRect();
-      if (r.top <= probe && r.bottom >= probe) target = '/proyectos';
-    }
-    if (target === '/' && expEl) {
-      const r = expEl.getBoundingClientRect();
-      if (r.top <= probe && r.bottom >= probe) target = '/experiencia';
-    }
-
-    if (target === this.currentRouteSegment) return;
-    this.currentRouteSegment = target;
-    if (window.location.pathname !== target) {
-      window.history.replaceState(window.history.state, '', target);
     }
   }
 
@@ -229,10 +209,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
     this.stopTypewriter();
-    if (this.routeSyncRaf !== null) {
-      cancelAnimationFrame(this.routeSyncRaf);
-      this.routeSyncRaf = null;
-    }
     ScrollTrigger.getAll().forEach(t => t.kill(true));
     this.theme.setProgress(0);
     if (isPlatformBrowser(this.platformId)) {
@@ -308,7 +284,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   resetAnimations(): void {
     ScrollTrigger.getAll().forEach(t => t.kill(true));
-    gsap.set('.section-header-cv, .about-card, .edu-card, .skill-category', {
+    gsap.set('.section-header-cv, .about-card, .edu-card', {
       clearProps: 'all'
     });
     this.experienceComponent?.resetAnimations();
@@ -317,5 +293,21 @@ export class HomeComponent implements OnInit, OnDestroy {
       document.documentElement.classList.remove('dark-scroll-active');
     }
     this.animationsInitialized = false;
+  }
+
+  getSkillTags(type: string): string[] {
+    const skill = this.skills.find(s => s.tipo === type);
+    if (!skill || !skill.tags) return [];
+    try {
+      return typeof skill.tags === 'string' ? JSON.parse(skill.tags) : skill.tags;
+    } catch { return []; }
+  }
+
+  techIcon(tag: string): string {
+    return techIcon(tag);
+  }
+
+  hideIconOnError(event: Event): void {
+    hideIconOnError(event);
   }
 }

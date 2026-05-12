@@ -114,10 +114,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private applyRoute(url: string): void {
     const pathOnly = url.split(/[?#]/)[0];
-    //`/experiencia` y `/proyectos` comparten vista con `/`; solo cambia el scroll inicial
-    const isHomeAlias = pathOnly === '/experiencia' || pathOnly === '/proyectos';
-    this.isHomeRoute = pathOnly === '/' || pathOnly === '' || isHomeAlias;
+    this.isHomeRoute = pathOnly === '/' || pathOnly === '';
     this.isAdminRoute = pathOnly.startsWith('/admin');
+
+    if (isPlatformBrowser(this.platformId)) {
+      const showBar = this.isHomeRoute || this.isAdminRoute;
+      document.documentElement.classList.toggle('home-route', showBar);
+    }
 
     if (!this.isHomeRoute) {
       this.showPreloader = false;
@@ -202,25 +205,6 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    //Entrada directa por URL a `/experiencia` o `/proyectos`: aterriza en la sección
-    if (isHomeAlias) {
-      this.showPreloader = false;
-      const computeY = pathOnly === '/proyectos'
-        ? () => this.computeProjectsTargetY()
-        : () => this.computeExperienceTargetY();
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        this.homeComponent?.initAnimations();
-        this.cdr.detectChanges();
-        setTimeout(() => {
-          ScrollTrigger.refresh();
-          this.stopVirtualScroll();
-          const targetY = computeY();
-          window.scrollTo(0, targetY);
-        }, 150);
-      }, 100);
-      return;
-    }
 
     const returnFlag = sessionStorage.getItem('authReturn');
     if (returnFlag) {
@@ -540,16 +524,6 @@ export class AppComponent implements OnInit, OnDestroy {
       return showcaseSection.getBoundingClientRect().top + window.scrollY;
     }
     return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-  }
-
-  //Top de la `.exp-scroll-section` para que el pin horizontal arranque desde el principio
-  private computeExperienceTargetY(): number {
-    if (!isPlatformBrowser(this.platformId)) return 0;
-    const expSection = document.querySelector('.exp-scroll-section') as HTMLElement | null;
-    if (expSection) {
-      return expSection.getBoundingClientRect().top + window.scrollY;
-    }
-    return 0;
   }
 
   toggleMobileMenu(): void {

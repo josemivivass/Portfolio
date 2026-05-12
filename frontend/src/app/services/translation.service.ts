@@ -266,7 +266,7 @@ const ES: Record<string, string> = {
   'admin.profile.chatbot.saved': 'Prompt actualizado',
   'admin.profile.chatbot.error': 'No se pudo guardar el prompt',
   'admin.profile.chatbot.empty': 'El prompt no puede estar vacío',
-  'admin.profile.chatbot.reset': 'Restaurar por defecto',
+  'admin.profile.chatbot.reset': 'Restaurar',
   'admin.profile.chatbot.edit': 'Editar prompt',
   'admin.profile.chatbot.edit.title': 'Editar prompt del chatbot',
   'admin.profile.chatbot.model.title': 'Modelo del chatbot',
@@ -276,6 +276,13 @@ const ES: Record<string, string> = {
   'admin.profile.chatbot.model.saving': 'Guardando…',
   'admin.profile.chatbot.model.saved': 'Modelo actualizado',
   'admin.profile.chatbot.model.error': 'No se pudo guardar el modelo',
+  'admin.profile.skills.title': 'Habilidades técnicas',
+  'admin.profile.skills.sub': 'Tags mostrados en cada categoría de la sección Skills.',
+  'admin.profile.skills.edit': 'Editar habilidades',
+  'admin.profile.skills.edit.title': 'Editar habilidades técnicas',
+  'admin.profile.skills.placeholder': 'Tag1, Tag2, Tag3',
+  'admin.profile.skills.saving': 'Guardando…',
+  'admin.profile.skills.saved': 'Habilidades actualizadas',
 
   // Dashboard
   'admin.dashboard.title': 'Dashboard',
@@ -376,6 +383,18 @@ const ES: Record<string, string> = {
   'admin.experience.field.desc': 'Descripción',
   'admin.experience.field.tags': 'Tags',
 
+  // Education
+  'admin.tab.education': 'Educación',
+  'admin.education.sub': 'Formación académica mostrada en el CV.',
+  'admin.education.create.new': '+ Nueva educación',
+  'admin.education.empty': 'No hay formación académica registrada.',
+  'admin.education.edit.title': 'Editar educación',
+  'admin.education.create.title': 'Crear educación',
+  'admin.education.field.start': 'Inicio',
+  'admin.education.field.end': 'Fin (vacío = actualidad)',
+  'admin.education.field.title': 'Título / Curso',
+  'admin.education.field.location': 'Centro educativo',
+
   // Visitors
   'admin.visitors.title': 'Visitas',
   'admin.visitors.sub': '{total} visitas registradas — {unique} únicas.',
@@ -431,6 +450,8 @@ const ES: Record<string, string> = {
   'admin.confirm.project.msg': '¿Seguro que quieres eliminar el proyecto "{name}"? Esta acción no se puede deshacer.',
   'admin.confirm.experience.title': 'Eliminar experiencia',
   'admin.confirm.experience.msg': '¿Seguro que quieres eliminar la experiencia "{name}"? Esta acción no se puede deshacer.',
+  'admin.confirm.education.title': 'Eliminar educación',
+  'admin.confirm.education.msg': '¿Seguro que quieres eliminar la educación "{name}"? Esta acción no se puede deshacer.',
   'admin.confirm.message.title': 'Eliminar mensaje',
   'admin.confirm.message.msg': '¿Seguro que quieres eliminar el mensaje de "{name}"? Esta acción no se puede deshacer.',
 
@@ -445,6 +466,10 @@ const ES: Record<string, string> = {
   'admin.error.experience.save': 'Error al guardar experiencia',
   'admin.error.experience.create': 'Error al crear experiencia',
   'admin.error.experience.delete': 'Error al eliminar experiencia',
+  'admin.error.education.save': 'Error al guardar educación',
+  'admin.error.education.create': 'Error al crear educación',
+  'admin.error.education.delete': 'Error al eliminar educación',
+  'admin.error.skills.save': 'Error al guardar habilidades',
   'admin.error.message.delete': 'Error al eliminar mensaje',
   'admin.error.message.update': 'No se pudo actualizar el mensaje',
 
@@ -685,7 +710,7 @@ const EN: Record<string, string> = {
   'admin.profile.chatbot.saved': 'Prompt updated',
   'admin.profile.chatbot.error': 'Could not save the prompt',
   'admin.profile.chatbot.empty': 'The prompt cannot be empty',
-  'admin.profile.chatbot.reset': 'Reset to default',
+  'admin.profile.chatbot.reset': 'Reset',
   'admin.profile.chatbot.edit': 'Edit prompt',
   'admin.profile.chatbot.edit.title': 'Edit chatbot prompt',
   'admin.profile.chatbot.model.title': 'Chatbot model',
@@ -695,6 +720,13 @@ const EN: Record<string, string> = {
   'admin.profile.chatbot.model.saving': 'Saving…',
   'admin.profile.chatbot.model.saved': 'Model updated',
   'admin.profile.chatbot.model.error': 'Could not save the model',
+  'admin.profile.skills.title': 'Technical skills',
+  'admin.profile.skills.sub': 'Tags shown in each category of the Skills section.',
+  'admin.profile.skills.edit': 'Edit skills',
+  'admin.profile.skills.edit.title': 'Edit technical skills',
+  'admin.profile.skills.placeholder': 'Tag1, Tag2, Tag3',
+  'admin.profile.skills.saving': 'Saving…',
+  'admin.profile.skills.saved': 'Skills updated',
 
   // Dashboard
   'admin.dashboard.title': 'Dashboard',
@@ -795,6 +827,18 @@ const EN: Record<string, string> = {
   'admin.experience.field.desc': 'Description',
   'admin.experience.field.tags': 'Tags',
 
+  // Education
+  'admin.tab.education': 'Education',
+  'admin.education.sub': 'Academic background shown in the CV.',
+  'admin.education.create.new': '+ New education',
+  'admin.education.empty': 'No academic background recorded.',
+  'admin.education.edit.title': 'Edit education',
+  'admin.education.create.title': 'Create education',
+  'admin.education.field.start': 'Start',
+  'admin.education.field.end': 'End (empty = present)',
+  'admin.education.field.title': 'Title / Degree',
+  'admin.education.field.location': 'School / Institution',
+
   // Visitors
   'admin.visitors.title': 'Visits',
   'admin.visitors.sub': '{total} visits recorded — {unique} unique.',
@@ -849,6 +893,8 @@ const EN: Record<string, string> = {
   'admin.confirm.project.title': 'Delete project',
   'admin.confirm.project.msg': 'Are you sure you want to delete the project "{name}"? This action cannot be undone.',
   'admin.confirm.experience.title': 'Delete experience',
+  'admin.confirm.education.msg': 'Are you sure you want to delete the education "{name}"? This action cannot be undone.',
+  'admin.confirm.education.title': 'Delete education',
   'admin.confirm.experience.msg': 'Are you sure you want to delete the experience "{name}"? This action cannot be undone.',
   'admin.confirm.message.title': 'Delete message',
   'admin.confirm.message.msg': 'Are you sure you want to delete the message from "{name}"? This action cannot be undone.',
@@ -864,6 +910,10 @@ const EN: Record<string, string> = {
   'admin.error.experience.save': 'Error saving experience',
   'admin.error.experience.create': 'Error creating experience',
   'admin.error.experience.delete': 'Error deleting experience',
+  'admin.error.education.save': 'Error saving education',
+  'admin.error.education.create': 'Error creating education',
+  'admin.error.education.delete': 'Error deleting education',
+  'admin.error.skills.save': 'Error saving skills',
   'admin.error.message.delete': 'Error deleting message',
   'admin.error.message.update': 'Could not update the message',
 

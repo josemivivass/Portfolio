@@ -536,6 +536,13 @@
   background: var(--surface-alt);
 }
 
+/* Ajuste de iconos en botones de footer de modal */
+.edit-modal-footer button svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
 select {
   padding: 11px 14px;
   border: 1.5px solid var(--border);
@@ -1082,6 +1089,17 @@ select:focus {
   .edit-modal-footer { padding-left: 20px; padding-right: 20px; }
   .grid-2 { grid-template-columns: 1fr; gap: 14px; }
   .confirm-modal { width: calc(100% - 32px); }
+
+  /* Footer del modal en móvil — botones compactos para que los 3 del
+     prompt del chatbot (Reset, Cancelar, Guardar) quepan bien sin
+     desbordar ni quedar enormes. */
+  .edit-modal-footer { flex-wrap: wrap; gap: 8px; padding-top: 14px; padding-bottom: 16px; }
+  .admin-shell .edit-modal-footer .btn-primary,
+  .admin-shell .edit-modal-footer .btn-secondary {
+    padding: 8px 14px;
+    font-size: 0.78rem;
+  }
+  .edit-modal-footer button svg { width: 12px; height: 12px; }
 }
 
 @media (max-width: 640px) {

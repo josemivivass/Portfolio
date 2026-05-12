@@ -10,7 +10,6 @@ const DEFAULT_PHOTO = path.join(
 
 const EDITABLE_KEYS = ['hero.tagline', 'about', 'footer.role'];
 
-// Mapeo clave lógica → columnas de la tabla profile_texts
 const KEY_TO_COLS = {
   'hero.tagline': { es: 'hero_tagline_es', en: 'hero_tagline_en' },
   'about':        { es: 'about_es',        en: 'about_en' },
@@ -94,8 +93,6 @@ function ensureDir() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-// ─── Lecturas SQL ───────────────────────────────────────────────
-
 async function fetchTexts() {
   const [rows] = await pool.query(
     'SELECT * FROM profile_texts WHERE id = 1 LIMIT 1'
@@ -140,8 +137,6 @@ async function upsertMeta(key, value) {
   );
 }
 
-// ─── Helper exportado para el chatbot ─────────────────────────────
-// Async: lee el prompt actual de la base de datos, con fallback al default.
 exports.loadSystemPrompt = async function () {
   try {
     const value = await fetchMeta('chatbot_prompt', null);
@@ -152,8 +147,6 @@ exports.loadSystemPrompt = async function () {
   }
 };
 
-// Lee el modelo configurado desde la base de datos. Si no existe o no está en
-// la lista permitida, devuelve el default.
 exports.loadChatbotModel = async function () {
   try {
     const value = await fetchMeta('chatbot_model', null);
@@ -166,8 +159,6 @@ exports.loadChatbotModel = async function () {
     return DEFAULT_CHATBOT_MODEL;
   }
 };
-
-// ─── Handlers HTTP ─────────────────────────────────────────────
 
 exports.getTexts = async (req, res) => {
   try {

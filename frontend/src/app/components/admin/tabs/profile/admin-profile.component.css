@@ -241,6 +241,63 @@
   margin-left: 4px;
 }
 
+/* Skills (display de chips por categoría) — dos columnas, igual que home. */
+.profile-skills-display {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.profile-skill-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-alt);
+  min-width: 0;
+}
+/* Limitamos a 2 líneas usando line-clamp: los chips son inline-block, por lo
+   que el navegador los trata como contenido en línea dentro del -webkit-box
+   y añade el ellipsis automáticamente si se desbordan. */
+.profile-skill-tags {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  line-height: 1.9;
+}
+.profile-skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  margin: 0 4px 0 0;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  vertical-align: middle;
+}
+.profile-skill-chip-icon {
+  width: 12px;
+  height: 12px;
+  display: block;
+  flex-shrink: 0;
+}
+.profile-skill-empty {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+@media (max-width: 640px) {
+  .profile-skills-display { grid-template-columns: 1fr; }
+}
+
 /* Preview del prompt (la versión de modal vive en el shell del padre) */
 .profile-prompt-preview {
   margin-bottom: 24px;
@@ -273,8 +330,9 @@
   }
   .profile-page .profile-col:nth-child(1) > .profile-card:nth-child(1) { order: 1; }
   .profile-page .profile-col:nth-child(2) > .profile-card:nth-child(1) { order: 2; }
-  .profile-page .profile-col:nth-child(1) > .profile-card:nth-child(2) { order: 3; }
-  .profile-page .profile-col:nth-child(2) > .profile-card:nth-child(2) { order: 4; }
+  .profile-page .profile-col:nth-child(2) > .profile-card:nth-child(2) { order: 3; }
+  .profile-page .profile-col:nth-child(1) > .profile-card:nth-child(2) { order: 4; }
+  .profile-page .profile-col:nth-child(2) > .profile-card:nth-child(3) { order: 5; }
 }
 @media (max-width: 640px) {
   .card.profile-card { padding: 22px; }

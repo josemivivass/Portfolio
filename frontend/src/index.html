@@ -10,6 +10,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      var p = (location.pathname || '/').split(/[?#]/)[0];
+      var showBar =
+        p === '/' || p === '' ||
+        p === '/admin' || p.indexOf('/admin/') === 0;
+      if (showBar) document.documentElement.classList.add('home-route');
+    })();
+  </script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>

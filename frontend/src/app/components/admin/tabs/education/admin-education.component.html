@@ -1,0 +1,99 @@
+<section class="page">
+  <header class="page-head">
+    <div>
+      <h1>{{ state.i18n.t('admin.tab.education') }}</h1>
+      <p class="page-sub">{{ state.i18n.t('admin.education.sub') }}</p>
+    </div>
+    <button type="button" class="btn-primary btn-new-compact" (click)="state.newEducation()">
+      <span class="btn-new-icon">+</span>
+      <span class="btn-new-label">{{ state.i18n.t('admin.education.create.new') }}</span>
+    </button>
+  </header>
+
+  <div class="card table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="sortable" [class.sorted]="state.sortState().educations.col === 'start_date'" (click)="state.toggleSort('educations', 'start_date')">
+            <span>{{ state.i18n.t('admin.education.field.start') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('educations', 'start_date')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortState().educations.col === 'end_date'" (click)="state.toggleSort('educations', 'end_date')">
+            <span>{{ state.i18n.t('admin.experience.col.end') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('educations', 'end_date')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortState().educations.col === 'title'" (click)="state.toggleSort('educations', 'title')">
+            <span>{{ state.i18n.t('admin.education.field.title') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('educations', 'title')"></span>
+          </th>
+          <th>{{ state.i18n.t('admin.education.field.location') }}</th>
+          <th style="width:100px;text-align:right"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (edu of state.sortedEducations(); track edu.id) {
+          <tr>
+            <td class="mono">{{ edu.start_date | date:'yyyy-MM' }}</td>
+            <td class="mono">{{ edu.end_date ? (edu.end_date | date:'yyyy-MM') : (state.i18n.lang === 'es' ? 'Presente' : 'Present') }}</td>
+            <td><strong>{{ state.i18n.lang === 'es' ? edu.title : (edu.title_en || edu.title) }}</strong></td>
+            <td>{{ edu.location }}</td>
+            <td style="text-align:right">
+              <div class="actions">
+                <button type="button" class="btn-edit" (click)="state.editEducation(edu)" [attr.aria-label]="state.i18n.t('admin.action.edit')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                @if (state.isAdmin()) {
+                  <button type="button" class="btn-delete" (click)="state.deleteEducation(edu)" [attr.aria-label]="state.i18n.t('admin.action.delete')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (state.educations().length === 0) {
+      <div class="empty">{{ state.i18n.t('admin.education.empty') }}</div>
+    }
+  </div>
+
+  <div class="mobile-toolbar">
+    <div class="mobile-sort">
+      <span>{{ state.i18n.t('admin.action.sort') }}:</span>
+      <select [ngModel]="state.sortState().educations.col" (ngModelChange)="state.setSortCol('educations', $event)">
+        <option value="start_date">{{ state.i18n.t('admin.education.field.start') }}</option>
+        <option value="title">{{ state.i18n.t('admin.education.field.title') }}</option>
+      </select>
+    </div>
+    <button type="button" class="dir-btn" (click)="state.toggleSortDir('educations')" [attr.aria-label]="state.i18n.t('admin.action.sort_dir')">
+      <span class="dir-arrow" [class.desc]="state.sortState().educations.dir === 'desc'">↑</span>
+    </button>
+  </div>
+
+  <div class="mobile-list">
+    @for (edu of state.sortedEducations(); track edu.id) {
+      <div class="mobile-card">
+        <div class="mobile-card-head">
+          <div class="mobile-card-avatar">{{ edu.title.charAt(0).toUpperCase() }}</div>
+          <div class="mobile-card-title">
+            <strong>{{ state.i18n.lang === 'es' ? edu.title : (edu.title_en || edu.title) }}</strong>
+            <span class="mobile-card-sub">{{ edu.location }}</span>
+          </div>
+        </div>
+        <div class="mobile-card-body">
+          <div class="mobile-meta-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            {{ edu.start_date | date:'yyyy-MM' }} - {{ edu.end_date ? (edu.end_date | date:'yyyy-MM') : (state.i18n.lang === 'es' ? 'Presente' : 'Present') }}
+          </div>
+        </div>
+        <div class="mobile-card-actions">
+          <button type="button" class="btn-edit" (click)="state.editEducation(edu)">{{ state.i18n.t('admin.action.edit') }}</button>
+          @if (state.isAdmin()) {
+            <button type="button" class="btn-delete" (click)="state.deleteEducation(edu)">{{ state.i18n.t('admin.action.delete') }}</button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</section>

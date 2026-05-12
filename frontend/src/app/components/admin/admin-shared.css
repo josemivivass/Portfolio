@@ -166,6 +166,39 @@
 .admin-shell .actions::before { content: ''; display: inline-block; width: 0; height: 30px; vertical-align: middle; }
 .admin-shell .actions > button { vertical-align: middle; }
 
+/* Chip de tag (logo + texto). Se usa tanto en la tabla desktop como
+   en las mobile-cards. */
+.admin-shell .tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: var(--accent-softer);
+  color: var(--accent);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+}
+.admin-shell .tag-chip-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* Celda de tags en la tabla: una sola línea, recortada con … cuando
+   los chips se desbordan. `max-width` evita que la celda se trague
+   las demás columnas si el proyecto tiene muchos tags. */
+.admin-shell .data-table .tag-cell { max-width: 320px; }
+.admin-shell .data-table .tag-cell-inner {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-shell .data-table .tag-cell-inner .tag-chip { margin-right: 4px; }
+
 /* ─── Buttons ─────────────────────────────────────── */
 .admin-shell button.btn-primary,
 .admin-shell button.btn-secondary,
@@ -765,16 +798,6 @@ quill-editor:focus-within .ql-container.ql-snow {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-  }
-  .admin-shell .tag-chip {
-    display: inline-block;
-    padding: 3px 10px;
-    background: var(--accent-softer);
-    color: var(--accent);
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
   }
   .admin-shell .mobile-card-actions {
     display: flex;

@@ -49,6 +49,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
         {{ state.i18n.t('admin.tab.experience') }}
       </a>
+      <a routerLink="education" routerLinkActive="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        {{ state.i18n.t('admin.tab.education') }}
+      </a>
 
       <span class="sidebar-section">{{ state.i18n.t('admin.section.data') }}</span>
       <a routerLink="visitors" routerLinkActive="active">
@@ -331,6 +335,81 @@
         <div class="edit-modal-footer">
           <button type="button" class="btn-secondary" (click)="state.cancelExperienceEdit()">{{ state.i18n.t('admin.action.cancel') }}</button>
           <button type="submit" class="btn-primary">{{ state.i18n.t('admin.action.save') }}</button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ─── Education edit / create modal ─── -->
+  @if (state.editingEducation(); as editingEducation) {
+    <div class="edit-modal-backdrop" (click)="state.cancelEducationEdit()">
+      <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="state.saveEducation()">
+        <div class="edit-modal-header">
+          <h3>{{ editingEducation.id ? state.i18n.t('admin.education.edit.title') : state.i18n.t('admin.education.create.title') }}</h3>
+          <button type="button" class="edit-modal-close" (click)="state.cancelEducationEdit()" [attr.aria-label]="state.i18n.t('admin.action.close')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="edit-modal-body">
+          <div class="grid-2">
+            <label>{{ state.i18n.t('admin.education.field.start') }}<input type="date" [(ngModel)]="editingEducation.start_date" name="start_date" required></label>
+            <label>{{ state.i18n.t('admin.education.field.end') }}<input type="date" [(ngModel)]="editingEducation.end_date" name="end_date"></label>
+
+            <div class="modal-bilingual-field full">
+              <span class="profile-text-label">{{ state.i18n.t('admin.education.field.title') }}</span>
+              <div class="profile-text-cols">
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
+                  <input [(ngModel)]="editingEducation.title" name="title" required />
+                </div>
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
+                  <input [(ngModel)]="editingEducation.title_en" name="title_en" />
+                </div>
+              </div>
+            </div>
+
+            <label class="full">{{ state.i18n.t('admin.education.field.location') }}<input [(ngModel)]="editingEducation.location" name="location" /></label>
+          </div>
+        </div>
+        <div class="edit-modal-footer">
+          <button type="button" class="btn-secondary" (click)="state.cancelEducationEdit()">{{ state.i18n.t('admin.action.cancel') }}</button>
+          <button type="submit" class="btn-primary">{{ state.i18n.t('admin.action.save') }}</button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- ─── Skills edit modal ─── -->
+  @if (state.editingSkills(); as editingSkills) {
+    <div class="edit-modal-backdrop" (click)="state.cancelEditSkills()">
+      <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="state.saveSkills()">
+        <div class="edit-modal-header">
+          <h3>{{ state.i18n.t('admin.profile.skills.edit.title') }}</h3>
+          <button type="button" class="edit-modal-close" (click)="state.cancelEditSkills()" [attr.aria-label]="state.i18n.t('admin.action.close')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="edit-modal-body">
+          <div class="grid-2">
+            @for (c of state.skillCategories; track c.tipo) {
+              <label class="full">
+                {{ state.i18n.t(c.labelKey) }}
+                <input [(ngModel)]="editingSkills[c.tipo]" [name]="'skill_' + c.tipo" [placeholder]="state.i18n.t('admin.profile.skills.placeholder')" />
+              </label>
+            }
+          </div>
+        </div>
+        <div class="edit-modal-footer">
+          @if (state.skillsStatus() === 'error') {
+            <span class="profile-status profile-status--err">
+              ✗ {{ state.skillsError() }}
+            </span>
+          }
+          <button type="button" class="btn-secondary" (click)="state.cancelEditSkills()" [disabled]="state.skillsSaving()">{{ state.i18n.t('admin.action.cancel') }}</button>
+          <button type="submit" class="btn-primary" [disabled]="state.skillsSaving()">
+            {{ state.skillsSaving() ? state.i18n.t('admin.profile.skills.saving') : state.i18n.t('admin.action.save') }}
+          </button>
         </div>
       </form>
     </div>

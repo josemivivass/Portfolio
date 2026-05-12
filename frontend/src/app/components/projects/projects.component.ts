@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ProjectService, resolveApiAssetUrl } from '../../services/project.service';
 import { TranslationService } from '../../services/translation.service';
+import { techIcon, hideIconOnError } from '../../utils/tech-icons';
 
 type ProjectFilterId = 'all' | 'web' | 'android' | 'ai' | 'other';
 
@@ -157,11 +158,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   techIcon(rawTag: string): string {
-    if (!rawTag) return '';
-    const tag = rawTag.trim().toLowerCase();
-    const slug = TECH_ICON_MAP[tag];
-    if (!slug) return '';
-    return `https://cdn.simpleicons.org/${slug}/007bff`;
+    return techIcon(rawTag);
+  }
+
+  hideIconOnError(event: Event): void {
+    hideIconOnError(event);
   }
 
   //Carrusel de capturas
@@ -279,79 +280,3 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     }
   }
 }
-
-// Mapeo manual tag → slug de simple-icons (cdn.simpleicons.org).
-const TECH_ICON_MAP: Record<string, string> = {
-  'angular': 'angular',
-  'typescript': 'typescript',
-  'javascript': 'javascript',
-  'js': 'javascript',
-  'node.js': 'nodedotjs',
-  'nodejs': 'nodedotjs',
-  'node': 'nodedotjs',
-  'react': 'react',
-  'react.js': 'react',
-  'vue': 'vuedotjs',
-  'next.js': 'nextdotjs',
-  'nextjs': 'nextdotjs',
-  'html': 'html5',
-  'html5': 'html5',
-  'css': 'css',
-  'css3': 'css',
-  'html5/css3': 'html5',
-  'sass': 'sass',
-  'tailwind': 'tailwindcss',
-  'tailwindcss': 'tailwindcss',
-  'bootstrap': 'bootstrap',
-  'python': 'python',
-  'java': 'openjdk',
-  'kotlin': 'kotlin',
-  'android': 'android',
-  'flutter': 'flutter',
-  'dart': 'dart',
-  'mysql': 'mysql',
-  'sql': 'mysql',
-  'postgres': 'postgresql',
-  'postgresql': 'postgresql',
-  'mongodb': 'mongodb',
-  'redis': 'redis',
-  'docker': 'docker',
-  'aws': 'amazonwebservices',
-  'gcp': 'googlecloud',
-  'azure': 'microsoftazure',
-  'firebase': 'firebase',
-  'github': 'github',
-  'git': 'git',
-  'gitlab': 'gitlab',
-  'linux': 'linux',
-  'express': 'express',
-  'express.js': 'express',
-  'django': 'django',
-  'flask': 'flask',
-  'fastapi': 'fastapi',
-  'spring': 'spring',
-  'laravel': 'laravel',
-  'php': 'php',
-  'tensorflow': 'tensorflow',
-  'pytorch': 'pytorch',
-  'scikit-learn': 'scikitlearn',
-  'pandas': 'pandas',
-  'numpy': 'numpy',
-  'openai': 'openai',
-  'openai api': 'openai',
-  'langchain': 'langchain',
-  'llms': 'openai',
-  'rags': 'openai',
-  'llamaindex': 'openai',
-  'machine learning': 'tensorflow',
-  'power bi': 'powerbi',
-  'jmeter': 'apachejmeter',
-  'postman': 'postman',
-  'soapui': 'soapui',
-  'grafana': 'grafana',
-  'influxdb': 'influxdb',
-  'rest apis': 'openapiinitiative',
-  'figma': 'figma',
-  'three.js': 'threedotjs',
-  'gsap': 'greensock',
-};

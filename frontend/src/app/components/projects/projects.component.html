@@ -166,7 +166,7 @@
                 <!-- Tags con icono del stack (encima de los botones) -->
                 <div class="showcase-tags" *ngIf="project.tags">
                   <span class="showcase-tag" *ngFor="let tag of project.tags.split(',')">
-                    <img *ngIf="techIcon(tag)" [src]="techIcon(tag)" alt="" class="showcase-tag-icon" loading="lazy" />
+                    <img *ngIf="techIcon(tag)" [src]="techIcon(tag)" alt="" class="showcase-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
                     {{ tag.trim() }}
                   </span>
                 </div>
@@ -363,7 +363,7 @@
         <span class="case-modal-tech-label">{{ i18n.t('projects.modal.tech') }}</span>
         <div class="showcase-tags">
           <span class="showcase-tag" *ngFor="let tag of caseProject.tags.split(',')">
-            <img *ngIf="techIcon(tag)" [src]="techIcon(tag)" alt="" class="showcase-tag-icon" loading="lazy" />
+            <img *ngIf="techIcon(tag)" [src]="techIcon(tag)" alt="" class="showcase-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
             {{ tag.trim() }}
           </span>
         </div>

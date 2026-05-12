@@ -143,6 +143,49 @@
 
       <div class="card profile-card">
         <div class="profile-card-head">
+          <h3>{{ state.i18n.t('admin.profile.skills.title') }}</h3>
+          <p>{{ state.i18n.t('admin.profile.skills.sub') }}</p>
+        </div>
+
+        <div class="profile-skills-display">
+          @for (c of state.skillCategories; track c.tipo) {
+            <div class="profile-skill-row">
+              <span class="profile-text-label">{{ state.i18n.t(c.labelKey) }}</span>
+              <div class="profile-skill-tags">
+                @for (t of state.getSkillTags(c.tipo); track $index) {
+                  <span class="profile-skill-chip">
+                    @if (state.techIcon(t); as icon) {
+                      <img [src]="icon" alt="" class="profile-skill-chip-icon" loading="lazy" (error)="state.hideIconOnError($event)" />
+                    }
+                    {{ t }}
+                  </span>
+                } @empty {
+                  <span class="profile-skill-empty">—</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="profile-texts-footer">
+          <button type="button" class="btn-primary" (click)="state.startEditSkills()">
+            {{ state.i18n.t('admin.profile.skills.edit') }}
+          </button>
+          @if (state.skillsStatus() === 'saved') {
+            <span class="profile-status profile-status--ok">
+              ✓ {{ state.i18n.t('admin.profile.skills.saved') }}
+            </span>
+          }
+          @if (state.skillsStatus() === 'error') {
+            <span class="profile-status profile-status--err">
+              ✗ {{ state.skillsError() }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="card profile-card">
+        <div class="profile-card-head">
           <h3>{{ state.i18n.t('admin.profile.chatbot.title') }}</h3>
           <p>{{ state.i18n.t('admin.profile.chatbot.sub') }}</p>
         </div>

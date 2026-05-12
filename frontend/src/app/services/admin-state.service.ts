@@ -4,10 +4,11 @@ import { AdminService, AdminUser, ProfileData } from './admin.service';
 import { AuthService } from './auth.service';
 import { TranslationService } from './translation.service';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
+import { techIcon, hideIconOnError } from '../utils/tech-icons';
 
-export type AdminTab = 'dashboard' | 'users' | 'projects' | 'experience' | 'visitors' | 'logins' | 'messages' | 'chatbot' | 'profile';
+export type AdminTab = 'dashboard' | 'users' | 'projects' | 'experience' | 'education' | 'visitors' | 'logins' | 'messages' | 'chatbot' | 'profile';
 type SortDir = 'asc' | 'desc';
-type SortTable = 'users' | 'projects' | 'experiences' | 'visitors' | 'logins';
+type SortTable = 'users' | 'projects' | 'experiences' | 'educations' | 'visitors' | 'logins';
 interface SortState { col: string; dir: SortDir; }
 
 interface ChartBar {
@@ -56,6 +57,8 @@ export class AdminStateService {
   readonly messages = signal<any[]>([]);
   readonly chatbotMessages = signal<any[]>([]);
   readonly chatbotClears = signal<any[]>([]);
+  readonly educations = signal<any[]>([]);
+  readonly skills = signal<any[]>([]);
 
   // ─── Estado UI ───
   readonly activeTab = signal<AdminTab>('dashboard');
@@ -87,6 +90,18 @@ export class AdminStateService {
   readonly editingProfileTexts = signal<{ es: Record<string, string>; en: Record<string, string> } | null>(null);
   readonly editingChatbotPrompt = signal<string | null>(null);
   readonly confirmModal = signal<ConfirmModal | null>(null);
+  readonly editingEducation = signal<any | null>(null);
+  readonly editingSkills = signal<Record<string, string> | null>(null);
+  readonly skillsSaving = signal(false);
+  readonly skillsStatus = signal<'idle' | 'saved' | 'error'>('idle');
+  readonly skillsError = signal('');
+
+  readonly skillCategories: { tipo: string; labelKey: string }[] = [
+    { tipo: 'IA & Data Science',              labelKey: 'skills.ai'    },
+    { tipo: 'Desarrollo Full Stack & Móvil',  labelKey: 'skills.dev'   },
+    { tipo: 'Cloud & DevOps',                 labelKey: 'skills.cloud' },
+    { tipo: 'QA & Testing',                   labelKey: 'skills.qa'    }
+  ];
 
   // ─── Galería de proyecto en edición ───
   readonly projectImagesUploading = signal(0);
@@ -164,6 +179,7 @@ export class AdminStateService {
     users: { col: 'id', dir: 'asc' },
     projects: { col: 'id', dir: 'asc' },
     experiences: { col: 'start_date', dir: 'desc' },
+    educations: { col: 'start_date', dir: 'desc' },
     visitors: { col: 'entry_time', dir: 'desc' },
     logins: { col: 'login_time', dir: 'desc' }
   });
@@ -192,11 +208,13 @@ export class AdminStateService {
       case 'users': return 'admin.tab.users';
       case 'projects': return 'admin.tab.projects';
       case 'experience': return 'admin.tab.experience';
+      case 'education': return 'admin.tab.education';
       case 'visitors': return 'admin.tab.visitors';
       case 'logins': return 'admin.tab.logins';
       case 'messages': return 'admin.tab.messages';
       case 'chatbot': return 'admin.tab.chatbot';
       case 'profile': return 'admin.tab.profile';
+      default: return '';
     }
   });
 
@@ -212,6 +230,10 @@ export class AdminStateService {
   readonly sortedExperiences = computed(() => {
     const s = this.sortState().experiences;
     return this.sortRows(this.experiences(), s.col, s.dir);
+  });
+  readonly sortedEducations = computed(() => {
+    const s = this.sortState().educations;
+    return this.sortRows(this.educations(), s.col, s.dir);
   });
   readonly sortedVisitorLogs = computed(() => {
     const s = this.sortState().visitors;
@@ -405,7 +427,7 @@ export class AdminStateService {
 
   private loadAllData(): void {
     this.initialLoading.set(true);
-    let pending = 10;
+    let pending = 12;
     const done = () => {
       pending--;
       if (pending <= 0) {
@@ -425,6 +447,14 @@ export class AdminStateService {
     this.adminService.listExperience().subscribe({
       next: d => { this.experiences.set(d ?? []); done(); },
       error: fail('experience')
+    });
+    this.adminService.listEducation().subscribe({
+      next: d => { this.educations.set(d ?? []); done(); },
+      error: fail('education')
+    });
+    this.adminService.listSkills().subscribe({
+      next: d => { this.skills.set(d ?? []); done(); },
+      error: fail('skills')
     });
     this.adminService.listVisitorLogs().subscribe({
       next: d => { this.visitorLogs.set(d ?? []); this.buildCharts(); done(); },
@@ -471,6 +501,22 @@ export class AdminStateService {
       },
       error: fail('chatbot-model')
     });
+  }
+
+  getSkillTags(type: string): string[] {
+    const skill = this.skills().find(s => s.tipo === type);
+    if (!skill || !skill.tags) return [];
+    try {
+      return typeof skill.tags === 'string' ? JSON.parse(skill.tags) : skill.tags;
+    } catch { return []; }
+  }
+
+  techIcon(tag: string): string {
+    return techIcon(tag);
+  }
+
+  hideIconOnError(event: Event): void {
+    hideIconOnError(event);
   }
 
   private applyProfileData(data: ProfileData | null | undefined): void {
@@ -919,6 +965,8 @@ export class AdminStateService {
     this.editingProject.set(null);
     this.editingExperience.set(null);
     this.editingUser.set(null);
+    this.editingEducation.set(null);
+    this.editingSkills.set(null);
     this.mobileMenuOpen.set(false);
   }
 
@@ -1458,6 +1506,149 @@ export class AdminStateService {
         });
       }
     );
+  }
+
+  // ═══════════════════════════════════════════════════════
+  //  Education
+  // ═══════════════════════════════════════════════════════
+  newEducation(): void {
+    this.editingEducation.set({ id: null, start_date: '', end_date: '', title: '', title_en: '', location: '' });
+  }
+
+  editEducation(e: any): void {
+    this.editingEducation.set({
+      ...e,
+      start_date: e.start_date ? e.start_date.substring(0, 10) : '',
+      end_date: e.end_date ? e.end_date.substring(0, 10) : ''
+    });
+  }
+
+  saveEducation(): void {
+    const e = this.editingEducation();
+    if (!e) return;
+    const payload = { ...e };
+    this.editingEducation.set(null);
+
+    if (payload.id) {
+      const list = this.educations();
+      const idx = list.findIndex(x => x.id === payload.id);
+      const prev = idx >= 0 ? list[idx] : null;
+      if (idx >= 0) this.educations.set([...list.slice(0, idx), { ...list[idx], ...payload }, ...list.slice(idx + 1)]);
+      this.adminService.updateEducation(payload.id, payload).subscribe({
+        error: (err) => {
+          if (idx >= 0 && prev) {
+            const cur = this.educations();
+            this.educations.set([...cur.slice(0, idx), prev, ...cur.slice(idx + 1)]);
+          }
+          alert(this.i18n.t('admin.error.education.save'));
+          console.error(err);
+        }
+      });
+    } else {
+      this.adminService.createEducation(payload).subscribe({
+        next: (res: any) => {
+          const created = { ...payload, id: res?.id };
+          this.educations.set([created, ...this.educations()]);
+        },
+        error: (err) => { alert(this.i18n.t('admin.error.education.create')); console.error(err); }
+      });
+    }
+  }
+
+  cancelEducationEdit(): void { this.editingEducation.set(null); }
+
+  deleteEducation(e: any): void {
+    if (!this.isAdmin()) return;
+    this.askConfirm(
+      this.i18n.t('admin.confirm.education.title'),
+      this.i18n.t('admin.confirm.education.msg', { name: e.title }),
+      () => {
+        const prev = this.educations();
+        this.educations.set(prev.filter(x => x.id !== e.id));
+        this.adminService.deleteEducation(e.id).subscribe({
+          error: (err) => {
+            this.educations.set(prev);
+            alert(this.i18n.t('admin.error.education.delete'));
+            console.error(err);
+          }
+        });
+      }
+    );
+  }
+
+  
+
+  // ═══════════════════════════════════════════════════════
+  //  Skills
+  // ═══════════════════════════════════════════════════════
+  startEditSkills(): void {
+    const draft: Record<string, string> = {};
+    for (const c of this.skillCategories) {
+      draft[c.tipo] = this.getSkillTags(c.tipo).join(', ');
+    }
+    this.editingSkills.set(draft);
+    this.skillsStatus.set('idle');
+    this.skillsError.set('');
+  }
+
+  cancelEditSkills(): void {
+    if (this.skillsSaving()) return;
+    this.editingSkills.set(null);
+    this.skillsStatus.set('idle');
+    this.skillsError.set('');
+  }
+
+  saveSkills(): void {
+    const draft = this.editingSkills();
+    if (!draft || this.skillsSaving()) return;
+    this.skillsSaving.set(true);
+    this.skillsStatus.set('idle');
+
+    const ops = this.skillCategories.map(c => {
+      const tags = (draft[c.tipo] || '')
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean);
+      const existing = this.skills().find(s => s.tipo === c.tipo);
+      return { tipo: c.tipo, tags, existing };
+    });
+
+    let pending = ops.length;
+    let hadError = false;
+    const finish = () => {
+      pending--;
+      if (pending > 0) return;
+      this.skillsSaving.set(false);
+      if (hadError) {
+        this.skillsStatus.set('error');
+        this.skillsError.set(this.i18n.t('admin.error.skills.save'));
+      } else {
+        this.skillsStatus.set('saved');
+        this.editingSkills.set(null);
+      }
+    };
+
+    for (const op of ops) {
+      if (op.existing) {
+        this.adminService.updateSkill(op.existing.id, { tipo: op.tipo, tags: op.tags }).subscribe({
+          next: () => {
+            this.skills.update(list => list.map(s =>
+              s.id === op.existing.id ? { ...s, tags: op.tags } : s
+            ));
+            finish();
+          },
+          error: (err) => { hadError = true; console.error(err); finish(); }
+        });
+      } else {
+        this.adminService.createSkill({ tipo: op.tipo, tags: op.tags }).subscribe({
+          next: (res: any) => {
+            this.skills.update(list => [...list, { id: res?.id, tipo: op.tipo, tags: op.tags }]);
+            finish();
+          },
+          error: (err) => { hadError = true; console.error(err); finish(); }
+        });
+      }
+    }
   }
 
   // ═══════════════════════════════════════════════════════

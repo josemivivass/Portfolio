@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const admin = require('../controllers/admin.controller');
+const education = require('../controllers/education.controller');
+const skills = require('../controllers/skills.controller');
 const { verifyToken, requireRole } = require('../middlewares/auth.middleware');
 
 const editorOrAdmin = [verifyToken, requireRole('admin', 'editor')];
@@ -22,6 +24,16 @@ router.post('/projects/upload-image', editorOrAdmin, admin.uploadProjectImage);
 router.post('/experience', editorOrAdmin, admin.createExperience);
 router.put('/experience/:id', editorOrAdmin, admin.updateExperience);
 router.delete('/experience/:id', adminOnly, admin.deleteExperience);
+
+// Education
+router.post('/education', editorOrAdmin, education.createEducation);
+router.put('/education/:id', editorOrAdmin, education.updateEducation);
+router.delete('/education/:id', adminOnly, education.deleteEducation);
+
+// Skills
+router.post('/skills', editorOrAdmin, skills.createSkill);
+router.put('/skills/:id', editorOrAdmin, skills.updateSkill);
+router.delete('/skills/:id', adminOnly, skills.deleteSkill);
 
 // Logs / mensajes (admin y editor pueden consultar)
 router.get('/visitor-logs', editorOrAdmin, admin.listVisitorLogs);

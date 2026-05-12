@@ -127,6 +127,34 @@ CREATE TABLE profile_meta (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+CREATE TABLE education (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    start_date DATE NOT NULL,
+    end_date DATE NULL,
+    title VARCHAR(150) NOT NULL,
+    title_en VARCHAR(150),
+    location VARCHAR(150),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE skills (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tipo ENUM('IA & Data Science', 'Desarrollo Full Stack & Móvil', 'Cloud & DevOps', 'QA & Testing') NOT NULL,
+    tags JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO education (start_date, end_date, title, title_en, location) VALUES
+('2025-09-01', '2026-06-30', 'Desarrollo de Aplicaciones Multiplataforma (DAM)', 'Cross-platform Application Development (DAM)', 'IES Ágora'),
+('2024-09-01', '2025-06-30', 'Especialización en IA y BigData', 'Specialization in AI and Big Data', 'IES Ágora'),
+('2022-09-01', '2024-06-30', 'Desarrollo de aplicaciones web (DAW)', 'Web Application Development (DAW)', 'IES Ágora');
+
+INSERT INTO skills (tipo, tags) VALUES
+('IA & Data Science',             JSON_ARRAY('Python', 'Machine Learning', 'LangChain', 'RAGs', 'OpenAI API', 'Groq Cloud', 'Scikit-learn', 'Pandas', 'NumPy', 'Power BI', 'LlamaIndex', 'LLMs')),
+('Desarrollo Full Stack & Móvil', JSON_ARRAY('Angular', 'TypeScript', 'React.js', 'Node.js', 'Android', 'Java', 'SQL', 'HTML5/CSS3')),
+('Cloud & DevOps',                JSON_ARRAY('AWS', 'Docker', 'GitHub', 'Linux')),
+('QA & Testing',                  JSON_ARRAY('JMeter', 'LoadRunner', 'Postman', 'SoapUI', 'ALM', 'Grafana', 'InfluxDB', 'REST APIs'));
+
 INSERT INTO users (email, password_hash, role) VALUES
 ('admin@gmail.com', '$2b$10$4CdvJxThn2PR0wEeo71kkOx8vzvREb8uUv80tnLpHnOq5t2yXrsE2', 'admin'),
 ('pepepe@gmail.com', '$2b$10$ZBPkPqBb6rSIyGyoOmbcDOVls2o9VtWZlm4i8oGbBfpZZGXk99kQm', 'editor'),

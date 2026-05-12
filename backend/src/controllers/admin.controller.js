@@ -60,7 +60,6 @@ async function promotePendingImages(images, projectId) {
   }
 }
 
-// ─── USERS ─────────────────────────────────────────────
 exports.listUsers = async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -171,8 +170,6 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ message: 'Error al eliminar usuario' });
   }
 };
-
-//Proyectos
 
 const ALLOWED_TYPES   = ['web', 'android', 'ai', 'other'];
 const ALLOWED_STATUS  = ['production', 'development', 'archived'];
@@ -311,7 +308,6 @@ exports.deleteProject = async (req, res) => {
   }
 };
 
-// ─── EXPERIENCE ────────────────────────────────────────
 exports.createExperience = async (req, res) => {
   const {
     start_date, end_date, title, title_en, company,
@@ -365,8 +361,6 @@ exports.updateExperience = async (req, res) => {
     res.status(500).json({ message: 'Error al actualizar experiencia' });
   }
 };
-
-//Logs / mensajes
 
 exports.listVisitorLogs = async (req, res) => {
   try {
@@ -447,7 +441,6 @@ exports.deleteContactMessage = async (req, res) => {
   }
 };
 
-// Chatbot
 exports.listChatbotConversations = async (req, res) => {
   try {
     const [messages] = await pool.query(
@@ -517,8 +510,6 @@ exports.deleteExperience = async (req, res) => {
     res.status(500).json({ message: 'Error al eliminar experiencia' });
   }
 };
-
-// Subida de img de proyecto
 
 const ALLOWED_IMG_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MIME_TO_EXT = {

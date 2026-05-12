@@ -43,7 +43,18 @@
             <td>{{ p.id }}</td>
             <td class="rich-text-cell" [innerHTML]="p.title"></td>
             <td>{{ p.project_date | date:'dd/MM/yyyy' }}</td>
-            <td>{{ p.tags }}</td>
+            <td class="tag-cell">
+              <div class="tag-cell-inner">
+                @for (t of (p.tags || '').split(','); track $index) {
+                  <span class="tag-chip">
+                    @if (state.techIcon(t.trim()); as icon) {
+                      <img [src]="icon" alt="" class="tag-chip-icon" loading="lazy" (error)="state.hideIconOnError($event)" />
+                    }
+                    {{ t.trim() }}
+                  </span>
+                }
+              </div>
+            </td>
             <td>{{ p.is_featured ? state.i18n.t('admin.projects.yes') : state.i18n.t('admin.projects.no') }}</td>
             <td class="actions">
               <button class="btn-edit" (click)="state.editProject(p)">{{ state.i18n.t('admin.action.edit') }}</button>
@@ -93,7 +104,12 @@
           @if (p.tags) {
             <div class="mobile-tags">
               @for (t of (p.tags || '').split(','); track $index) {
-                <span class="tag-chip">{{ t.trim() }}</span>
+                <span class="tag-chip">
+                  @if (state.techIcon(t.trim()); as icon) {
+                    <img [src]="icon" alt="" class="tag-chip-icon" loading="lazy" (error)="state.hideIconOnError($event)" />
+                  }
+                  {{ t.trim() }}
+                </span>
               }
             </div>
           }

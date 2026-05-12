@@ -59,6 +59,9 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
   private sphereCenterY = 0;
   private hasAvatar = false;
 
+  // Menu sticky de proyectos: define el corte del gradiente del gutter.
+  private cachedStickyTopEl: HTMLElement | null = null;
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private theme: BackgroundThemeService
@@ -88,6 +91,11 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
     window.removeEventListener('mousemove',  this.onMouseMove);
     window.removeEventListener('mouseleave', this.onMouseLeave);
     window.removeEventListener('resize',     this.onResize);
+    // Devolvemos <html> al fondo estatico de styles.css (admin/contacto/etc.).
+    const html = document.documentElement;
+    html.style.backgroundColor = '';
+    html.style.backgroundImage = '';
+    html.style.backgroundAttachment = '';
   }
 
   // ─── Handlers ────────────────────────────────────────────────────────
@@ -111,6 +119,15 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
   };
 
   private onResize = (): void => this.resize();
+
+  // Y en pantalla del borde inferior del menu sticky de proyectos.
+  private getMenuSplitY(): number {
+    if (!this.cachedStickyTopEl || !document.body.contains(this.cachedStickyTopEl)) {
+      this.cachedStickyTopEl = document.querySelector('.showcase-sticky-top') as HTMLElement | null;
+    }
+    if (!this.cachedStickyTopEl) return window.innerHeight + 1;
+    return this.cachedStickyTopEl.getBoundingClientRect().bottom;
+  }
 
   private resize(): void {
     this.W = window.innerWidth;
@@ -236,6 +253,17 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
     const bgB = Math.round(this.lerp(bgLB, 0x2b, themeP));
     ctx.fillStyle = `rgb(${bgR}, ${bgG}, ${bgB})`;
     ctx.fillRect(0, 0, W, H);
+
+    // Gutter del scrollbar: split duro a la altura del menu de proyectos.
+    const dark = `rgb(${bgR}, ${bgG}, ${bgB})`;
+    const [tR, tG, tB] = this.hexToRgb(this.cssVar('--c-bg', '#f8f9fa'));
+    const light = `rgb(${tR}, ${tG}, ${tB})`;
+    const vh = window.innerHeight || 1;
+    const splitPct = Math.max(0, Math.min(100, (this.getMenuSplitY() / vh) * 100));
+    const html = document.documentElement;
+    html.style.backgroundImage = `linear-gradient(to bottom, ${dark} 0%, ${dark} ${splitPct}%, ${light} ${splitPct}%, ${light} 100%)`;
+    html.style.backgroundAttachment = 'fixed';
+    html.style.backgroundColor = 'transparent';
 
     // ── Color base de partículas/líneas: gris en claro → blanco en oscuro
     const baseR = Math.round(this.lerp(100, 255, themeP));

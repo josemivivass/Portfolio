@@ -7,8 +7,6 @@ import { adminExitGuard } from './guards/admin-exit.guard';
 
 export const routes: Routes = [
   { path: '', children: [] },
-  { path: 'experiencia', children: [] },
-  { path: 'proyectos', children: [] },
   { path: 'contacto', component: ContactComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },

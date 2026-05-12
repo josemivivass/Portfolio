@@ -1,22 +1,18 @@
 const nodemailer = require('nodemailer');
 
-// Creamos un "transportador" reutilizable con la configuración de tu servicio de correo
 const transporter = nodemailer.createTransport({
-  service: process.env.EMAIL_SERVICE, // p.ej. 'gmail'
+  service: process.env.EMAIL_SERVICE,
   auth: {
-    user: process.env.EMAIL_USER, // Tu dirección de correo
-    pass: process.env.EMAIL_PASS, // Tu contraseña de aplicación
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
-/**
- * Envía un correo de notificación cuando se recibe un nuevo mensaje de contacto.
- */
 exports.sendContactNotification = async ({ name, email, message }) => {
   const mailOptions = {
     from: `"Notificador Portfolio" <${process.env.EMAIL_USER}>`,
-    to: process.env.EMAIL_TO, // El correo donde recibirás los avisos
-    replyTo: email, // Permite darle a "Responder" en Gmail y contestar directo al cliente
+    to: process.env.EMAIL_TO,
+    replyTo: email,
     subject: `Nuevo CONTACTO en el PORTAFOLIO. ${name}`,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 40px 20px; color: #333;">
@@ -54,6 +50,5 @@ exports.sendContactNotification = async ({ name, email, message }) => {
     console.log('Correo de notificación de contacto enviado correctamente.');
   } catch (error) {
     console.error('Error al enviar el correo de notificación de contacto:', error);
-    // No relanzamos el error para no bloquear la respuesta al usuario.
   }
 };

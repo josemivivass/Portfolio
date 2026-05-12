@@ -1,4 +1,3 @@
-<!-- HERO -->
 <section class="hero-container">
   <div class="hero-content">
 
@@ -60,7 +59,6 @@
   </svg>
 </section>
 
-<!-- SOBRE MI -->
 <section #cvSection class="about-section">
   <div class="section-inner">
     <header class="section-header-cv">
@@ -85,10 +83,8 @@
   </div>
 </section>
 
-<!-- EXPERIENCIA -->
 <app-experience (loaded)="onExperienceLoaded($event)"></app-experience>
 
-<!-- EDUCACION -->
 <section #cvSection class="education-section">
   <div class="section-inner">
     <header class="section-header-cv">
@@ -96,26 +92,17 @@
       <div class="accent-line"></div>
     </header>
     <div class="edu-grid">
-      <div #eduEl class="edu-card">
-        <div class="edu-year">{{ i18n.t('edu.1.date') }}</div>
-        <h3>{{ i18n.t('edu.1.name') }}</h3>
-        <p class="edu-school">IES Agora</p>
-      </div>
-      <div #eduEl class="edu-card">
-        <div class="edu-year">{{ i18n.t('edu.2.date') }}</div>
-        <h3>{{ i18n.t('edu.2.name') }}</h3>
-        <p class="edu-school">IES Agora</p>
-      </div>
-      <div #eduEl class="edu-card">
-        <div class="edu-year">{{ i18n.t('edu.3.date') }}</div>
-        <h3>{{ i18n.t('edu.3.name') }}</h3>
-        <p class="edu-school">IES Agora</p>
-      </div>
+      @for (edu of educations; track edu.id) {
+        <div #eduEl class="edu-card">
+          <div class="edu-year">{{ edu.start_date | date:'yyyy' }} - {{ edu.end_date ? (edu.end_date | date:'yyyy') : (i18n.lang === 'es' ? 'Presente' : 'Present') }}</div>
+          <h3>{{ i18n.lang === 'es' ? edu.title : (edu.title_en || edu.title) }}</h3>
+          <p class="edu-school">{{ i18n.lang === 'es' ? edu.location : (edu.location_en || edu.location) }}</p>
+        </div>
+      }
     </div>
   </div>
 </section>
 
-<!-- HABILIDADES + PROYECTOS -->
 <section #cvSection class="skills-showcase-section">
 
     <div class="sp-skills-layer">
@@ -132,7 +119,14 @@
                 {{ i18n.t('skills.ai') }}
               </h3>
               <div class="skill-tags">
-                <span>Python</span><span>Machine Learning</span><span>LangChain</span><span>RAGs</span><span>OpenAI API</span><span>Scikit-learn</span><span>Pandas</span><span>NumPy</span><span>Power BI</span><span>LlamaIndex</span><span>LLMs</span>
+                @for (tag of getSkillTags('IA & Data Science'); track $index) {
+                  <span>
+                    @if (techIcon(tag); as icon) {
+                      <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
+                    }
+                    {{ tag }}
+                  </span>
+                }
               </div>
             </div>
             <div class="skill-category">
@@ -141,7 +135,14 @@
                 {{ i18n.t('skills.cloud') }}
               </h3>
               <div class="skill-tags">
-                <span>AWS</span><span>Docker</span><span>GitHub</span><span>Linux</span>
+                @for (tag of getSkillTags('Cloud & DevOps'); track $index) {
+                  <span>
+                    @if (techIcon(tag); as icon) {
+                      <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
+                    }
+                    {{ tag }}
+                  </span>
+                }
               </div>
             </div>
           </div>
@@ -152,7 +153,14 @@
                 {{ i18n.t('skills.dev') }}
               </h3>
               <div class="skill-tags">
-                <span>Angular</span><span>TypeScript</span><span>React.js</span><span>Node.js</span><span>Android</span><span>Java</span><span>SQL</span><span>HTML5/CSS3</span>
+                @for (tag of getSkillTags('Desarrollo Full Stack & Móvil'); track $index) {
+                  <span>
+                    @if (techIcon(tag); as icon) {
+                      <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
+                    }
+                    {{ tag }}
+                  </span>
+                }
               </div>
             </div>
             <div class="skill-category">
@@ -161,7 +169,14 @@
                 {{ i18n.t('skills.qa') }}
               </h3>
               <div class="skill-tags">
-                <span>JMeter</span><span>LoadRunner</span><span>Postman</span><span>SoapUI</span><span>ALM</span><span>Grafana</span><span>InfluxDB</span><span>REST APIs</span>
+                @for (tag of getSkillTags('QA & Testing'); track $index) {
+                  <span>
+                    @if (techIcon(tag); as icon) {
+                      <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
+                    }
+                    {{ tag }}
+                  </span>
+                }
               </div>
             </div>
           </div>
