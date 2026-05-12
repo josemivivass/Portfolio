@@ -286,7 +286,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private tickVirtualScroll(): void {
     if (!this.virtualScrollEnabled) return;
 
-    //Re-clamp el target: el alto del documento cambia con pins/unpins de ScrollTrigger
+    // Re-clamp el target
     const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
     if (this.targetScrollY > maxY) this.targetScrollY = maxY;
 
@@ -298,13 +298,16 @@ export class AppComponent implements OnInit, OnDestroy {
         step = Math.sign(step) * this.MAIN_SCROLL_MAX_PX_PER_FRAME;
       }
       this.currentScrollY += step;
+      window.scrollTo(0, this.currentScrollY);
+      
+      // Mantenemos el bucle vivo mientras haya movimiento
+      this.scrollRafId = requestAnimationFrame(() => this.tickVirtualScroll());
     } else {
+      // Movimiento completado: ajustamos al valor exacto y APAGAMOS el bucle
       this.currentScrollY = this.targetScrollY;
+      window.scrollTo(0, this.currentScrollY);
+      this.stopVirtualScroll();
     }
-
-    window.scrollTo(0, this.currentScrollY);
-
-    this.scrollRafId = requestAnimationFrame(() => this.tickVirtualScroll());
   }
 
   //SCROLL & TOUCH HANDLERS
@@ -312,8 +315,16 @@ export class AppComponent implements OnInit, OnDestroy {
   @HostListener('window:scroll')
   onScroll(): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute || this.showPreloader) return;
+    
     this.menuTranslateY = -window.scrollY;
     this.cdr.detectChanges();
+
+    // Tolerancia ampliada a 10px para evitar falsos positivos por decimales del navegador
+    if (Math.abs(window.scrollY - this.currentScrollY) > 10) {
+      this.stopVirtualScroll();
+      this.currentScrollY = window.scrollY;
+      this.targetScrollY = window.scrollY;
+    }
   }
 
   @HostListener('window:scrollToTop')
@@ -328,22 +339,18 @@ export class AppComponent implements OnInit, OnDestroy {
   onWheel(event: WheelEvent): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
 
-    //Wheel sobre el chatbot: redirigir al panel de mensajes
     if (this.isCursorInsideChatbot(event)) {
       event.preventDefault();
       event.stopPropagation();
       const target = event.target as HTMLElement;
       if (!target.closest('.chatbot-input-area')) {
         const msgContainer = document.querySelector('.chatbot-messages') as HTMLElement;
-        if (msgContainer) {
-          msgContainer.scrollTop += event.deltaY;
-        }
+        if (msgContainer) msgContainer.scrollTop += event.deltaY;
       }
       this.chatbotWasOpen = true;
       return;
     }
 
-    //Resync del scroll virtual al cerrar el chatbot
     if (this.chatbotWasOpen) {
       this.chatbotWasOpen = false;
       this.currentScrollY = window.scrollY;
@@ -355,7 +362,6 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
-    //Excepción: lista interna de proyectos absorbe el delta antes de mover el documento
     if (this.scrollableContainerAbsorbs(event.target as HTMLElement, event.deltaY)) {
       event.preventDefault();
       return;
@@ -367,10 +373,18 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!this.virtualScrollEnabled) {
       this.currentScrollY = window.scrollY;
       this.targetScrollY = window.scrollY;
-      this.startVirtualScroll();
     }
+
+    let delta = event.deltaY;
+    if (event.deltaMode === 1) delta *= 33;
+    else if (event.deltaMode === 2) delta *= window.innerHeight;
+
     const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + event.deltaY, maxY));
+    this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + delta, maxY));
+
+    if (!this.virtualScrollEnabled) {
+      this.startVirtualScroll(false);
+    }
   }
 
   //Si el target está sobre `.showcase-list` y aún hay scroll interno, lo absorbe ahí
@@ -426,14 +440,18 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     event.preventDefault();
+
     if (!this.virtualScrollEnabled) {
       this.currentScrollY = window.scrollY;
       this.targetScrollY = window.scrollY;
-      this.startVirtualScroll();
     }
 
     const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
     this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + delta * 2, maxY));
+
+    if (!this.virtualScrollEnabled) {
+      this.startVirtualScroll(false);
+    }
   }
 
   private isCursorInsideChatbot(event: WheelEvent): boolean {
@@ -540,6 +558,46 @@ export class AppComponent implements OnInit, OnDestroy {
 
   closeMobileMenu(): void {
     this.mobileMenuOpen = false;
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute || this.showPreloader) return;
+    if (this.isTransitioning) return;
+
+    const target = event.target as HTMLElement;
+    if (target.tagName.toLowerCase() === 'input' || target.tagName.toLowerCase() === 'textarea') return;
+
+    let delta = 0;
+    const scrollAmount = 100;
+    const pageAmount = window.innerHeight * 0.8;
+
+    if (!this.virtualScrollEnabled) {
+      this.currentScrollY = window.scrollY;
+      this.targetScrollY = window.scrollY;
+    }
+
+    switch (event.key) {
+      case 'ArrowUp': delta = -scrollAmount; break;
+      case 'ArrowDown': delta = scrollAmount; break;
+      case 'PageUp': delta = -pageAmount; break;
+      case 'PageDown': delta = pageAmount; break;
+      case ' ': delta = event.shiftKey ? -pageAmount : pageAmount; break;
+      case 'Home': delta = -this.targetScrollY; break;
+      case 'End': 
+        delta = Math.max(0, document.documentElement.scrollHeight - window.innerHeight) - this.targetScrollY; 
+        break;
+      default: return;
+    }
+
+    event.preventDefault();
+
+    const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    this.targetScrollY = Math.max(0, Math.min(this.targetScrollY + delta, maxY));
+
+    if (!this.virtualScrollEnabled) {
+      this.startVirtualScroll(false);
+    }
   }
 
   logout(): void {
