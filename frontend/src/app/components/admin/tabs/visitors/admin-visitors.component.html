@@ -49,9 +49,9 @@
       <tbody>
         @for (v of state.sortedVisitorLogs(); track $index) {
           <tr>
-            <td>{{ v.entry_time | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="mono">{{ v.entry_time | date:'dd-MM-yyyy' }}</td>
             <td class="mono">{{ v.visitor_uuid?.substring(0, 8) }}…</td>
-            <td>{{ v.ip_address || '—' }}</td>
+            <td class="mono">{{ v.ip_address || '—' }}</td>
             <td>{{ state.shortUA(v.user_agent) }}</td>
             <td>{{ v.is_logged_in ? state.i18n.t('admin.projects.yes') : state.i18n.t('admin.projects.no') }}</td>
           </tr>

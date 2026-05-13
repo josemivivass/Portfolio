@@ -37,7 +37,8 @@
                   class="btn-primary"
                   [disabled]="!state.profilePhotoDataUrl() || state.profileUploadingPhoto()"
                   (click)="state.uploadProfilePhoto()">
-            {{ state.profileUploadingPhoto() ? state.i18n.t('admin.profile.photo.saving') : state.i18n.t('admin.profile.photo.upload') }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>{{ state.profileUploadingPhoto() ? state.i18n.t('admin.profile.photo.saving') : state.i18n.t('admin.profile.photo.upload') }}</span>
           </button>
           @if (state.profilePhotoFileName(); as name) {
             <span class="profile-file-name">{{ name }}</span>
@@ -126,7 +127,8 @@
           <button type="button"
                   class="btn-primary"
                   (click)="state.startEditProfileTexts()">
-            {{ state.i18n.t('admin.profile.texts.edit') }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span>{{ state.i18n.t('admin.profile.texts.edit') }}</span>
           </button>
           @if (state.profileTextsStatus() === 'saved') {
             <span class="profile-status profile-status--ok">
@@ -169,7 +171,8 @@
 
         <div class="profile-texts-footer">
           <button type="button" class="btn-primary" (click)="state.startEditSkills()">
-            {{ state.i18n.t('admin.profile.skills.edit') }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span>{{ state.i18n.t('admin.profile.skills.edit') }}</span>
           </button>
           @if (state.skillsStatus() === 'saved') {
             <span class="profile-status profile-status--ok">
@@ -198,7 +201,8 @@
           <button type="button"
                   class="btn-primary"
                   (click)="state.startEditChatbotPrompt()">
-            {{ state.i18n.t('admin.profile.chatbot.edit') }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span>{{ state.i18n.t('admin.profile.chatbot.edit') }}</span>
           </button>
           @if (state.chatbotPromptStatus() === 'saved') {
             <span class="profile-status profile-status--ok">

@@ -57,12 +57,12 @@
       <tbody>
         @for (l of state.sortedLoginLogs(); track $index) {
           <tr>
-            <td>{{ l.login_time | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="mono">{{ l.login_time | date:'dd-MM-yyyy' }}</td>
             <td>{{ l.email || '—' }}</td>
-            <td>{{ l.ip_address || '—' }}</td>
+            <td class="mono">{{ l.ip_address || '—' }}</td>
             <td>{{ state.shortUA(l.user_agent) }}</td>
             <td>{{ l.language || '—' }}</td>
-            <td>{{ l.screen_resolution || '—' }}</td>
+            <td class="mono">{{ l.screen_resolution || '—' }}</td>
             <td>{{ l.time_zone || '—' }}</td>
           </tr>
         } @empty {

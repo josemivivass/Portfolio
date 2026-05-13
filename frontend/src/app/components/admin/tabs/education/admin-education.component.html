@@ -14,6 +14,15 @@
     <table class="data-table">
       <thead>
         <tr>
+          <th class="sortable" [class.sorted]="state.sortState().educations.col === 'id'" (click)="state.toggleSort('educations', 'id')">
+            <span>{{ state.i18n.t('admin.experience.col.id') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('educations', 'id')"></span>
+          </th>
+          <th class="sortable" [class.sorted]="state.sortState().educations.col === 'title'" (click)="state.toggleSort('educations', 'title')">
+            <span>{{ state.i18n.t('admin.education.field.title') }}</span>
+            <span class="sort-icon" [attr.data-dir]="state.sortDir('educations', 'title')"></span>
+          </th>
+          <th>{{ state.i18n.t('admin.education.field.location') }}</th>
           <th class="sortable" [class.sorted]="state.sortState().educations.col === 'start_date'" (click)="state.toggleSort('educations', 'start_date')">
             <span>{{ state.i18n.t('admin.education.field.start') }}</span>
             <span class="sort-icon" [attr.data-dir]="state.sortDir('educations', 'start_date')"></span>
@@ -22,21 +31,17 @@
             <span>{{ state.i18n.t('admin.experience.col.end') }}</span>
             <span class="sort-icon" [attr.data-dir]="state.sortDir('educations', 'end_date')"></span>
           </th>
-          <th class="sortable" [class.sorted]="state.sortState().educations.col === 'title'" (click)="state.toggleSort('educations', 'title')">
-            <span>{{ state.i18n.t('admin.education.field.title') }}</span>
-            <span class="sort-icon" [attr.data-dir]="state.sortDir('educations', 'title')"></span>
-          </th>
-          <th>{{ state.i18n.t('admin.education.field.location') }}</th>
           <th style="width:100px;text-align:right"></th>
         </tr>
       </thead>
       <tbody>
         @for (edu of state.sortedEducations(); track edu.id) {
           <tr>
-            <td class="mono">{{ edu.start_date | date:'yyyy-MM' }}</td>
-            <td class="mono">{{ edu.end_date ? (edu.end_date | date:'yyyy-MM') : (state.i18n.lang === 'es' ? 'Presente' : 'Present') }}</td>
+            <td class="mono">{{ edu.id }}</td>
             <td><strong>{{ state.i18n.lang === 'es' ? edu.title : (edu.title_en || edu.title) }}</strong></td>
             <td>{{ edu.location }}</td>
+            <td class="mono">{{ edu.start_date | date:'dd-MM-yyyy' }}</td>
+            <td class="mono">{{ edu.end_date ? (edu.end_date | date:'dd-MM-yyyy') : state.i18n.t('admin.experience.current') }}</td>
             <td style="text-align:right">
               <div class="actions">
                 <button type="button" class="btn-edit" (click)="state.editEducation(edu)" [attr.aria-label]="state.i18n.t('admin.action.edit')">
@@ -84,7 +89,7 @@
         <div class="mobile-card-body">
           <div class="mobile-meta-row">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            {{ edu.start_date | date:'yyyy-MM' }} - {{ edu.end_date ? (edu.end_date | date:'yyyy-MM') : (state.i18n.lang === 'es' ? 'Presente' : 'Present') }}
+            {{ edu.start_date | date:'yyyy-MM' }} - {{ edu.end_date ? (edu.end_date | date:'yyyy-MM') : state.i18n.t('admin.experience.current') }}
           </div>
         </div>
         <div class="mobile-card-actions">
