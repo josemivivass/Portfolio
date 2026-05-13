@@ -88,11 +88,20 @@ const ES: Record<string, string> = {
   'about.lang.en.level': 'Profesional completo',
 
   // --- Experience ---
-  'exp.title': 'Mi <em>Experiencia</em>',
-  'exp.scroll_hint': 'Desliza',
-  'exp.badge.current': 'Actual',
+  'exp.title': 'Experiencia<br/><em>profesional</em>',
+  'exp.eyebrow': 'Trayectoria profesional',
+  'exp.deck': 'Un recorrido construyendo software, proyectos y retos que han forjado mi camino.',
+  'exp.scroll_hint': 'Desplaza',
+  'exp.badge.current': 'Actualidad',
   'exp.badge.internship': 'Prácticas',
   'exp.growing': 'En crecimiento continuo',
+  'exp.year.label.present': 'Presente',
+  'exp.year.label.start': 'Inicio',
+  'exp.progress.label': 'Trayectoria',
+  'exp.corner.label': 'Experiencia',
+  'exp.end.title': 'Siempre<br/><em>creciendo</em>.',
+  'exp.end.text': 'Cada año buscando nuevos retos.',
+  'exp.end.meta': '— Fin de la trayectoria',
 
   // --- Education ---
   'edu.title': 'Mi <em>Educación</em>',
@@ -532,11 +541,20 @@ const EN: Record<string, string> = {
   'about.lang.en.level': 'Full professional proficiency',
 
   // --- Experience ---
-  'exp.title': 'My <em>Experience</em>',
+  'exp.title': 'Professional<br/><em>experience</em>',
+  'exp.eyebrow': 'Professional trajectory',
+  'exp.deck': 'A journey building software, projects and challenges that have shaped my path.',
   'exp.scroll_hint': 'Scroll',
   'exp.badge.current': 'Current',
   'exp.badge.internship': 'Internship',
   'exp.growing': 'Continuously growing',
+  'exp.year.label.present': 'Present',
+  'exp.year.label.start': 'Start',
+  'exp.progress.label': 'Trajectory',
+  'exp.corner.label': 'Experience',
+  'exp.end.title': 'Always<br/><em>growing</em>.',
+  'exp.end.text': 'Every year looking for new challenges.',
+  'exp.end.meta': '— End of the trajectory',
 
   // --- Education ---
   'edu.title': 'My <em>Education</em>',

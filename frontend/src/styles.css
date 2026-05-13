@@ -11,6 +11,7 @@ body {
   padding: 0;
   background-color: var(--c-bg);
   color: var(--c-text-body);
+  font-family: var(--ff-sans);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -98,14 +99,6 @@ html.home-route::-webkit-scrollbar-corner {
   }
 }
 
-.showcase-card-title *,
-.showcase-desc *,
-.case-modal-title *,
-.case-modal-desc * {
-  font-family: inherit;
-  color: inherit;
-}
-
 .showcase-card-title p,
 .showcase-desc p,
 .case-modal-title p,
@@ -114,6 +107,34 @@ html.home-route::-webkit-scrollbar-corner {
   padding: 0;
   display: inline;
 }
+
+.exp-card-title p,
+.exp-card-desc p {
+  display: block;
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  white-space: normal;
+}
+
+.exp-card-title,
+.exp-card-title p,
+.exp-card-desc,
+.exp-card-desc p {
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
+}
+
+.exp-card-desc p + p { margin-top: 0.45em; }
+
+.exp-card-desc ul,
+.exp-card-desc ol {
+  margin: 0 0 0.4em;
+  padding-left: 1.2em;
+}
+
+.exp-card-desc li { margin: 0.1em 0; }
 
 @media (max-width: 768px) {
   html { font-size: 15px; }
@@ -126,24 +147,17 @@ html.home-route::-webkit-scrollbar-corner {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: var(--ff-sans);
 }
 
-em, strong {
-  font-family: var(--ff-serif);
+input, select, textarea, button {
+  font-family: inherit;
 }
-em {
-  font-style: italic;
-  font-weight: 300;
-}
-strong {
-  font-style: normal;
-  font-weight: 500;
-}
+
+em, i  { font-style: italic; }
+strong, b { font-weight: 600; }
 
 .admin-shell em,
 .admin-shell strong {
-  font-family: inherit;
   font-style: inherit;
   font-weight: inherit;
 }

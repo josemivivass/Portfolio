@@ -1,19 +1,36 @@
 <section #expSection class="exp-scroll-section">
+
+  <div class="page-corner" *ngIf="yearRange">
+    <span>{{ i18n.t('exp.corner.label') }} · {{ yearRange }}</span>
+    <span class="page-corner-line"></span>
+    <span>JM</span>
+  </div>
+
+  <div class="exp-progress-label" *ngIf="experiences.length">{{ i18n.t('exp.progress.label') }}</div>
+  <div class="exp-progress" *ngIf="experiences.length">
+    <div class="exp-progress-fill" #progressFill></div>
+  </div>
+  <div class="exp-progress-counter" *ngIf="experiences.length">
+    <strong>{{ formatNumber(activeIndex) }}</strong> / {{ formatNumber(experiences.length) }}
+  </div>
+
   <div class="exp-track-wrapper">
     <div class="exp-horizontal-track" #expTrack>
 
-      <div class="exp-title-panel">
-        <header class="section-header-cv">
-          <h2 [innerHTML]="i18n.t('exp.title')"></h2>
-          <div class="accent-line"></div>
-        </header>
-        <div class="exp-scroll-hint">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
-          </svg>
-          <span>{{ i18n.t('exp.scroll_hint') }}</span>
+      <section class="exp-title-panel">
+        <div class="exp-title-panel-main">
+          <div class="exp-eyebrow">{{ i18n.t('exp.eyebrow') }}</div>
+          <h1 class="exp-title" [innerHTML]="i18n.t('exp.title')"></h1>
+          <p class="exp-deck">{{ i18n.t('exp.deck') }}</p>
         </div>
-      </div>
+        <div class="exp-scroll-hint">
+          <span>{{ i18n.t('exp.scroll_hint') }}</span>
+          <span class="exp-scroll-hint-line"></span>
+          <svg class="exp-scroll-hint-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M13 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </section>
 
       <div class="exp-divider"></div>
 
@@ -21,33 +38,64 @@
 
         <div class="exp-year-marker" *ngIf="showYearMarker(i)">
           <span class="exp-year-num">{{ getYear(exp) }}</span>
-          <div class="exp-year-bar"></div>
+          <span class="exp-year-label" *ngIf="getYearLabel(exp) as label">{{ label }}</span>
+          <span class="exp-year-bar"></span>
         </div>
 
-        <div [class]="getCardClasses(exp, i)">
+        <article [class]="getCardClasses(exp, i)">
           <div [class]="getBarClass(exp)"></div>
+
+          <span class="exp-card-badge exp-card-badge--current" *ngIf="!exp.end_date">{{ i18n.t('exp.badge.current') }}</span>
+          <span class="exp-card-badge" *ngIf="exp.end_date && isInternship(exp)">{{ i18n.t('exp.badge.internship') }}</span>
+
           <div class="exp-card-body">
-            <p class="exp-date">{{ getDateRange(exp) }}</p>
-            <h3 [innerHTML]="i18n.lang === 'en' && exp.title_en ? exp.title_en : exp.title"></h3>
-            <p class="exp-company">{{ getCompanyDisplay(exp) }}</p>
-            <p class="exp-desc" [innerHTML]="i18n.lang === 'en' && exp.description_en ? exp.description_en : exp.description"></p>
-            <div class="timeline-tags" *ngIf="exp.tags">
-              <span class="t-tag" *ngFor="let tag of exp.tags.split(',')">{{ tag.trim() }}</span>
+            <div class="exp-card-number">{{ formatNumber(i + 1) }} · {{ exp.company }}</div>
+            <div class="exp-card-date">{{ getDateRange(exp) }}</div>
+            <h2 class="exp-card-title" [innerHTML]="i18n.lang === 'en' && exp.title_en ? exp.title_en : exp.title"></h2>
+
+            <div class="exp-card-company">
+              <span>{{ exp.company }}</span>
+              <ng-container *ngIf="getContractType(exp) as contract">
+                <span class="dot"></span>
+                <span class="muted">{{ contract }}</span>
+              </ng-container>
+            </div>
+
+            <div class="exp-card-location" *ngIf="getLocation(exp) as loc">
+              <svg class="exp-card-location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span>{{ loc }}</span>
+            </div>
+
+            <div class="exp-card-rule"></div>
+            <p class="exp-card-desc" [innerHTML]="i18n.lang === 'en' && exp.description_en ? exp.description_en : exp.description"></p>
+
+            <div class="exp-card-tags" *ngIf="exp.tags">
+              <span class="exp-card-tag" *ngFor="let tag of exp.tags.split(',')">
+                <ng-container *ngIf="techIcon(tag.trim()) as icon">
+                  <img [src]="icon" alt="" class="exp-card-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
+                </ng-container>
+                {{ tag.trim() }}
+              </span>
             </div>
           </div>
-          <span class="exp-intern-badge exp-badge--current" *ngIf="!exp.end_date">{{ i18n.t('exp.badge.current') }}</span>
-          <span class="exp-intern-badge" *ngIf="exp.end_date && isInternship(exp)">{{ i18n.t('exp.badge.internship') }}</span>
-        </div>
+
+          <span class="exp-card-watermark" *ngIf="isLargeCard(i)">{{ formatNumber(i + 1) }}</span>
+        </article>
 
       </ng-container>
 
-      <div class="exp-end-panel">
+      <section class="exp-end-panel">
         <div class="exp-end-orbit">
           <div class="exp-end-ring"></div>
           <div class="exp-end-dot"></div>
         </div>
-        <p>{{ i18n.t('exp.growing') }}</p>
-      </div>
+        <div class="exp-end-title" [innerHTML]="i18n.t('exp.end.title')"></div>
+        <p class="exp-end-text">{{ i18n.t('exp.end.text') }}</p>
+        <div class="exp-end-meta">{{ i18n.t('exp.end.meta') }}</div>
+      </section>
 
     </div>
   </div>
