@@ -5,9 +5,11 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { BackgroundThemeService } from '../../services/background-theme.service';
 
-const PARTICLE_COUNT = 150;
-const CONNECT_DIST   = 160;
-const MOUSE_RADIUS   = 180;
+const PARTICLE_COUNT_DESKTOP = 150;
+const PARTICLE_COUNT_MOBILE  = 60;
+const CONNECT_DIST            = 160;
+const MOUSE_RADIUS            = 180;
+const MOBILE_BREAKPOINT_PX    = 850;
 
 @Component({
   selector: 'app-background',
@@ -38,6 +40,9 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
 
   private cachedStickyTopEl: HTMLElement | null = null;
 
+  private isMobile = false;
+  private particleCount = PARTICLE_COUNT_DESKTOP;
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private theme: BackgroundThemeService
@@ -46,7 +51,7 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    this.dpr   = Math.min(window.devicePixelRatio || 1, 2);
+    this.applyDeviceProfile();
     this.bgCtx = this.bgCanvasRef.nativeElement.getContext('2d')!;
 
     this.resize();
@@ -59,17 +64,18 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
     this.animate();
   }
 
+  private applyDeviceProfile(): void {
+    this.isMobile = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT_PX}px)`).matches;
+    this.particleCount = this.isMobile ? PARTICLE_COUNT_MOBILE : PARTICLE_COUNT_DESKTOP;
+    this.dpr = Math.min(window.devicePixelRatio || 1, this.isMobile ? 1.5 : 2);
+  }
+
   ngOnDestroy(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     cancelAnimationFrame(this.rafId);
     window.removeEventListener('mousemove',  this.onMouseMove);
     window.removeEventListener('mouseleave', this.onMouseLeave);
     window.removeEventListener('resize',     this.onResize);
-
-    const html = document.documentElement;
-    html.style.backgroundColor = '';
-    html.style.backgroundImage = '';
-    html.style.backgroundAttachment = '';
   }
 
   private onMouseMove = (e: MouseEvent): void => {
@@ -82,14 +88,20 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
     this.targetY = -9999;
   };
 
-  private onResize = (): void => this.resize();
+  private onResize = (): void => {
+    const wasMobile = this.isMobile;
+    this.applyDeviceProfile();
+    this.resize();
+    if (wasMobile !== this.isMobile) this.initParticles();
+  };
 
   private getMenuSplitY(): number {
     if (!this.cachedStickyTopEl || !document.body.contains(this.cachedStickyTopEl)) {
       this.cachedStickyTopEl = document.querySelector('.showcase-sticky-top') as HTMLElement | null;
     }
     if (!this.cachedStickyTopEl) return window.innerHeight + 1;
-    return this.cachedStickyTopEl.getBoundingClientRect().bottom;
+    const rect = this.cachedStickyTopEl.getBoundingClientRect();
+    return (rect.top + rect.bottom) / 2;
   }
 
   private resize(): void {
@@ -107,7 +119,7 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
 
   private initParticles(): void {
     this.particles.length = 0;
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
+    for (let i = 0; i < this.particleCount; i++) {
       this.particles.push({
         x: Math.random() * this.W,
         y: Math.random() * this.H,
@@ -149,26 +161,22 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
 
     const themeP = this.theme.progress;
     const [bgLR, bgLG, bgLB] = this.hexToRgb(this.cssVar('--c-bg', '#f8f9fa'));
-    const bgR = Math.round(this.lerp(bgLR, 0x24, themeP));
-    const bgG = Math.round(this.lerp(bgLG, 0x29, themeP));
-    const bgB = Math.round(this.lerp(bgLB, 0x2b, themeP));
-    ctx.fillStyle = `rgb(${bgR}, ${bgG}, ${bgB})`;
-    ctx.fillRect(0, 0, W, H);
 
-    const dark = `rgb(${bgR}, ${bgG}, ${bgB})`;
-    const [tR, tG, tB] = this.hexToRgb(this.cssVar('--c-bg', '#f8f9fa'));
-    const light = `rgb(${tR}, ${tG}, ${tB})`;
-    const vh = window.innerHeight || 1;
-    const splitPct = Math.max(0, Math.min(100, (this.getMenuSplitY() / vh) * 100));
-    const html = document.documentElement;
-    html.style.backgroundImage = `linear-gradient(to bottom, ${dark} 0%, ${dark} ${splitPct}%, ${light} ${splitPct}%, ${light} 100%)`;
-    html.style.backgroundAttachment = 'fixed';
-    html.style.backgroundColor = 'transparent';
+    const themedBgR = Math.round(this.lerp(bgLR, 0x24, themeP));
+    const themedBgG = Math.round(this.lerp(bgLG, 0x29, themeP));
+    const themedBgB = Math.round(this.lerp(bgLB, 0x2b, themeP));
+    const themedBg = `rgb(${themedBgR}, ${themedBgG}, ${themedBgB})`;
+    const lightBg  = `rgb(${bgLR}, ${bgLG}, ${bgLB})`;
 
-    const baseR = Math.round(this.lerp(100, 255, themeP));
-    const baseG = Math.round(this.lerp(110, 255, themeP));
-    const baseB = Math.round(this.lerp(120, 255, themeP));
-    const baseRgb = `${baseR}, ${baseG}, ${baseB}`;
+    const splitY = Math.max(0, Math.min(H, this.getMenuSplitY()));
+
+    ctx.fillStyle = themedBg;
+    ctx.fillRect(0, 0, W, splitY);
+    ctx.fillStyle = lightBg;
+    ctx.fillRect(0, splitY, W, H - splitY);
+
+    const themedBaseRgb = `${Math.round(this.lerp(100, 255, themeP))}, ${Math.round(this.lerp(110, 255, themeP))}, ${Math.round(this.lerp(120, 255, themeP))}`;
+    const lightBaseRgb  = `100, 110, 120`;
 
     const [pr, pg, pb] = this.hexToRgb(this.cssVar('--c-primary', '#007bff'));
     const primaryRgb = `${pr}, ${pg}, ${pb}`;
@@ -211,6 +219,7 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
           const mdx  = midX - this.mouseX;
           const mdy  = midY - this.mouseY;
           const md   = Math.sqrt(mdx * mdx + mdy * mdy);
+          const baseRgb = midY < splitY ? themedBaseRgb : lightBaseRgb;
           if (md < MOUSE_RADIUS) {
             const t = 1 - md / MOUSE_RADIUS;
             ctx.strokeStyle = `rgba(${primaryRgb}, ${a + t * 0.35})`;
@@ -232,6 +241,7 @@ export class BackgroundComponent implements AfterViewInit, OnDestroy {
       const dy   = p.y - this.mouseY;
       const d    = Math.sqrt(dx * dx + dy * dy);
       const near = d < MOUSE_RADIUS ? (1 - d / MOUSE_RADIUS) : 0;
+      const baseRgb = p.y < splitY ? themedBaseRgb : lightBaseRgb;
 
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r + near * 1.2, 0, Math.PI * 2);

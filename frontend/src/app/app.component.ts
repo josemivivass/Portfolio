@@ -358,15 +358,6 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  @HostListener('window:scrollToTop')
-  onScrollToTop(): void {
-    if (!this.isHomeRoute) return;
-    this.stopVirtualScroll();
-    this.targetScrollY = 0;
-    this.currentScrollY = 0;
-    window.scrollTo({ top: 0, behavior: 'auto' });
-  }
-
   onWheel(event: WheelEvent): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
 

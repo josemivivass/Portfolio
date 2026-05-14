@@ -32,7 +32,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     { id: 'all',     labelKey: 'projects.filter.all' },
     { id: 'web',     labelKey: 'projects.filter.web' },
     { id: 'android', labelKey: 'projects.filter.android' },
-    { id: 'ai',      labelKey: 'projects.filter.ai' },
   ];
   activeFilter: ProjectFilterId = 'all';
 
@@ -86,11 +85,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       this.openQrId = null;
       this.cdr.detectChanges();
     }
-  }
-
-  scrollToTop(event: Event): void {
-    event.preventDefault();
-    window.dispatchEvent(new CustomEvent('scrollToTop'));
   }
 
   //Helpers para la vitrina de proyectos

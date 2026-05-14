@@ -4,31 +4,33 @@
   <!-- Cabecera pegajosa -->
   <div class="showcase-sticky-top">
     <div class="showcase-sticky-inner">
-      <a href="javascript:void(0)" (click)="scrollToTop($event)" class="projects-back-arrow" aria-label="Volver al inicio">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-        <span>{{ i18n.t('login.back') }}</span>
-      </a>
+      <div class="section-heading-block section-header-cv">
+        <div class="section-meta-row">
+          <div class="section-num">{{ i18n.t('chapter.label') }}</div>
+          <span class="showcase-sub showcase-sub--desktop" *ngIf="projectsYearRange">{{ projectsYearRange }}</span>
+        </div>
+        <div class="section-title-row">
+          <h2 class="section-title">
+            <span class="section-roman">V.</span>
+            <span [innerHTML]="i18n.t('projects.title')"></span>
+          </h2>
 
-      <header class="showcase-header">
-        <h2 class="showcase-title" [innerHTML]="i18n.t('projects.title')"></h2>
-        <span class="showcase-sub" *ngIf="projectsYearRange">{{ projectsYearRange }}</span>
-      </header>
+          <!-- Filtro por tipo de proyecto -->
+          <div class="showcase-filters" *ngIf="projects.length > 0" role="tablist">
+            <button type="button"
+                    *ngFor="let f of projectFilters"
+                    class="showcase-filter"
+                    role="tab"
+                    [class.is-active]="activeFilter === f.id"
+                    [attr.aria-selected]="activeFilter === f.id"
+                    (click)="setFilter(f.id)">
+              <span class="showcase-filter-label">{{ i18n.t(f.labelKey) }}</span>
+              <span class="showcase-filter-count">{{ countByFilter(f.id) }}</span>
+            </button>
+          </div>
 
-      <!-- Filtro por tipo de proyecto -->
-      <div class="showcase-filters" *ngIf="projects.length > 0" role="tablist">
-        <button type="button"
-                *ngFor="let f of projectFilters"
-                class="showcase-filter"
-                role="tab"
-                [class.is-active]="activeFilter === f.id"
-                [attr.aria-selected]="activeFilter === f.id"
-                (click)="setFilter(f.id)">
-          <span class="showcase-filter-label">{{ i18n.t(f.labelKey) }}</span>
-          <span class="showcase-filter-count">{{ countByFilter(f.id) }}</span>
-        </button>
+          <span class="showcase-sub showcase-sub--mobile" *ngIf="projectsYearRange">{{ projectsYearRange }}</span>
+        </div>
       </div>
     </div>
   </div>

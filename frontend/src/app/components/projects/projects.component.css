@@ -17,12 +17,8 @@
   position: relative;
   z-index: 5;
   background: transparent;
-  -webkit-backdrop-filter: invert(1) hue-rotate(180deg);
-  backdrop-filter: invert(1) hue-rotate(180deg);
   color: var(--pj-ink);
   isolation: isolate;
-  transform: translateZ(0);
-  will-change: transform;
   contain: layout style;
 }
 
@@ -36,36 +32,12 @@
 }
 
 /* CABECERA "STICKY" */
-.projects-back-arrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--pj-ink-mute);
-  text-decoration: none;
-  font-size: 0.86rem;
-  font-weight: 500;
-  font-family: var(--ff-serif);
-  letter-spacing: 0.4px;
-  transition: color 0.25s ease;
-  align-self: flex-start;
-}
-.projects-back-arrow svg {
-  width: 18px;
-  height: 18px;
-  stroke-width: 2;
-  transition: transform 0.25s ease;
-}
-.projects-back-arrow:hover { color: var(--pj-accent); }
-.projects-back-arrow:hover svg { transform: translateX(-4px); }
-
 .showcase-sticky-top {
   position: sticky;
   top: 0;
   z-index: 30;
   width: 100%;
-  background: rgba(248, 249, 250, 0.92);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--pj-bg);
   border-bottom: 1px solid var(--pj-rule);
   box-shadow: 0 6px 18px rgba(17, 24, 39, 0.05);
   transform: translateZ(0);
@@ -95,30 +67,70 @@
   color: var(--pj-ink);
 }
 
-.showcase-header {
+.section-heading-block {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.section-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
 }
 
-/* Título "Proyectos Destacados" */
-.showcase-title {
-  font-family: var(--ff-serif);
-  font-size: 2rem;
-  font-weight: 300;
-  color: var(--pj-ink);
-  letter-spacing: -0.5px;
-  margin: 0;
-  line-height: 1.05;
+.section-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
 }
-.showcase-title em {
+
+.section-num {
+  font-family: var(--pj-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--pj-accent);
+  font-weight: 500;
+}
+
+.section-title {
+  font-family: var(--ff-serif);
+  font-weight: 300;
+  font-size: clamp(2.4rem, 4.6vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--pj-ink);
+  text-wrap: balance;
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.section-title em {
   font-style: italic;
+  color: var(--pj-accent);
+}
+
+.section-roman {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 0.7em;
+  color: var(--pj-accent);
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
 }
 
 .showcase-sub {
-  margin-left: auto;
   font-family: var(--pj-mono);
   font-size: 0.72rem;
   color: var(--pj-ink-mute);
@@ -126,12 +138,15 @@
   text-transform: uppercase;
   font-weight: 500;
 }
+.showcase-sub--mobile { display: none; }
 
 /* Filtros */
 .showcase-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .showcase-filter {
@@ -272,8 +287,7 @@
   align-items: center;
   gap: 6px;
   padding: 5px 11px;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(6px);
+  background: #ffffff;
   border: 1px solid var(--pj-rule);
   border-radius: 999px;
   font-family: var(--pj-mono);
@@ -508,7 +522,7 @@
 .showcase-card-title {
   grid-column: 1 / -1;
   font-family: var(--ff-serif);
-  font-size: clamp(2.7rem, 5.2vw, 4.3rem);
+  font-size: clamp(2.4rem, 4.4vw, 3.6rem);
   font-weight: 400;
   line-height: 1.02;
   letter-spacing: -0.025em;
@@ -1083,8 +1097,7 @@
   display: flex;
   gap: 6px;
   padding: 5px 9px;
-  background: rgba(17, 24, 39, 0.45);
-  backdrop-filter: blur(6px);
+  background: rgba(17, 24, 39, 0.6);
   border-radius: 999px;
 }
 
@@ -1351,7 +1364,8 @@
 @media (max-height: 820px) and (min-width: 851px) {
   .showcase-sticky-inner { padding: 14px 40px 12px; gap: 10px; }
   .showcase-inner { padding: 18px 40px 18px; gap: 14px; }
-  .showcase-title { font-size: 1.7rem; }
+  .section-title  { font-size: clamp(1.8rem, 3.6vw, 2.6rem); }
+  .section-num    { font-size: 0.66rem; min-width: 160px; }
   .showcase-sub   { font-size: 0.7rem; }
   .showcase-list  { gap: 0; }
   .showcase-card  { padding: 50px 6px; gap: 50px;
@@ -1373,8 +1387,6 @@
   .showcase-filter-count  { min-width: 18px; font-size: 0.62rem; padding: 0 5px; }
   .showcase-qr-frame      { width: 64px; height: 64px; padding: 4px; }
   .showcase-qr-label      { font-size: 0.58rem; }
-  .projects-back-arrow    { font-size: 0.78rem; }
-  .projects-back-arrow svg { width: 15px; height: 15px; }
 
   .case-modal             { max-height: 98vh; width: min(820px, 100%); }
   .case-modal-media       { padding: 12px 24px; min-height: 0; }
@@ -1407,7 +1419,7 @@
 
 @media (max-height: 680px) and (min-width: 851px) {
   .showcase-inner { padding: 12px 28px 12px; gap: 10px; }
-  .showcase-title { font-size: 1.5rem; }
+  .section-title  { font-size: clamp(1.5rem, 3vw, 2.1rem); }
   .showcase-card  { padding: 36px 6px; gap: 36px; }
   .showcase-card-title    { font-size: 1.9rem; }
   .showcase-desc          { font-size: 1rem; -webkit-line-clamp: 3; }
@@ -1434,13 +1446,17 @@
 @media (max-width: 850px) {
   .sp-projects-curtain {
     --pj-bg-alt: #d9dce0;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
   }
 
   .showcase-sticky-inner { padding: 14px 22px 12px; gap: 12px; }
   .showcase-inner   { padding: 30px 22px 0; gap: 16px; }
-  .showcase-title   { font-size: 1.7rem; }
+  .section-title    { font-size: clamp(1.8rem, 7vw, 2.4rem); gap: 14px; }
+  .section-num      { font-size: 0.66rem; min-width: 0; }
+
+  /* La fecha pasa a la segunda fila, pegada al borde derecho,
+     dejando libre el top-right para el menú hamburguesa. */
+  .showcase-sub--desktop { display: none; }
+  .showcase-sub--mobile  { display: inline-block; margin-left: auto; }
   .portfolio-footer { padding: 14px 18px 22px; margin-top: 16px; }
   .sp-projects-curtain .portfolio-footer { padding: 12px 0 24px; }
   .footer-inner     { padding-right: 70px; gap: 6px 14px; }

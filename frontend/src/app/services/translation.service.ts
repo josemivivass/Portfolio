@@ -147,7 +147,7 @@ const ES: Record<string, string> = {
   'skills.card.cloud.eyebrow': 'iv. Plataforma',
 
   // --- Projects ---
-  'projects.title': 'Proyectos <em>Destacados</em>',
+  'projects.title': 'Proyectos <em>Destacados</em>.',
   'projects.error': 'Error al cargar los proyectos.',
   'projects.none': 'No hay proyectos disponibles en este momento.',
   'projects.code': 'Código',
@@ -623,7 +623,7 @@ const EN: Record<string, string> = {
   'skills.card.cloud.eyebrow': 'iv. Platform',
 
   // --- Projects ---
-  'projects.title': 'Featured <em>Projects</em>',
+  'projects.title': 'Featured <em>Projects</em>.',
   'projects.error': 'Error loading projects.',
   'projects.none': 'No projects available at this time.',
   'projects.code': 'Code',
