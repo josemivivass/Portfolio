@@ -1,9 +1,7 @@
-<section #expSection class="exp-scroll-section">
+<section #expSection class="exp-scroll-section" id="experience">
 
   <div class="page-corner" *ngIf="yearRange">
     <span>{{ i18n.t('exp.corner.label') }} · {{ yearRange }}</span>
-    <span class="page-corner-line"></span>
-    <span>JM</span>
   </div>
 
   <div class="exp-progress-label" *ngIf="experiences.length">{{ i18n.t('exp.progress.label') }}</div>
@@ -19,8 +17,13 @@
 
       <section class="exp-title-panel">
         <div class="exp-title-panel-main">
-          <div class="exp-eyebrow">{{ i18n.t('exp.eyebrow') }}</div>
-          <h1 class="exp-title" [innerHTML]="i18n.t('exp.title')"></h1>
+          <div class="section-heading-block">
+            <div class="section-num">{{ i18n.t('chapter.label') }}</div>
+            <h1 class="exp-title section-title" #expTitleEl>
+              <span class="section-roman">II.</span>
+              <span [innerHTML]="i18n.t('exp.title')"></span>
+            </h1>
+          </div>
           <p class="exp-deck">{{ i18n.t('exp.deck') }}</p>
         </div>
         <div class="exp-scroll-hint">
@@ -94,7 +97,6 @@
         </div>
         <div class="exp-end-title" [innerHTML]="i18n.t('exp.end.title')"></div>
         <p class="exp-end-text">{{ i18n.t('exp.end.text') }}</p>
-        <div class="exp-end-meta">{{ i18n.t('exp.end.meta') }}</div>
       </section>
 
     </div>

@@ -6,106 +6,83 @@
   background-color: transparent;
 }
 
-.side-menu {
-  position: fixed;
-  top: 50vh;
-  z-index: 3000;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  will-change: transform;
-}
-
-.left-menu {
-  left: 80px;
-  align-items: flex-start;
-}
-
-.right-menu {
-  right: 80px;
-  align-items: flex-end;
-  text-align: right;
-}
-
-.menu-label {
-  font-size: 0.65rem;
-  font-weight: 700;
+.page-corner {
+  position: absolute;
+  top: 28px;
+  right: 56px;
+  z-index: 5;
+  font-family: var(--ff-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--c-text-muted);
-  letter-spacing: 1.5px;
-  margin-bottom: 5px;
-  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  gap: 18px;
 }
-
-.nav-link {
+.page-corner a {
+  color: var(--c-text-muted);
   text-decoration: none;
-  color: var(--c-text-heading);
-  font-weight: 400;
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
-  transition: all 0.2s ease-in-out;
+  transition: color 0.2s ease;
   cursor: pointer;
-  background: none;
-  border: none;
-  padding: 2px 0;
-  font-family: var(--ff-serif);
 }
-
-.nav-link:hover {
-  color: var(--c-primary);
-  padding-left: 5px;
+.page-corner a:hover { color: var(--c-primary); }
+.page-corner a.is-active {
+  color: var(--c-text-heading);
+  font-weight: 500;
 }
-
-.right-menu .nav-link:hover {
-  padding-left: 0;
-  padding-right: 5px;
-}
-
-.nav-link.active {
+.page-corner a.admin-link {
   color: var(--c-primary);
 }
-
-.highlight {
-  color: var(--c-primary);
-}
-
-.btn-logout {
-  color: var(--c-danger);
-  font-size: 0.85rem;
-}
-
-.user-status {
-  font-size: 0.75rem;
+.page-corner .user-status {
   color: var(--c-success);
-  font-weight: 700;
-  margin-bottom: 2px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
 }
+.page-corner-sep {
+  width: 1px;
+  height: 12px;
+  background: var(--c-border);
+}
+.page-corner-line {
+  width: 32px;
+  height: 1px;
+  background: var(--c-border);
+}
+.page-corner-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.page-corner-lang em {
+  font-style: normal;
+  color: var(--c-border);
+  margin: 0 2px;
+}
+.page-corner-lang a { padding: 0 2px; }
 
-.lang-toggle {
-  margin-top: 12px;
-  padding: 4px 12px;
-  border: 2px solid var(--c-text-heading);
-  border-radius: 6px;
+:host-context(.dark-scroll-active) .page-corner,
+:host-context(.dark-scroll-active) .page-corner a {
+  color: #d8dee4;
+}
+:host-context(.dark-scroll-active) .page-corner a:hover {
+  color: var(--c-primary-light);
+}
+:host-context(.dark-scroll-active) .page-corner a.is-active {
+  color: #f1f5f4;
+}
+:host-context(.dark-scroll-active) .page-corner-sep,
+:host-context(.dark-scroll-active) .page-corner-line {
+  background: rgba(241, 245, 244, 0.25);
+}
+:host-context(.dark-scroll-active) .page-corner-lang em {
   background: transparent;
-  color: var(--c-text-heading);
-  font-size: 0.72rem;
-  font-weight: 400;
-  font-family: var(--ff-serif);
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.lang-toggle:hover {
-  background: var(--c-primary);
-  border-color: var(--c-primary);
-  color: #fff;
+  color: rgba(241, 245, 244, 0.35);
 }
 
 .main-content {
   padding: 0;
   width: 100%;
-  padding-left: 250px;
-  padding-right: 250px;
   box-sizing: border-box;
 }
 
@@ -114,18 +91,14 @@
   min-height: 100vh;
 }
 
-@media (max-width: 1100px) {
-  .left-menu { left: 40px; }
-  .right-menu { right: 40px; }
-  .main-content { padding-left: 150px; padding-right: 150px; }
+@media (max-width: 1180px) {
+  .page-corner { right: 36px; }
 }
 
-@media (max-width: 850px) {
-  .side-menu { display: none; }
-  .main-content { padding-left: 20px; padding-right: 20px; }
+@media (max-width: 980px) {
+  .page-corner { display: none; }
 }
 
-/* Menu hamburguesa de movil */
 .mobile-menu-toggle {
   display: none;
   position: fixed;
@@ -168,11 +141,9 @@
 .mobile-menu-toggle.is-open .bar:nth-child(1) {
   transform: translateY(8px) rotate(45deg);
 }
-
 .mobile-menu-toggle.is-open .bar:nth-child(2) {
   opacity: 0;
 }
-
 .mobile-menu-toggle.is-open .bar:nth-child(3) {
   transform: translateY(-8px) rotate(-45deg);
 }
@@ -196,7 +167,7 @@
   position: fixed;
   top: 0;
   right: 0;
-  min-width: 200px;
+  min-width: 220px;
   max-width: 75vw;
   padding: 70px 24px 24px 24px;
   flex-direction: column;
@@ -213,9 +184,67 @@
   z-index: 3080;
 }
 
+.mobile-menu-panel .menu-label {
+  font-family: var(--ff-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--c-text-muted);
+  letter-spacing: 0.18em;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.mobile-menu-panel .nav-link {
+  text-decoration: none;
+  color: var(--c-text-heading);
+  font-weight: 400;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  font-family: var(--ff-serif);
+}
 .mobile-menu-panel .nav-link:hover {
+  color: var(--c-primary);
   padding-left: 0;
   padding-right: 5px;
+}
+.mobile-menu-panel .nav-link.active,
+.mobile-menu-panel .nav-link.highlight {
+  color: var(--c-primary);
+}
+.mobile-menu-panel .btn-logout {
+  color: var(--c-danger);
+  font-size: 0.85rem;
+}
+.mobile-menu-panel .user-status {
+  font-size: 0.75rem;
+  color: var(--c-success);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.mobile-menu-panel .lang-toggle {
+  margin-top: 12px;
+  padding: 4px 12px;
+  border: 2px solid var(--c-text-heading);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--c-text-heading);
+  font-size: 0.72rem;
+  font-weight: 400;
+  font-family: var(--ff-serif);
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.mobile-menu-panel .lang-toggle:hover {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: #fff;
 }
 
 .mobile-menu-panel.is-open {
@@ -226,12 +255,11 @@
   margin-top: 18px;
 }
 
-@media (max-width: 850px) {
+@media (max-width: 980px) {
   .mobile-menu-toggle { display: flex; }
   .mobile-menu-panel { display: flex; }
 }
 
-/* Standalone route: back arrow + full-width content */
 .page-back-arrow {
   position: fixed;
   top: 40px;

@@ -13,6 +13,38 @@
     <span>{{ i18n.t('login.back') }}</span>
   </a>
 
+  <div *ngIf="isHomeRoute" class="page-corner">
+    <ng-container *ngIf="isLoggedIn; else loggedOutCorner">
+      <span class="user-status">{{ i18n.t('nav.connected') }}</span>
+      <span class="page-corner-sep"></span>
+      <a href="javascript:void(0)" (click)="logout()">{{ i18n.t('nav.logout') }}</a>
+    </ng-container>
+    <ng-template #loggedOutCorner>
+      <a routerLink="/login">{{ i18n.t('nav.login') }}</a>
+      <span class="page-corner-sep"></span>
+      <a routerLink="/register">{{ i18n.t('nav.register') }}</a>
+    </ng-template>
+
+    <ng-container *ngIf="canAccessAdmin">
+      <span class="page-corner-sep"></span>
+      <a href="javascript:void(0)" (click)="enterAdmin()" class="admin-link">{{ i18n.t('nav.admin') }}</a>
+    </ng-container>
+
+    <span class="page-corner-line"></span>
+
+    <a href="javascript:void(0)" (click)="scrollToProjects($event)">{{ i18n.t('nav.projects') }}</a>
+    <span class="page-corner-sep"></span>
+    <a routerLink="/contacto">{{ i18n.t('nav.contact') }}</a>
+
+    <span class="page-corner-line"></span>
+
+    <span class="page-corner-lang">
+      <a href="javascript:void(0)" (click)="setLang('es')" [class.is-active]="i18n.lang === 'es'">ES</a>
+      <em>/</em>
+      <a href="javascript:void(0)" (click)="setLang('en')" [class.is-active]="i18n.lang === 'en'">EN</a>
+    </span>
+  </div>
+
   <button *ngIf="isHomeRoute"
           type="button"
           class="mobile-menu-toggle"
@@ -30,8 +62,12 @@
 
   <nav *ngIf="isHomeRoute" class="mobile-menu-panel" [class.is-open]="mobileMenuOpen">
     <span class="menu-label">{{ i18n.t('nav.pages') }}</span>
-    <a (click)="scrollToCv($event); closeMobileMenu()" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" style="cursor: pointer;">{{ i18n.t('nav.cv') }}</a>
-    <a (click)="scrollToProjects($event); closeMobileMenu()" class="nav-link" style="cursor: pointer;">{{ i18n.t('nav.projects') }}</a>
+    <a href="javascript:void(0)" (click)="scrollToSection('hero'); closeMobileMenu()" class="nav-link">{{ i18n.t('nav.home') }}</a>
+    <a href="javascript:void(0)" (click)="scrollToSection('about'); closeMobileMenu()" class="nav-link">{{ i18n.t('nav.about') }}</a>
+    <a href="javascript:void(0)" (click)="scrollToSection('experience'); closeMobileMenu()" class="nav-link">{{ i18n.t('nav.experience') }}</a>
+    <a href="javascript:void(0)" (click)="scrollToSection('education'); closeMobileMenu()" class="nav-link">{{ i18n.t('nav.education') }}</a>
+    <a href="javascript:void(0)" (click)="scrollToSection('skills'); closeMobileMenu()" class="nav-link">{{ i18n.t('nav.skills') }}</a>
+    <a href="javascript:void(0)" (click)="scrollToProjects($event); closeMobileMenu()" class="nav-link">{{ i18n.t('nav.projects') }}</a>
     <a routerLink="/contacto" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">{{ i18n.t('nav.contact') }}</a>
     <a *ngIf="canAccessAdmin" href="javascript:void(0)" (click)="enterAdmin(); closeMobileMenu()" class="nav-link admin-link">{{ i18n.t('nav.admin') }}</a>
 
@@ -43,31 +79,6 @@
     <ng-template #loggedOutMobile>
       <a routerLink="/login" class="nav-link" (click)="closeMobileMenu()">{{ i18n.t('nav.login') }}</a>
       <a routerLink="/register" class="nav-link highlight" (click)="closeMobileMenu()">{{ i18n.t('nav.register') }}</a>
-    </ng-template>
-    <button class="lang-toggle" (click)="i18n.toggle()" [attr.aria-label]="'Switch to ' + i18n.t('nav.lang')">
-      {{ i18n.t('nav.lang') }}
-    </button>
-  </nav>
-
-  <nav *ngIf="isHomeRoute" class="side-menu left-menu"
-       [style.transform]="isHomeRoute ? 'translateY(calc(-50% + ' + menuTranslateY + 'px))' : 'translateY(-50%)'">
-    <span class="menu-label">{{ i18n.t('nav.pages') }}</span>
-    <a (click)="scrollToCv($event)" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" style="cursor: pointer;">{{ i18n.t('nav.cv') }}</a>
-    <a (click)="scrollToProjects($event)" class="nav-link" style="cursor: pointer;">{{ i18n.t('nav.projects') }}</a>
-    <a routerLink="/contacto" routerLinkActive="active" class="nav-link">{{ i18n.t('nav.contact') }}</a>
-    <a *ngIf="canAccessAdmin" href="javascript:void(0)" (click)="enterAdmin()" class="nav-link admin-link">{{ i18n.t('nav.admin') }}</a>
-  </nav>
-
-  <nav *ngIf="isHomeRoute" class="side-menu right-menu"
-       [style.transform]="isHomeRoute ? 'translateY(calc(-50% + ' + menuTranslateY + 'px))' : 'translateY(-50%)'">
-    <span class="menu-label">{{ i18n.t('nav.account') }}</span>
-    <ng-container *ngIf="isLoggedIn; else loggedOut">
-      <span class="user-status">{{ i18n.t('nav.connected') }}</span>
-      <button class="nav-link btn-logout" (click)="logout()">{{ i18n.t('nav.logout') }}</button>
-    </ng-container>
-    <ng-template #loggedOut>
-      <a routerLink="/login" class="nav-link">{{ i18n.t('nav.login') }}</a>
-      <a routerLink="/register" class="nav-link highlight">{{ i18n.t('nav.register') }}</a>
     </ng-template>
     <button class="lang-toggle" (click)="i18n.toggle()" [attr.aria-label]="'Switch to ' + i18n.t('nav.lang')">
       {{ i18n.t('nav.lang') }}

@@ -1,44 +1,44 @@
-<section class="hero-container">
-  <div class="hero-content">
+<!-- ──────────── HERO ──────────── -->
+<section class="hero" id="hero">
 
-    <div class="hero-avatar">
-      <img [src]="photoUrl" alt="Jose Miguel Vivas Sanchez" />
-    </div>
+  <div class="hero-text">
+    <div class="hero-eyebrow">{{ i18n.t('hero.eyebrow') }}</div>
+    <h1 class="hero-title" #heroTitleEl [innerHTML]="i18n.t('hero.title')"></h1>
+    <p class="hero-deck" [innerHTML]="i18n.t('hero.tagline')"></p>
 
-    <div class="hero-text">
-      <p class="hero-tagline">{{ i18n.t('hero.tagline') }}</p>
-      <p class="hero-typewriter" aria-live="polite">
-        <span class="hero-typewriter-text">{{ typedRole }}</span><span class="hero-typewriter-caret"></span>
-      </p>
-    </div>
+    <p class="hero-typewriter" aria-live="polite">
+      <span class="hero-typewriter-label">{{ i18n.t('hero.stack.label') }}</span>
+      <span class="hero-typewriter-text">{{ typedRole }}</span>
+      <span class="hero-typewriter-caret"></span>
+    </p>
 
-    <div class="hero-links">
-      <a href="mailto:jose.miguel.vivas.sanchez@gmail.com" class="hero-link-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4l-10 8L2 4"/></svg>
+    <div class="hero-actions">
+      <a href="mailto:jose.miguel.vivas.sanchez@gmail.com" class="hero-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4l-10 8L2 4"/></svg>
         {{ i18n.t('hero.email') }}
       </a>
-      <a href="https://linkedin.com/in/josemiguelvivassanchez/" target="_blank" class="hero-link-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+      <a href="https://linkedin.com/in/josemiguelvivassanchez/" target="_blank" class="hero-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
         LinkedIn
       </a>
-      <a href="https://github.com/josemivivass" target="_blank" class="hero-link-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.69-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.13 0 1.54-.01 2.78-.01 3.16 0 .31.21.68.8.56C20.21 21.39 23.5 17.07 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+      <a href="https://github.com/josemivivass" target="_blank" class="hero-btn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.69-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.13 0 1.54-.01 2.78-.01 3.16 0 .31.21.68.8.56C20.21 21.39 23.5 17.07 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
         {{ i18n.t('hero.github') }}
       </a>
-      <a href="tel:+34645316309" class="hero-link-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <a href="tel:+34645316309" class="hero-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         {{ i18n.t('hero.phone') }}
       </a>
 
       <div class="hero-cv-wrap" (click)="$event.stopPropagation()">
         <button type="button"
-                class="hero-link-btn hero-link-btn--solid"
+                class="hero-btn hero-btn--solid"
                 (click)="cvMenuOpen = !cvMenuOpen"
                 [attr.aria-expanded]="cvMenuOpen"
                 aria-haspopup="menu">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           {{ i18n.t('hero.cv') }}
-          <svg class="hero-cv-chevron" [class.is-open]="cvMenuOpen" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          <svg class="hero-cv-chevron" [class.is-open]="cvMenuOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="hero-cv-menu" *ngIf="cvMenuOpen" role="menu">
           <a href="/cv-es.pdf" download role="menuitem" (click)="cvMenuOpen = false">
@@ -54,136 +54,199 @@
     </div>
   </div>
 
-  <svg class="hero-scroll-arrow" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-    <polyline points="6 9 12 15 18 9"/>
-  </svg>
+  <div class="hero-portrait-wrap">
+    <div class="hero-portrait-frame"></div>
+    <div class="hero-portrait">
+      <img [src]="photoUrl" alt="Jose Miguel Vivas Sanchez" class="hero-portrait-img" />
+    </div>
+    <div class="hero-portrait-caption"><span class="dot"></span>{{ i18n.t('hero.available.short') }}</div>
+  </div>
+
+  <div class="hero-scroll">
+    <span>{{ i18n.t('hero.scroll') }}</span>
+    <span class="hero-scroll-line"></span>
+  </div>
 </section>
 
-<section #cvSection class="about-section">
-  <div class="section-inner">
-    <header class="section-header-cv">
-      <h2 [innerHTML]="i18n.t('about.title')"></h2>
-      <div class="accent-line"></div>
-    </header>
-    <div class="about-card">
+<!-- ──────────── SOBRE MÍ — Capítulo I ──────────── -->
+<section #cvSection class="section about-section" id="about">
+  <div class="section-heading-block section-header-cv">
+    <div class="section-num">{{ i18n.t('chapter.label') }}</div>
+    <h2 class="section-title">
+      <span class="section-roman">I.</span>
+      <span [innerHTML]="i18n.t('about.title')"></span>
+    </h2>
+  </div>
+
+  <div class="about-body about-card">
+    <aside class="about-aside">
+      <div class="about-aside-block">
+        <div class="about-aside-label">{{ i18n.t('about.aside.base') }}</div>
+        <div class="about-aside-value">{{ i18n.t('about.aside.base.value') }}</div>
+      </div>
+    </aside>
+
+    <div class="about-main">
       <div class="about-text">
         <p [innerHTML]="i18n.t('about')"></p>
       </div>
-      <div class="about-languages">
-        <div class="lang-item">
-          <span class="lang-name">{{ i18n.t('about.lang.es') }}</span>
-          <span class="lang-level">{{ i18n.t('about.lang.es.level') }}</span>
+
+      <div class="about-langs">
+        <div class="about-lang">
+          <div class="about-lang-flag">ES · {{ i18n.t('about.lang.es.level') }}</div>
+          <div class="about-lang-name">{{ i18n.t('about.lang.es') }}</div>
+          <div class="about-lang-level">{{ i18n.t('about.lang.es.level') }}</div>
         </div>
-        <div class="lang-item">
-          <span class="lang-name">{{ i18n.t('about.lang.en') }}</span>
-          <span class="lang-level">{{ i18n.t('about.lang.en.level') }}</span>
+        <div class="about-lang">
+          <div class="about-lang-flag">EN · {{ i18n.t('about.lang.en.level') }}</div>
+          <div class="about-lang-name">{{ i18n.t('about.lang.en') }}</div>
+          <div class="about-lang-level">{{ i18n.t('about.lang.en.level') }}</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ──────────── EXPERIENCIA — Capítulo II ──────────── -->
 <app-experience (loaded)="onExperienceLoaded($event)"></app-experience>
 
-<section #cvSection class="education-section">
-  <div class="section-inner">
-    <header class="section-header-cv">
-      <h2 [innerHTML]="i18n.t('edu.title')"></h2>
-      <div class="accent-line"></div>
-    </header>
-    <div class="edu-grid">
-      @for (edu of educations; track edu.id) {
-        <div #eduEl class="edu-card">
-          <div class="edu-year">{{ edu.start_date | date:'yyyy' }} - {{ edu.end_date ? (edu.end_date | date:'yyyy') : (i18n.lang === 'es' ? 'Presente' : 'Present') }}</div>
-          <h3>{{ i18n.lang === 'es' ? edu.title : (edu.title_en || edu.title) }}</h3>
-          <p class="edu-school">{{ i18n.lang === 'es' ? edu.location : (edu.location_en || edu.location) }}</p>
+<!-- ──────────── EDUCACIÓN — Capítulo III ──────────── -->
+<section #cvSection class="section education-section" id="education">
+  <div class="section-heading-block section-header-cv">
+    <div class="section-num">{{ i18n.t('chapter.label') }}</div>
+    <h2 class="section-title">
+      <span class="section-roman">III.</span>
+      <span [innerHTML]="i18n.t('edu.title')"></span>
+    </h2>
+  </div>
+
+  <div class="edu-list">
+    @for (edu of educations; track edu.id; let i = $index) {
+      <article #eduEl class="edu-row edu-card">
+        <div class="edu-year">
+          {{ edu.start_date | date:'yyyy' }} — {{ edu.end_date ? (edu.end_date | date:'yyyy') : (i18n.lang === 'es' ? 'Presente' : 'Present') }}
         </div>
-      }
-    </div>
+        <div class="edu-num">{{ toRoman(i + 1) }}.</div>
+        <div class="edu-main">
+          <h3 class="edu-name" [innerHTML]="i18n.lang === 'es' ? edu.title : (edu.title_en || edu.title)"></h3>
+          <div class="edu-school">
+            <span>{{ i18n.lang === 'es' ? edu.location : (edu.location_en || edu.location) }}</span>
+          </div>
+        </div>
+      </article>
+    }
   </div>
 </section>
 
-<section #cvSection class="skills-showcase-section">
+<!-- ──────────── HABILIDADES — Capítulo IV ──────────── -->
+<section class="skills-showcase-section">
 
-    <div class="sp-skills-layer">
-      <div class="section-inner">
-        <header class="section-header-cv">
-          <h2 [innerHTML]="i18n.t('skills.title')"></h2>
-          <div class="accent-line"></div>
-        </header>
-        <div class="skills-two-col">
-          <div class="skills-col skills-col--left">
-            <div class="skill-category">
-              <h3>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2" ry="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
-                {{ i18n.t('skills.ai') }}
-              </h3>
-              <div class="skill-tags">
-                @for (tag of getSkillTags('IA & Data Science'); track $index) {
-                  <span>
-                    @if (techIcon(tag); as icon) {
-                      <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
-                    }
-                    {{ tag }}
-                  </span>
-                }
-              </div>
-            </div>
-            <div class="skill-category">
-              <h3>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-                {{ i18n.t('skills.cloud') }}
-              </h3>
-              <div class="skill-tags">
-                @for (tag of getSkillTags('Cloud & DevOps'); track $index) {
-                  <span>
-                    @if (techIcon(tag); as icon) {
-                      <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
-                    }
-                    {{ tag }}
-                  </span>
-                }
-              </div>
-            </div>
-          </div>
-          <div class="skills-col skills-col--right">
-            <div class="skill-category">
-              <h3>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                {{ i18n.t('skills.dev') }}
-              </h3>
-              <div class="skill-tags">
-                @for (tag of getSkillTags('Desarrollo Full Stack & Móvil'); track $index) {
-                  <span>
-                    @if (techIcon(tag); as icon) {
-                      <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
-                    }
-                    {{ tag }}
-                  </span>
-                }
-              </div>
-            </div>
-            <div class="skill-category">
-              <h3>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                {{ i18n.t('skills.qa') }}
-              </h3>
-              <div class="skill-tags">
-                @for (tag of getSkillTags('QA & Testing'); track $index) {
-                  <span>
-                    @if (techIcon(tag); as icon) {
-                      <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
-                    }
-                    {{ tag }}
-                  </span>
-                }
-              </div>
-            </div>
-          </div>
-        </div>
+  <div class="sp-skills-layer">
+    <section #cvSection class="section skills-section" id="skills">
+      <div class="section-heading-block section-header-cv">
+        <div class="section-num">{{ i18n.t('chapter.label') }}</div>
+        <h2 class="section-title">
+          <span class="section-roman">IV.</span>
+          <span [innerHTML]="i18n.t('skills.title')"></span>
+        </h2>
       </div>
-    </div>
 
-    <app-projects (loaded)="onProjectsLoaded($event)"></app-projects>
+      <div class="skills-grid">
+        <article class="skill-card">
+          <div class="skill-card-head">
+            <div class="skill-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+            </div>
+            <div class="skill-card-title-wrap">
+              <span class="skill-card-num">{{ i18n.t('skills.card.ai.eyebrow') }}</span>
+              <h3 class="skill-card-title" [innerHTML]="i18n.t('skills.ai.title')"></h3>
+            </div>
+            <div class="skill-card-count">{{ formatSkillCount(getSkillTags('IA & Data Science').length) }}</div>
+          </div>
+          <div class="skill-card-tags">
+            @for (tag of getSkillTags('IA & Data Science'); track $index) {
+              <span class="skill-tag">
+                @if (techIcon(tag); as icon) {
+                  <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
+                }
+                {{ tag }}
+              </span>
+            }
+          </div>
+        </article>
+
+        <article class="skill-card">
+          <div class="skill-card-head">
+            <div class="skill-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <div class="skill-card-title-wrap">
+              <span class="skill-card-num">{{ i18n.t('skills.card.dev.eyebrow') }}</span>
+              <h3 class="skill-card-title" [innerHTML]="i18n.t('skills.dev.title')"></h3>
+            </div>
+            <div class="skill-card-count">{{ formatSkillCount(getSkillTags('Desarrollo Full Stack & Móvil').length) }}</div>
+          </div>
+          <div class="skill-card-tags">
+            @for (tag of getSkillTags('Desarrollo Full Stack & Móvil'); track $index) {
+              <span class="skill-tag">
+                @if (techIcon(tag); as icon) {
+                  <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
+                }
+                {{ tag }}
+              </span>
+            }
+          </div>
+        </article>
+
+        <article class="skill-card">
+          <div class="skill-card-head">
+            <div class="skill-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <div class="skill-card-title-wrap">
+              <span class="skill-card-num">{{ i18n.t('skills.card.qa.eyebrow') }}</span>
+              <h3 class="skill-card-title" [innerHTML]="i18n.t('skills.qa.title')"></h3>
+            </div>
+            <div class="skill-card-count">{{ formatSkillCount(getSkillTags('QA & Testing').length) }}</div>
+          </div>
+          <div class="skill-card-tags">
+            @for (tag of getSkillTags('QA & Testing'); track $index) {
+              <span class="skill-tag">
+                @if (techIcon(tag); as icon) {
+                  <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
+                }
+                {{ tag }}
+              </span>
+            }
+          </div>
+        </article>
+
+        <article class="skill-card">
+          <div class="skill-card-head">
+            <div class="skill-card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+            </div>
+            <div class="skill-card-title-wrap">
+              <span class="skill-card-num">{{ i18n.t('skills.card.cloud.eyebrow') }}</span>
+              <h3 class="skill-card-title" [innerHTML]="i18n.t('skills.cloud.title')"></h3>
+            </div>
+            <div class="skill-card-count">{{ formatSkillCount(getSkillTags('Cloud & DevOps').length) }}</div>
+          </div>
+          <div class="skill-card-tags">
+            @for (tag of getSkillTags('Cloud & DevOps'); track $index) {
+              <span class="skill-tag">
+                @if (techIcon(tag); as icon) {
+                  <img [src]="icon" alt="" class="skill-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
+                }
+                {{ tag }}
+              </span>
+            }
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <app-projects (loaded)="onProjectsLoaded($event)"></app-projects>
 
 </section>

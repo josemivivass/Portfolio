@@ -1,5 +1,11 @@
 :host { display: contents; }
 
+/* Italic words always in blue */
+:host em {
+  font-style: italic;
+  color: var(--c-primary);
+}
+
 .exp-scroll-section {
   position: relative;
   overflow: hidden;
@@ -45,12 +51,6 @@
   pointer-events: none;
 }
 
-.page-corner-line {
-  width: 32px;
-  height: 1px;
-  background: var(--c-border-light);
-}
-
 /* PROGRESS */
 .exp-progress {
   position: absolute;
@@ -87,7 +87,7 @@
 .exp-progress-counter {
   position: absolute;
   bottom: 40px;
-  right: 80px;
+  right: 110px;
   font-family: var(--ff-mono);
   font-size: 0.68rem;
   letter-spacing: 0.16em;
@@ -120,35 +120,49 @@
   justify-content: center;
 }
 
-.exp-eyebrow {
+.section-heading-block {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.section-num {
   font-family: var(--ff-mono);
   font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--c-primary);
   font-weight: 500;
-  margin-bottom: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--c-border);
+  width: fit-content;
+  min-width: 200px;
 }
 
-.exp-eyebrow::before {
-  content: '';
-  width: 32px;
-  height: 1px;
-  background: var(--c-primary);
+.section-roman {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 0.7em;
+  color: var(--c-primary);
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
 }
 
 .exp-title {
   font-family: var(--ff-serif);
   font-weight: 300;
-  font-size: clamp(3rem, 6vw, 5.4rem);
-  line-height: 0.96;
-  letter-spacing: -0.025em;
+  font-size: clamp(2.4rem, 4.6vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
   color: var(--c-text-heading);
-  margin: 0 0 26px;
+  margin: 0;
   text-wrap: balance;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  column-gap: 20px;
 }
 
 .exp-title ::ng-deep em {
@@ -599,6 +613,14 @@
   color: #f1f5f4;
 }
 
+:host-context(.dark-scroll-active) .section-num {
+  color: var(--c-primary-light);
+  border-top-color: rgba(241, 245, 244, 0.22);
+}
+:host-context(.dark-scroll-active) .section-roman {
+  color: var(--c-primary-light);
+}
+
 :host-context(.dark-scroll-active) .exp-deck,
 :host-context(.dark-scroll-active) .exp-end-text,
 :host-context(.dark-scroll-active) .exp-year-label,
@@ -620,7 +642,6 @@
   color: rgba(241, 245, 244, 0.7);
 }
 
-:host-context(.dark-scroll-active) .page-corner-line,
 :host-context(.dark-scroll-active) .exp-progress {
   background: rgba(241, 245, 244, 0.25);
 }
@@ -642,6 +663,7 @@
     transform: none !important;
   }
   .exp-title-panel { width: 100%; padding: 0 0 20px; }
+  .exp-title { white-space: nowrap; }
   .exp-divider, .exp-year-bar { display: none; }
   .exp-year-marker { flex-direction: row; padding: 8px 0; }
   .exp-year-num { font-size: 2rem; }

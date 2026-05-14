@@ -16,6 +16,8 @@ import { TrackingService } from './services/tracking.service';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
 import { PreloaderComponent } from './components/preloader/preloader.component';
 
+type SectionId = 'hero' | 'about' | 'experience' | 'education' | 'skills';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -41,6 +43,7 @@ export class AppComponent implements OnInit, OnDestroy {
   isHomeRoute = true;
   isAdminRoute = false;
   mobileMenuOpen = false;
+  activeSection: SectionId = 'hero';
 
   menuTranslateY = 0;
 
@@ -299,8 +302,9 @@ export class AppComponent implements OnInit, OnDestroy {
   @HostListener('window:scroll')
   onScroll(): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute || this.showPreloader) return;
-    
+
     this.menuTranslateY = -window.scrollY;
+    this.updateActiveSection();
     this.cdr.detectChanges();
 
     // Tolerancia ampliada a 10px para evitar falsos positivos por decimales del navegador
@@ -308,6 +312,49 @@ export class AppComponent implements OnInit, OnDestroy {
       this.stopVirtualScroll();
       this.currentScrollY = window.scrollY;
       this.targetScrollY = window.scrollY;
+    }
+  }
+
+  private updateActiveSection(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const ids: SectionId[] = ['hero', 'about', 'experience', 'education', 'skills'];
+    const offsets: Array<{ id: SectionId; y: number }> = [];
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      offsets.push({ id, y: rect.top + window.scrollY });
+    }
+    if (!offsets.length) return;
+    const probe = window.scrollY + window.innerHeight * 0.35;
+    let current: SectionId = offsets[0].id;
+    for (const o of offsets) {
+      if (probe >= o.y) current = o.id;
+    }
+    if (current !== this.activeSection) {
+      this.activeSection = current;
+    }
+  }
+
+  scrollToSection(id: SectionId): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (!this.isHomeRoute) {
+      sessionStorage.setItem('scrollToCv', '1');
+      this.router.navigateByUrl('/');
+      return;
+    }
+    const el = document.getElementById(id);
+    if (!el) return;
+    this.stopVirtualScroll();
+    const targetY = id === 'hero' ? 0 : Math.max(0, el.getBoundingClientRect().top + window.scrollY);
+    this.currentScrollY = targetY;
+    this.targetScrollY = targetY;
+    window.scrollTo(0, targetY);
+  }
+
+  setLang(lang: 'es' | 'en'): void {
+    if (this.i18n.lang !== lang) {
+      this.i18n.toggle();
     }
   }
 

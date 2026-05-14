@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, OnDestroy, Inject, PLATFORM_ID,
+  Component, OnInit, AfterViewInit, OnDestroy, Inject, PLATFORM_ID,
   ChangeDetectorRef, ElementRef, ViewChild, EventEmitter, Output
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -18,10 +18,11 @@ import { techIcon, hideIconOnError } from '../../utils/tech-icons';
   templateUrl: './experience.component.html',
   styleUrls: ['./experience.component.css']
 })
-export class ExperienceComponent implements OnInit, OnDestroy {
+export class ExperienceComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('expSection')  expSection!: ElementRef;
   @ViewChild('expTrack')    expTrack!:   ElementRef;
   @ViewChild('progressFill') progressFill?: ElementRef<HTMLElement>;
+  @ViewChild('expTitleEl')  expTitleEl?: ElementRef<HTMLElement>;
 
   @Output() loaded = new EventEmitter<any[]>();
 
@@ -34,6 +35,8 @@ export class ExperienceComponent implements OnInit, OnDestroy {
 
   private animationsInitialized = false;
   private langSub!: Subscription;
+  private titleResizeListener: (() => void) | null = null;
+  private titleResizeObserver: ResizeObserver | null = null;
 
   constructor(
     private experienceService: ExperienceService,
@@ -69,11 +72,67 @@ export class ExperienceComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
-    this.langSub?.unsubscribe();
+  ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const refit = () => this.fitExpTitle();
+    requestAnimationFrame(refit);
+    setTimeout(refit, 150);
+    setTimeout(refit, 500);
+    const fonts = (document as any).fonts;
+    if (fonts?.ready?.then) fonts.ready.then(refit);
+
+    this.titleResizeListener = refit;
+    window.addEventListener('resize', this.titleResizeListener, { passive: true });
+
+    const el = this.expTitleEl?.nativeElement;
+    const parent = el?.parentElement;
+    if (parent && typeof ResizeObserver !== 'undefined') {
+      this.titleResizeObserver = new ResizeObserver(refit);
+      this.titleResizeObserver.observe(parent);
+    }
   }
 
-  //ORDEN — la más reciente a la izquierda
+  private fitExpTitle(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const el = this.expTitleEl?.nativeElement;
+    if (!el) return;
+
+    if (window.innerWidth > 850) {
+      el.style.fontSize = '';
+      return;
+    }
+
+    const container = el.parentElement;
+    if (!container) return;
+    const available = container.clientWidth;
+    if (available <= 0) return;
+
+    el.style.whiteSpace = 'nowrap';
+    el.style.fontSize = '100px';
+    void el.offsetWidth;
+    const natural = el.scrollWidth;
+
+    if (natural > 0) {
+      const target = (available / natural) * 100;
+      const capped = Math.max(14, Math.min(target, 64));
+      el.style.fontSize = `${capped}px`;
+    } else {
+      el.style.fontSize = '';
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.langSub?.unsubscribe();
+    if (isPlatformBrowser(this.platformId) && this.titleResizeListener) {
+      window.removeEventListener('resize', this.titleResizeListener);
+      this.titleResizeListener = null;
+    }
+    if (this.titleResizeObserver) {
+      this.titleResizeObserver.disconnect();
+      this.titleResizeObserver = null;
+    }
+  }
 
   private sortNewestFirst(data: any[]): any[] {
     return [...data].sort((a, b) => {
@@ -182,7 +241,30 @@ export class ExperienceComponent implements OnInit, OnDestroy {
 
   initAnimations(): void {
     if (this.animationsInitialized || !isPlatformBrowser(this.platformId)) return;
-    if (window.innerWidth <= 850 || !this.expSection || !this.expTrack) return;
+    if (!this.expSection || !this.expTrack) return;
+
+    if (window.innerWidth <= 850) {
+      this.animationsInitialized = true;
+      const root = this.expSection.nativeElement as HTMLElement;
+      const heading = root.querySelector('.section-heading-block');
+      if (heading) {
+        gsap.from(heading, {
+          opacity: 0, y: 30,
+          duration: 0.7, ease: 'power2.out',
+          scrollTrigger: { trigger: heading, start: 'top 88%', toggleActions: 'play none none reverse' }
+        });
+      }
+      root.querySelectorAll<HTMLElement>('.exp-card').forEach((card, i) => {
+        gsap.from(card, {
+          opacity: 0, y: 40,
+          duration: 0.6, delay: i * 0.06, ease: 'power2.out',
+          scrollTrigger: { trigger: card, start: 'top 90%', toggleActions: 'play none none reverse' }
+        });
+      });
+      ScrollTrigger.refresh();
+      return;
+    }
+
     this.animationsInitialized = true;
     const section = this.expSection.nativeElement;
     const track   = this.expTrack.nativeElement;

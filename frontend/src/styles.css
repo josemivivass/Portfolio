@@ -153,13 +153,34 @@ input, select, textarea, button {
   font-family: inherit;
 }
 
-em, i  { font-style: italic; }
+em, i {
+  font-style: italic;
+  color: var(--c-primary);
+}
 strong, b { font-weight: 600; }
+
+@media (max-width: 980px) {
+  .hero-title br { display: none; }
+}
+
+@media (max-width: 850px) {
+  .exp-title br { display: none; }
+}
+
+/* Iconos de tag/skill tintados al color principal (sustituye su color original) */
+.skill-tag-icon,
+.exp-card-tag-icon,
+.showcase-tag-icon,
+.tag-chip-icon,
+.profile-skill-chip-icon {
+  filter: var(--c-tag-icon-filter);
+}
 
 .admin-shell em,
 .admin-shell strong {
   font-style: inherit;
   font-weight: inherit;
+  color: inherit;
 }
 
 .container {

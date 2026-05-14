@@ -126,4 +126,7 @@
   --c-projects-scroll-thumb-h: #adb5bd;
   --c-projects-tag-border:     rgba(0, 123, 255, 0.18);
   --c-projects-qr-shadow:      0 4px 12px rgba(17, 24, 39, 0.10);
+
+  /* Tinte de iconos en tags/skills */
+  --c-tag-icon-filter: brightness(0) saturate(100%) invert(34%) sepia(99%) saturate(3000%) hue-rotate(202deg) brightness(101%) contrast(101%);
 }

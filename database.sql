@@ -151,7 +151,7 @@ INSERT INTO education (start_date, end_date, title, title_en, location) VALUES
 
 INSERT INTO skills (tipo, tags) VALUES
 ('IA & Data Science',             JSON_ARRAY('Python', 'Machine Learning', 'LangChain', 'RAGs', 'OpenAI API', 'Groq Cloud', 'Scikit-learn', 'Pandas', 'NumPy', 'Power BI', 'LlamaIndex', 'LLMs')),
-('Desarrollo Full Stack & Móvil', JSON_ARRAY('Angular', 'TypeScript', 'React.js', 'Node.js', 'Android', 'Java', 'SQL', 'HTML5/CSS3')),
+('Desarrollo Full Stack & Móvil', JSON_ARRAY('Angular', 'TypeScript', 'React.js', 'Node.js', 'Android', 'Java', 'SQL', 'HTML5', 'CSS3')),
 ('Cloud & DevOps',                JSON_ARRAY('AWS', 'Docker', 'GitHub', 'Linux')),
 ('QA & Testing',                  JSON_ARRAY('JMeter', 'LoadRunner', 'Postman', 'SoapUI', 'ALM', 'Grafana', 'InfluxDB', 'REST APIs'));
 

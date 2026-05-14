@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, OnDestroy, Inject, PLATFORM_ID,
+  Component, OnInit, AfterViewInit, OnDestroy, Inject, PLATFORM_ID,
   ChangeDetectorRef, ElementRef, ViewChildren, ViewChild, QueryList,
   HostListener
 } from '@angular/core';
@@ -22,10 +22,11 @@ import { techIcon, hideIconOnError } from '../../utils/tech-icons';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChildren('cvSection') cvSections!: QueryList<ElementRef>;
   @ViewChildren('eduEl')     eduEls!:     QueryList<ElementRef>;
   @ViewChild(ExperienceComponent) experienceComponent?: ExperienceComponent;
+  @ViewChild('heroTitleEl') heroTitleEl?: ElementRef<HTMLElement>;
 
   // Listas públicas
   educations: any[] = [];
@@ -44,6 +45,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   private typewriterTimer: any = null;
 
   cvMenuOpen = false;
+
+  private resizeListener: (() => void) | null = null;
+  private titleResizeObserver: ResizeObserver | null = null;
 
   private animationsInitialized = false;
   private langSub!: Subscription;
@@ -66,7 +70,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.langSub = this.i18n.lang$.subscribe(() => this.cdr.detectChanges());
+    this.langSub = this.i18n.lang$.subscribe(() => {
+      this.cdr.detectChanges();
+      if (isPlatformBrowser(this.platformId)) {
+        setTimeout(() => this.fitHeroTitle(), 0);
+      }
+    });
 
     this.photoUrl = this.profile.photoUrl;
     this.profile.load().subscribe(() => {
@@ -85,6 +94,57 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.skills = res;
       this.cdr.detectChanges();
     });
+
+  }
+
+  ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const refit = () => this.fitHeroTitle();
+
+    requestAnimationFrame(refit);
+    setTimeout(refit, 100);
+    setTimeout(refit, 500);
+    const fonts = (document as any).fonts;
+    if (fonts?.ready?.then) fonts.ready.then(refit);
+
+    this.resizeListener = refit;
+    window.addEventListener('resize', this.resizeListener, { passive: true });
+
+    const el = this.heroTitleEl?.nativeElement;
+    const parent = el?.parentElement;
+    if (parent && typeof ResizeObserver !== 'undefined') {
+      this.titleResizeObserver = new ResizeObserver(refit);
+      this.titleResizeObserver.observe(parent);
+    }
+  }
+
+  private fitHeroTitle(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const el = this.heroTitleEl?.nativeElement;
+    if (!el) return;
+
+    if (window.innerWidth > 980) {
+      el.style.fontSize = '';
+      el.style.whiteSpace = '';
+      return;
+    }
+
+    const available = el.clientWidth;
+    if (available <= 0) return;
+
+    el.style.whiteSpace = 'nowrap';
+    el.style.fontSize = '100px';
+    void el.offsetWidth;
+    const natural = el.scrollWidth;
+
+    if (natural > 0) {
+      const target = (available / natural) * 100;
+      const capped = Math.max(14, Math.min(target, 96));
+      el.style.fontSize = `${capped}px`;
+    } else {
+      el.style.fontSize = '';
+    }
   }
 
   //Cierra el menú del CV al hacer click fuera
@@ -211,6 +271,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.stopTypewriter();
     ScrollTrigger.getAll().forEach(t => t.kill(true));
     this.theme.setProgress(0);
+    if (isPlatformBrowser(this.platformId) && this.resizeListener) {
+      window.removeEventListener('resize', this.resizeListener);
+      this.resizeListener = null;
+    }
+    if (this.titleResizeObserver) {
+      this.titleResizeObserver.disconnect();
+      this.titleResizeObserver = null;
+    }
     if (isPlatformBrowser(this.platformId)) {
       const body = document.body;
       const html = document.documentElement;
@@ -309,5 +377,21 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   hideIconOnError(event: Event): void {
     hideIconOnError(event);
+  }
+
+  toRoman(n: number): string {
+    const map: [number, string][] = [
+      [10, 'x'], [9, 'ix'], [5, 'v'], [4, 'iv'], [1, 'i']
+    ];
+    let result = '';
+    let value = Math.max(0, Math.floor(n));
+    for (const [num, sym] of map) {
+      while (value >= num) { result += sym; value -= num; }
+    }
+    return result;
+  }
+
+  formatSkillCount(n: number): string {
+    return n.toString().padStart(2, '0');
   }
 }

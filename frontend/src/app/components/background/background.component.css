@@ -1,5 +1,4 @@
-.background-particles-canvas,
-.background-sphere-canvas {
+.background-particles-canvas {
   position: fixed;
   top: 0;
   left: 0;
@@ -7,7 +6,5 @@
   height: 100vh;
   display: block;
   pointer-events: none;
+  z-index: 0;
 }
-
-.background-particles-canvas { z-index: 0; }
-.background-sphere-canvas    { z-index: 2; }

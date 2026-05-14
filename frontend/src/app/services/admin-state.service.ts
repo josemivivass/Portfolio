@@ -113,7 +113,7 @@ export class AdminStateService {
   // ─── Profile ───
   readonly profileApiUrl = 'http://127.0.0.1:3000/api/profile/photo';
   readonly profileFields: { key: string; labelKey: string; type: 'text' | 'textarea' }[] = [
-    { key: 'hero.tagline', labelKey: 'admin.profile.field.hero.tagline', type: 'text' },
+    { key: 'hero.tagline', labelKey: 'admin.profile.field.hero.tagline', type: 'textarea' },
     { key: 'about',        labelKey: 'admin.profile.field.about',        type: 'textarea' },
     { key: 'footer.role',  labelKey: 'admin.profile.field.footer.role',  type: 'text' }
   ];
