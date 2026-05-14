@@ -4,7 +4,7 @@
   <div class="hero-text">
     <div class="hero-eyebrow">{{ i18n.t('hero.eyebrow') }}</div>
     <h1 class="hero-title" #heroTitleEl [innerHTML]="i18n.t('hero.title')"></h1>
-    <p class="hero-deck" [innerHTML]="i18n.t('hero.tagline')"></p>
+    <div class="hero-deck" [innerHTML]="i18n.t('hero.tagline')"></div>
 
     <p class="hero-typewriter" aria-live="polite">
       <span class="hero-typewriter-label">{{ i18n.t('hero.stack.label') }}</span>
@@ -87,9 +87,7 @@
     </aside>
 
     <div class="about-main">
-      <div class="about-text">
-        <p [innerHTML]="i18n.t('about')"></p>
-      </div>
+      <div class="about-text" [innerHTML]="i18n.t('about')"></div>
 
       <div class="about-langs">
         <div class="about-lang">
@@ -126,7 +124,7 @@
         <div class="edu-year">
           {{ edu.start_date | date:'yyyy' }} — {{ edu.end_date ? (edu.end_date | date:'yyyy') : (i18n.lang === 'es' ? 'Presente' : 'Present') }}
         </div>
-        <div class="edu-num">{{ toRoman(i + 1) }}.</div>
+        <div class="edu-num">{{ toRoman(educations.length - i) }}.</div>
         <div class="edu-main">
           <h3 class="edu-name" [innerHTML]="i18n.lang === 'es' ? edu.title : (edu.title_en || edu.title)"></h3>
           <div class="edu-school">

@@ -34,6 +34,7 @@ interface ConfirmModal {
   message: string;
   confirmLabel: string;
   onConfirm: () => void;
+  messageHtml?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -114,8 +115,7 @@ export class AdminStateService {
   readonly profileApiUrl = 'http://127.0.0.1:3000/api/profile/photo';
   readonly profileFields: { key: string; labelKey: string; type: 'text' | 'textarea' }[] = [
     { key: 'hero.tagline', labelKey: 'admin.profile.field.hero.tagline', type: 'textarea' },
-    { key: 'about',        labelKey: 'admin.profile.field.about',        type: 'textarea' },
-    { key: 'footer.role',  labelKey: 'admin.profile.field.footer.role',  type: 'text' }
+    { key: 'about',        labelKey: 'admin.profile.field.about',        type: 'textarea' }
   ];
   readonly profileTexts = signal<{ es: Record<string, string>; en: Record<string, string> }>({ es: {}, en: {} });
   readonly profilePhotoVersion = signal(0);
@@ -999,15 +999,17 @@ export class AdminStateService {
   saveUser(): void {
     const u = this.editingUser();
     if (!u) return;
+    const isSelf = u.email === this.currentUserEmail() || u._original?.email === this.currentUserEmail();
+    const canEditRole = this.isAdmin() && !isSelf;
     const payload: { email: string; role?: AdminUser['role'] } = { email: u.email };
-    if (this.isAdmin()) payload.role = u.role;
+    if (canEditRole) payload.role = u.role;
 
     const list = this.users();
     const idx = list.findIndex(x => x.id === u.id);
     const prev = idx >= 0 ? list : null;
     if (idx >= 0) {
       const updated = { ...list[idx], email: u.email };
-      if (this.isAdmin()) updated.role = u.role;
+      if (canEditRole) updated.role = u.role;
       this.users.set([
         ...list.slice(0, idx),
         updated,
@@ -1239,7 +1241,9 @@ export class AdminStateService {
             console.error(err);
           }
         });
-      }
+      },
+      undefined,
+      true
     );
   }
 
@@ -1334,7 +1338,9 @@ export class AdminStateService {
             console.error(err);
           }
         });
-      }
+      },
+      undefined,
+      true
     );
   }
 
@@ -1380,12 +1386,13 @@ export class AdminStateService {
   // ═══════════════════════════════════════════════════════
   //  Confirm modal
   // ═══════════════════════════════════════════════════════
-  private askConfirm(title: string, message: string, onConfirm: () => void, confirmLabel?: string): void {
+  private askConfirm(title: string, message: string, onConfirm: () => void, confirmLabel?: string, messageHtml = false): void {
     this.confirmModal.set({
       title,
       message,
       confirmLabel: confirmLabel ?? this.i18n.t('admin.action.delete'),
-      onConfirm
+      onConfirm,
+      messageHtml
     });
   }
 

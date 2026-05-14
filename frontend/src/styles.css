@@ -109,7 +109,9 @@ html.home-route::-webkit-scrollbar-corner {
 }
 
 .exp-card-title p,
-.exp-card-desc p {
+.exp-card-desc p,
+.hero-deck p,
+.about-text p {
   display: block;
   margin: 0;
   padding: 0;
@@ -120,13 +122,26 @@ html.home-route::-webkit-scrollbar-corner {
 .exp-card-title,
 .exp-card-title p,
 .exp-card-desc,
-.exp-card-desc p {
+.exp-card-desc p,
+.hero-deck,
+.hero-deck p,
+.about-text,
+.about-text p {
   overflow-wrap: break-word;
   word-break: normal;
   hyphens: none;
 }
 
+.hero-deck,
+.hero-deck *,
+.about-text,
+.about-text * {
+  text-align: left !important;
+}
+
 .exp-card-desc p + p { margin-top: 0.45em; }
+.hero-deck p + p { margin-top: 0.45em; }
+.about-text p + p { margin-top: 20px; }
 
 .exp-card-desc ul,
 .exp-card-desc ol {

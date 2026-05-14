@@ -150,6 +150,8 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface-alt);
+  min-width: 0;
+  overflow: hidden;
 }
 .profile-text-value {
   margin: 0;
@@ -157,8 +159,11 @@
   line-height: 1.55;
   color: var(--text);
   overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+  max-width: 100%;
+  min-width: 0;
 }
-.profile-text-value strong { color: var(--text); }
 
 /* Footer de cards de profile (acción + status) */
 .profile-texts-footer {

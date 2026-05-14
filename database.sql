@@ -114,8 +114,6 @@ CREATE TABLE profile_texts (
     hero_tagline_en TEXT,
     about_es TEXT,
     about_en TEXT,
-    footer_role_es TEXT,
-    footer_role_en TEXT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CHECK (id = 1)
 );
@@ -328,14 +326,12 @@ INSERT INTO chatbot_messages (id, user_id, role, message, tokens_used, model, ip
 (75, 1, 'user', 'hola', 0, 'llama-3.1-8b-instant', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-17 11:49:09'),
 (76, 1, 'assistant', 'Hola! Me alegra atenderte. ¿En qué te puedo ayudar? La información que necesitas sobre José Miguel Vivas Sánchez, Desarrollador Web y Especialista en IA & Big Data, está disponible en su perfil. ¿En qué área específica te gustaría obtener más detalles?', 1234, 'llama-3.1-8b-instant', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '2026-04-17 11:49:09');
 
-INSERT INTO profile_texts (id, hero_tagline_es, hero_tagline_en, about_es, about_en, footer_role_es, footer_role_en) VALUES
+INSERT INTO profile_texts (id, hero_tagline_es, hero_tagline_en, about_es, about_en) VALUES
 (1,
- 'DESARROLLADOR FULL-STACK ESPECIALIZADO EN IA Y BIGDATA',
- 'FULL-STACK DEVELOPER SPECIALIZED IN AI AND BIG DATA',
+ 'Desarrollador Full Stack especializado en IA y Big Data. Escribo código limpio y eficiente, desde la optimización de bases de datos hasta la experiencia de usuario final.',
+ 'Full Stack Developer specialized in AI and Big Data. I write clean and efficient code, from database optimization to the end-user experience.',
  'Especialista en <strong>Inteligencia Artificial y Big Data</strong> con trayectoria previa en <strong>Quality Assurance</strong>. Combino la disciplina de pruebas con conocimientos en modelos predictivos y gestión de datos para desarrollar soluciones de IA escalables y libres de errores. Actualmente trabajando como <strong>Desarrollador Full Stack</strong> en Fundación COMPUTAEX, modernizando aplicaciones web con Python y React. Con más de un año de experiencia en QA para el sector bancario en Viewnext.',
- '<strong>Artificial Intelligence and Big Data</strong> specialist with a previous career in <strong>Quality Assurance</strong>. I combine testing discipline with predictive modeling and data management skills to develop scalable, error-free AI solutions. Currently working as a <strong>Full Stack Developer</strong> at Fundación COMPUTAEX, modernizing web applications with Python and React. With over a year of QA experience in the banking sector at Viewnext.',
- 'Desarrollador Web · IA & Big Data',
- 'Web Developer · AI & Big Data');
+ '<strong>Artificial Intelligence and Big Data</strong> specialist with a previous career in <strong>Quality Assurance</strong>. I combine testing discipline with predictive modeling and data management skills to develop scalable, error-free AI solutions. Currently working as a <strong>Full Stack Developer</strong> at Fundación COMPUTAEX, modernizing web applications with Python and React. With over a year of QA experience in the banking sector at Viewnext.');
 
 INSERT INTO profile_meta (meta_key, meta_value) VALUES
 ('photo_updated_at', '0'),

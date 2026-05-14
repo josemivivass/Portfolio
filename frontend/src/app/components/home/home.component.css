@@ -75,20 +75,33 @@
   color: var(--c-primary);
 }
 
+.hero-text { min-width: 0; }
+
 .hero-deck {
   font-family: var(--ff-serif);
   font-size: 1rem;
   font-weight: 300;
   line-height: 1.5;
   color: var(--c-text-body);
+  margin: 0 0 22px;
   max-width: 520px;
-  margin-bottom: 22px;
   text-wrap: pretty;
+  overflow-wrap: break-word;
+  word-break: normal;
+  min-width: 0;
 }
-.hero-deck em {
+.hero-deck ::ng-deep em,
+.hero-deck ::ng-deep i { color: var(--c-primary); }
+.hero-deck ::ng-deep em,
+.hero-deck ::ng-deep i {
   font-style: italic;
   color: var(--c-primary);
 }
+.hero-deck ::ng-deep strong,
+.hero-deck ::ng-deep b { font-weight: 600; }
+.hero-deck ::ng-deep u { text-decoration: underline; }
+.hero-deck ::ng-deep s,
+.hero-deck ::ng-deep strike { text-decoration: line-through; }
 
 /* Typewriter */
 .hero-typewriter {
@@ -422,29 +435,45 @@
   text-transform: none;
 }
 
+.about-main { min-width: 0; }
+
 .about-text {
   font-family: var(--ff-serif);
   font-weight: 300;
   font-size: 1.15rem;
   line-height: 1.55;
   color: var(--c-text-body);
-  text-wrap: pretty;
+  margin: 0 0 20px;
   max-width: 720px;
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+  word-break: normal;
+  min-width: 0;
 }
-.about-text p {
-  margin: 0;
-  white-space: normal;
-}
-.about-text p + p { margin-top: 20px; }
-.about-text em {
+.about-text ::ng-deep em,
+.about-text ::ng-deep i { color: var(--c-primary); }
+.about-text ::ng-deep strong,
+.about-text ::ng-deep b { color: var(--c-text-heading); }
+.about-text ::ng-deep em,
+.about-text ::ng-deep i {
   font-style: italic;
   color: var(--c-primary);
 }
-.about-text strong {
+.about-text ::ng-deep strong,
+.about-text ::ng-deep b {
   font-weight: 500;
   color: var(--c-text-heading);
   font-style: normal;
 }
+.about-text ::ng-deep u { text-decoration: underline; }
+.about-text ::ng-deep s,
+.about-text ::ng-deep strike { text-decoration: line-through; }
+.about-text ::ng-deep ol,
+.about-text ::ng-deep ul { margin: 0 0 12px; padding-left: 1.2rem; }
+.about-text ::ng-deep h1,
+.about-text ::ng-deep h2,
+.about-text ::ng-deep h3 { margin: 0 0 10px; color: var(--c-text-heading); }
+.about-text ::ng-deep a { color: var(--c-primary); text-decoration: underline; }
 
 .about-langs {
   display: grid;

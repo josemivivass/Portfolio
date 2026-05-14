@@ -560,6 +560,22 @@ quill-editor:focus-within .ql-container.ql-snow {
   display: inline;
 }
 
+.profile-text-value b,
+.profile-text-value strong { font-weight: 700 !important; color: var(--text); }
+.profile-text-value i,
+.profile-text-value em { font-style: italic !important; }
+.profile-text-value u { text-decoration: underline !important; }
+.profile-text-value s,
+.profile-text-value strike { text-decoration: line-through !important; }
+.profile-text-value p { margin: 0 0 8px; }
+.profile-text-value p:last-child { margin-bottom: 0; }
+.profile-text-value ol,
+.profile-text-value ul { margin: 0 0 8px 0; padding-left: 1.2rem; }
+.profile-text-value h1,
+.profile-text-value h2,
+.profile-text-value h3 { margin: 0 0 8px; color: var(--text); }
+.profile-text-value a { color: var(--accent); text-decoration: underline; }
+
 /* ─── Responsive ──────────────────────────────────── */
 @media (max-width: 1100px) {
   .admin-shell .chart-grid { grid-template-columns: 1fr; }

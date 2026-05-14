@@ -118,7 +118,7 @@
           @for (f of state.profileFields; track f.key) {
             <div class="profile-text-row">
               <span class="profile-text-label">{{ state.i18n.t(f.labelKey) }}</span>
-              <p class="profile-text-value" [innerHTML]="state.profileTexts()[state.i18n.lang][f.key] || '—'"></p>
+              <div class="profile-text-value" [innerHTML]="state.profileTexts()[state.i18n.lang][f.key] || '—'"></div>
             </div>
           }
         </div>

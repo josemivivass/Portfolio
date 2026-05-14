@@ -1331,12 +1331,6 @@
   font-size: 0.95rem;
 }
 
-.footer-role {
-  color: var(--pj-ink-mute);
-  font-size: 0.9rem;
-  font-family: var(--ff-serif);
-}
-
 .footer-sep {
   margin: 0 8px;
   color: var(--c-border-form);

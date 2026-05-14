@@ -126,11 +126,11 @@
               <div class="profile-text-cols">
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
-                  <quill-editor class="editor-title" [(ngModel)]="editingProject.title" name="title" [modules]="quillConfigTitle" required></quill-editor>
+                  <quill-editor class="editor-title" [(ngModel)]="editingProject.title" name="title" [modules]="quillConfigTitle" placeholder="" required></quill-editor>
                 </div>
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
-                  <quill-editor class="editor-title" [(ngModel)]="editingProject.title_en" name="title_en" [modules]="quillConfigTitle"></quill-editor>
+                  <quill-editor class="editor-title" [(ngModel)]="editingProject.title_en" name="title_en" [modules]="quillConfigTitle" placeholder=""></quill-editor>
                 </div>
               </div>
             </div>
@@ -139,11 +139,11 @@
               <div class="profile-text-cols">
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
-                  <quill-editor class="editor-desc" [(ngModel)]="editingProject.description" name="description" [modules]="quillConfigDesc"></quill-editor>
+                  <quill-editor class="editor-desc" [(ngModel)]="editingProject.description" name="description" [modules]="quillConfigDesc" placeholder=""></quill-editor>
                 </div>
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
-                  <quill-editor class="editor-desc" [(ngModel)]="editingProject.description_en" name="description_en" [modules]="quillConfigDesc"></quill-editor>
+                  <quill-editor class="editor-desc" [(ngModel)]="editingProject.description_en" name="description_en" [modules]="quillConfigDesc" placeholder=""></quill-editor>
                 </div>
               </div>
             </div>
@@ -278,11 +278,11 @@
               <div class="profile-text-cols">
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
-                  <quill-editor class="editor-title" [(ngModel)]="editingExperience.title" name="title" [modules]="quillConfigTitle" required></quill-editor>
+                  <quill-editor class="editor-title" [(ngModel)]="editingExperience.title" name="title" [modules]="quillConfigTitle" placeholder="" required></quill-editor>
                 </div>
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
-                  <quill-editor class="editor-title" [(ngModel)]="editingExperience.title_en" name="title_en" [modules]="quillConfigTitle"></quill-editor>
+                  <quill-editor class="editor-title" [(ngModel)]="editingExperience.title_en" name="title_en" [modules]="quillConfigTitle" placeholder=""></quill-editor>
                 </div>
               </div>
             </div>
@@ -320,11 +320,11 @@
               <div class="profile-text-cols">
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
-                  <quill-editor class="editor-desc" [(ngModel)]="editingExperience.description" name="description" [modules]="quillConfigDesc"></quill-editor>
+                  <quill-editor class="editor-desc" [(ngModel)]="editingExperience.description" name="description" [modules]="quillConfigDesc" placeholder=""></quill-editor>
                 </div>
                 <div class="profile-text-col">
                   <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
-                  <quill-editor class="editor-desc" [(ngModel)]="editingExperience.description_en" name="description_en" [modules]="quillConfigDesc"></quill-editor>
+                  <quill-editor class="editor-desc" [(ngModel)]="editingExperience.description_en" name="description_en" [modules]="quillConfigDesc" placeholder=""></quill-editor>
                 </div>
               </div>
             </div>
@@ -429,7 +429,7 @@
           <div class="grid-2">
             <label>{{ state.i18n.t('admin.users.field.email') }}<input type="email" [(ngModel)]="editingUser.email" name="user_email" required></label>
             <label>{{ state.i18n.t('admin.users.field.role') }}
-              @if (state.isAdmin()) {
+              @if (state.isAdmin() && editingUser.email !== state.currentUserEmail()) {
                 <select [(ngModel)]="editingUser.role" name="user_role">
                   <option value="user">user</option>
                   <option value="editor">editor</option>
@@ -467,27 +467,19 @@
                 <div class="profile-text-cols">
                   <div class="profile-text-col">
                     <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
-                    @if (f.type === 'text') {
-                      <input type="text"
-                             [(ngModel)]="editingProfileTexts.es[f.key]"
-                             [name]="'edit_es_' + f.key" />
-                    } @else {
-                      <textarea rows="11"
-                                [(ngModel)]="editingProfileTexts.es[f.key]"
-                                [name]="'edit_es_' + f.key"></textarea>
-                    }
+                    <quill-editor class="editor-desc"
+                                  [(ngModel)]="editingProfileTexts.es[f.key]"
+                                  [name]="'edit_es_' + f.key"
+                                  [modules]="quillConfigDesc"
+                                  placeholder=""></quill-editor>
                   </div>
                   <div class="profile-text-col">
                     <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
-                    @if (f.type === 'text') {
-                      <input type="text"
-                             [(ngModel)]="editingProfileTexts.en[f.key]"
-                             [name]="'edit_en_' + f.key" />
-                    } @else {
-                      <textarea rows="11"
-                                [(ngModel)]="editingProfileTexts.en[f.key]"
-                                [name]="'edit_en_' + f.key"></textarea>
-                    }
+                    <quill-editor class="editor-desc"
+                                  [(ngModel)]="editingProfileTexts.en[f.key]"
+                                  [name]="'edit_en_' + f.key"
+                                  [modules]="quillConfigDesc"
+                                  placeholder=""></quill-editor>
                   </div>
                 </div>
               </div>
@@ -566,7 +558,11 @@
           </svg>
         </div>
         <h3 class="confirm-title">{{ confirm.title }}</h3>
-        <p class="confirm-message">{{ confirm.message }}</p>
+        @if (confirm.messageHtml) {
+          <p class="confirm-message" [innerHTML]="confirm.message"></p>
+        } @else {
+          <p class="confirm-message">{{ confirm.message }}</p>
+        }
         <div class="confirm-actions">
           <button type="button" class="btn-secondary" (click)="state.cancelConfirm()">{{ state.i18n.t('admin.action.cancel') }}</button>
           <button type="button" class="btn-danger" (click)="state.confirmAction()">{{ confirm.confirmLabel }}</button>

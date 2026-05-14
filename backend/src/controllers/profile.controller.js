@@ -8,12 +8,11 @@ const DEFAULT_PHOTO = path.join(
   __dirname, '..', '..', '..', 'frontend', 'public', 'images', 'perfil.jpg'
 );
 
-const EDITABLE_KEYS = ['hero.tagline', 'about', 'footer.role'];
+const EDITABLE_KEYS = ['hero.tagline', 'about'];
 
 const KEY_TO_COLS = {
   'hero.tagline': { es: 'hero_tagline_es', en: 'hero_tagline_en' },
-  'about':        { es: 'about_es',        en: 'about_en' },
-  'footer.role':  { es: 'footer_role_es',  en: 'footer_role_en' }
+  'about':        { es: 'about_es',        en: 'about_en' }
 };
 
 const TEXT_DEFAULTS = {
@@ -24,10 +23,6 @@ const TEXT_DEFAULTS = {
   'about': {
     es: 'Especialista en <strong>Inteligencia Artificial y Big Data</strong> con trayectoria previa en <strong>Quality Assurance</strong>. Combino la disciplina de pruebas con conocimientos en modelos predictivos y gestión de datos para desarrollar soluciones de IA escalables y libres de errores. Actualmente trabajando como <strong>Desarrollador Full Stack</strong> en Fundación COMPUTAEX, modernizando aplicaciones web con Python y React. Con más de un año de experiencia en QA para el sector bancario en Viewnext.',
     en: '<strong>Artificial Intelligence and Big Data</strong> specialist with a previous career in <strong>Quality Assurance</strong>. I combine testing discipline with predictive modeling and data management skills to develop scalable, error-free AI solutions. Currently working as a <strong>Full Stack Developer</strong> at Fundación COMPUTAEX, modernizing web applications with Python and React. With over a year of QA experience in the banking sector at Viewnext.'
-  },
-  'footer.role': {
-    es: 'Desarrollador Web · IA & Big Data',
-    en: 'Web Developer · AI & Big Data'
   }
 };
 

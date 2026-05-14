@@ -181,9 +181,6 @@ const ES: Record<string, string> = {
   'projects.modal.fullscreen': 'Ver en pantalla completa',
   'projects.modal.fullscreen.close': 'Cerrar pantalla completa',
 
-  // --- Footer ---
-  'footer.role': 'Desarrollador Web · IA & Big Data',
-
   // --- Contact ---
   'contact.title': 'Contacto',
   'contact.subtitle': '¿Tienes un proyecto en mente? Hablemos.',
@@ -293,7 +290,6 @@ const ES: Record<string, string> = {
   'admin.profile.lang.en': 'Inglés',
   'admin.profile.field.hero.tagline': 'Titular principal',
   'admin.profile.field.about': 'Sobre mí',
-  'admin.profile.field.footer.role': 'Rol mostrado en el footer',
   'admin.profile.chatbot.title': 'Prompt del chatbot',
   'admin.profile.chatbot.sub': 'Instrucciones que recibe Nanas antes de cada conversación. Define su tono, su conocimiento sobre el perfil y cómo debe responder.',
   'admin.profile.chatbot.placeholder': 'Escribe las instrucciones para el chatbot…',
@@ -661,9 +657,6 @@ const EN: Record<string, string> = {
   'projects.modal.fullscreen': 'View fullscreen',
   'projects.modal.fullscreen.close': 'Close fullscreen',
 
-  // --- Footer ---
-  'footer.role': 'Web Developer · AI & Big Data',
-
   // --- Contact ---
   'contact.title': 'Contact',
   'contact.subtitle': 'Have a project in mind? Let\'s talk.',
@@ -773,7 +766,6 @@ const EN: Record<string, string> = {
   'admin.profile.lang.en': 'English',
   'admin.profile.field.hero.tagline': 'Principal headline',
   'admin.profile.field.about': 'About me',
-  'admin.profile.field.footer.role': 'Footer role',
   'admin.profile.chatbot.title': 'Chatbot prompt',
   'admin.profile.chatbot.sub': 'Instructions Nanas receives before every conversation. Defines its tone, profile knowledge, and reply style.',
   'admin.profile.chatbot.placeholder': 'Write the instructions for the chatbot…',
