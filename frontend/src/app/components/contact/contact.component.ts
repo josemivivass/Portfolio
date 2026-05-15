@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { TranslationService } from '../../services/translation.service';
+import { environment } from '../../../environments/environment';
 
 declare const grecaptcha: any;
 
@@ -141,8 +142,7 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
     this.cdr.detectChanges();
 
     try {
-      // Cambia la URL si tu backend se despliega en otro puerto o dominio
-      const response = await fetch('http://localhost:3000/api/contact', {
+      const response = await fetch(`${environment.apiUrl}/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...this.formData, recaptchaToken })

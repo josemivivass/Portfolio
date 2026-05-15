@@ -14,6 +14,7 @@ import { ProfileService } from '../../services/profile.service';
 import { ProjectsComponent } from '../projects/projects.component';
 import { ExperienceComponent } from '../experience/experience.component';
 import { techIcon, hideIconOnError } from '../../utils/tech-icons';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -86,11 +87,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // Peticiones para la home
-    this.http.get<any[]>('http://127.0.0.1:3000/api/education').subscribe(res => {
+    this.http.get<any[]>(`${environment.apiUrl}/education`).subscribe(res => {
       this.educations = res;
       this.cdr.detectChanges();
     });
-    this.http.get<any[]>('http://127.0.0.1:3000/api/skills').subscribe(res => {
+    this.http.get<any[]>(`${environment.apiUrl}/skills`).subscribe(res => {
       this.skills = res;
       this.cdr.detectChanges();
     });

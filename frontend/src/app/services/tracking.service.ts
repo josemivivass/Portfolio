@@ -1,10 +1,11 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class TrackingService {
-  private readonly apiUrl = 'http://localhost:3000/api/tracking/entry';
+  private readonly apiUrl = `${environment.apiUrl}/tracking/entry`;
   private readonly uuidKey = 'visitor_uuid';
   private readonly sessionKey = 'visitor_session_logged';
   private entryLogged = false;

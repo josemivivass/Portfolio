@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { TranslationService } from './translation.service';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { techIcon, hideIconOnError } from '../utils/tech-icons';
+import { environment } from '../../environments/environment';
 
 export type AdminTab = 'dashboard' | 'users' | 'projects' | 'experience' | 'education' | 'visitors' | 'logins' | 'messages' | 'chatbot' | 'profile';
 type SortDir = 'asc' | 'desc';
@@ -112,7 +113,7 @@ export class AdminStateService {
   private static readonly PROJECT_IMG_MIME_RE = /^image\/(jpe?g|png|webp|gif)$/i;
 
   // ─── Profile ───
-  readonly profileApiUrl = 'http://127.0.0.1:3000/api/profile/photo';
+  readonly profileApiUrl = `${environment.apiUrl}/profile/photo`;
   readonly profileFields: { key: string; labelKey: string; type: 'text' | 'textarea' }[] = [
     { key: 'hero.tagline', labelKey: 'admin.profile.field.hero.tagline', type: 'textarea' },
     { key: 'about',        labelKey: 'admin.profile.field.about',        type: 'textarea' }

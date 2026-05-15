@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { TranslationService } from './translation.service';
+import { environment } from '../../environments/environment';
 
 export interface ProfilePayload {
   es: Record<string, string>;
@@ -13,7 +14,7 @@ export interface ProfilePayload {
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
-  private apiUrl = 'http://127.0.0.1:3000/api/profile';
+  private apiUrl = `${environment.apiUrl}/profile`;
   private photoVersionSubject = new BehaviorSubject<number>(0);
   photoVersion$ = this.photoVersionSubject.asObservable();
   private loaded = false;

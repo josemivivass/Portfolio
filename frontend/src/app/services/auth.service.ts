@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 export type UserRole = 'admin' | 'editor' | 'user' | null;
 
@@ -10,7 +11,7 @@ export type UserRole = 'admin' | 'editor' | 'user' | null;
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
   private loggedIn = new BehaviorSubject<boolean>(false);
   private role = new BehaviorSubject<UserRole>(null);
 
