@@ -18,6 +18,12 @@ body {
   overflow-x: hidden;
 }
 
+body.lightbox-open .mobile-menu-toggle,
+body.lightbox-open .mobile-menu-panel,
+body.lightbox-open .mobile-menu-backdrop {
+  display: none !important;
+}
+
 body,
 body * {
   scrollbar-width: none;
@@ -99,15 +105,13 @@ html.home-route::-webkit-scrollbar-corner {
   }
 }
 
-.showcase-card-title p,
-.showcase-desc p,
-.case-modal-title p,
-.case-modal-desc p {
+.showcase-card-title p {
   margin: 0;
   padding: 0;
   display: inline;
 }
 
+.showcase-desc p,
 .exp-card-title p,
 .exp-card-desc p,
 .hero-deck p,
@@ -123,6 +127,8 @@ html.home-route::-webkit-scrollbar-corner {
 .exp-card-title p,
 .exp-card-desc,
 .exp-card-desc p,
+.showcase-desc,
+.showcase-desc p,
 .hero-deck,
 .hero-deck p,
 .about-text,
@@ -140,6 +146,7 @@ html.home-route::-webkit-scrollbar-corner {
 }
 
 .exp-card-desc p + p { margin-top: 0.45em; }
+.showcase-desc p + p { margin-top: 0.45em; }
 .hero-deck p + p { margin-top: 0.45em; }
 .about-text p + p { margin-top: 20px; }
 
@@ -182,7 +189,6 @@ strong, b { font-weight: 600; }
   .exp-title br { display: none; }
 }
 
-/* Iconos de tag/skill tintados al color principal (sustituye su color original) */
 .skill-tag-icon,
 .exp-card-tag-icon,
 .showcase-tag-icon,

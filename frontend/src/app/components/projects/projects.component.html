@@ -58,7 +58,10 @@
                [attr.aria-label]="i18n.t(getType(project) === 'android' ? 'projects.mockup.android' : 'projects.mockup.web')">
 
             <!-- Marco navegador con carrusel dentro -->
-            <div class="mockup-browser" *ngIf="getType(project) !== 'android'">
+            <div class="mockup-browser mockup-browser--clickable"
+                 *ngIf="getType(project) !== 'android'"
+                 (click)="openLightboxFor(project, $event)"
+                 [title]="i18n.t('projects.modal.fullscreen')">
               <div class="mockup-browser-bar">
                 <span class="mockup-dot mockup-dot--r"></span>
                 <span class="mockup-dot mockup-dot--y"></span>
@@ -72,6 +75,11 @@
                      loading="lazy"
                      alt="" />
                 <div class="mockup-browser-sheen"></div>
+
+                <button type="button"
+                        class="mockup-clickzone"
+                        (click)="openLightboxFor(project, $event)"
+                        [attr.aria-label]="i18n.t('projects.modal.fullscreen')"></button>
 
                 <ng-container *ngIf="imagesFor(project).length > 1">
                   <button type="button" class="carousel-arrow carousel-arrow--prev"
@@ -87,20 +95,15 @@
                   <div class="carousel-counter" aria-hidden="true">
                     {{ i18n.t('projects.carousel.counter', { i: activeImageIndex(project) + 1, n: imagesFor(project).length }) }}
                   </div>
-                  <div class="carousel-dots">
-                    <button *ngFor="let img of imagesFor(project); let idx = index"
-                            type="button"
-                            class="carousel-dot"
-                            [class.is-active]="activeImageIndex(project) === idx"
-                            (click)="goToImage(project, idx, $event)"
-                            [attr.aria-label]="i18n.t('projects.carousel.go', { n: idx + 1 })"></button>
-                  </div>
                 </ng-container>
               </div>
             </div>
 
             <!-- Marco móvil con carrusel dentro -->
-            <div class="mockup-phone" *ngIf="getType(project) === 'android'">
+            <div class="mockup-phone mockup-phone--clickable"
+                 *ngIf="getType(project) === 'android'"
+                 (click)="openLightboxFor(project, $event)"
+                 [title]="i18n.t('projects.modal.fullscreen')">
               <span class="mockup-phone-notch"></span>
               <div class="mockup-phone-screen carousel-stage">
                 <img *ngFor="let img of imagesFor(project); let idx = index"
@@ -109,6 +112,11 @@
                      loading="lazy"
                      alt="" />
                 <div class="mockup-phone-sheen"></div>
+
+                <button type="button"
+                        class="mockup-clickzone"
+                        (click)="openLightboxFor(project, $event)"
+                        [attr.aria-label]="i18n.t('projects.modal.fullscreen')"></button>
 
                 <ng-container *ngIf="imagesFor(project).length > 1">
                   <button type="button" class="carousel-arrow carousel-arrow--prev carousel-arrow--phone"
@@ -121,13 +129,8 @@
                           [attr.aria-label]="i18n.t('projects.carousel.next')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                   </button>
-                  <div class="carousel-dots carousel-dots--phone">
-                    <button *ngFor="let img of imagesFor(project); let idx = index"
-                            type="button"
-                            class="carousel-dot"
-                            [class.is-active]="activeImageIndex(project) === idx"
-                            (click)="goToImage(project, idx, $event)"
-                            [attr.aria-label]="i18n.t('projects.carousel.go', { n: idx + 1 })"></button>
+                  <div class="carousel-counter" aria-hidden="true">
+                    {{ i18n.t('projects.carousel.counter', { i: activeImageIndex(project) + 1, n: imagesFor(project).length }) }}
                   </div>
                 </ng-container>
               </div>
@@ -192,12 +195,6 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M21 14v7M17 21h4M14 17h3"/></svg>
                     {{ i18n.t('projects.qr.toggle') }}
                   </button>
-                  <button type="button"
-                          class="showcase-btn showcase-btn--link"
-                          (click)="openCase(project)"
-                          [attr.aria-label]="i18n.t('projects.view_case.aria')">
-                    {{ i18n.t('projects.view_case') }} →
-                  </button>
                 </div>
               </div>
 
@@ -247,143 +244,9 @@
   </div>
 </div>
 
-<!-- Modal de caso + lightbox -->
-<div class="case-modal-backdrop" *ngIf="caseProject" (click)="closeCase()">
-  <div class="case-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true">
-    <button type="button" class="case-modal-close" (click)="closeCase()" [attr.aria-label]="i18n.t('projects.modal.close')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-
-    <!-- Hero del modal: mockup grande. Click sobre la imagen abre el lightbox. -->
-    <div class="case-modal-media" [attr.data-type]="getType(caseProject)">
-      <div class="mockup-browser case-modal-mockup case-modal-mockup--clickable"
-           *ngIf="getType(caseProject) !== 'android'"
-           (click)="openLightbox($event)"
-           [title]="i18n.t('projects.modal.fullscreen')">
-        <div class="mockup-browser-bar">
-          <span class="mockup-dot mockup-dot--r"></span>
-          <span class="mockup-dot mockup-dot--y"></span>
-          <span class="mockup-dot mockup-dot--g"></span>
-          <span class="mockup-browser-url">{{ shortUrl(caseProject.live_url) }}</span>
-        </div>
-        <div class="mockup-browser-screen carousel-stage">
-          <img *ngFor="let img of imagesFor(caseProject); let idx = index; trackBy: trackByImageIdx"
-               [src]="img.url"
-               [class.is-active]="activeImageIndex(caseProject, -1) === idx"
-               alt="" />
-          <ng-container *ngIf="imagesFor(caseProject).length > 1">
-            <button type="button" class="carousel-arrow carousel-arrow--prev"
-                    (click)="prevImage(caseProject, $event, -1)"
-                    [attr.aria-label]="i18n.t('projects.carousel.prev')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button type="button" class="carousel-arrow carousel-arrow--next"
-                    (click)="nextImage(caseProject, $event, -1)"
-                    [attr.aria-label]="i18n.t('projects.carousel.next')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </ng-container>
-        </div>
-      </div>
-
-      <div class="mockup-phone case-modal-mockup case-modal-mockup--clickable"
-           *ngIf="getType(caseProject) === 'android'"
-           (click)="openLightbox($event)"
-           [title]="i18n.t('projects.modal.fullscreen')">
-        <span class="mockup-phone-notch"></span>
-        <div class="mockup-phone-screen carousel-stage">
-          <img *ngFor="let img of imagesFor(caseProject); let idx = index; trackBy: trackByImageIdx"
-               [src]="img.url"
-               [class.is-active]="activeImageIndex(caseProject, -1) === idx"
-               alt="" />
-          <ng-container *ngIf="imagesFor(caseProject).length > 1">
-            <button type="button" class="carousel-arrow carousel-arrow--prev carousel-arrow--phone"
-                    (click)="prevImage(caseProject, $event, -1)"
-                    [attr.aria-label]="i18n.t('projects.carousel.prev')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button type="button" class="carousel-arrow carousel-arrow--next carousel-arrow--phone"
-                    (click)="nextImage(caseProject, $event, -1)"
-                    [attr.aria-label]="i18n.t('projects.carousel.next')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </ng-container>
-        </div>
-        <span class="mockup-phone-bar"></span>
-      </div>
-
-      <!-- Botón explícito de pantalla completa (junto a la X de cerrar). -->
-      <button type="button"
-              class="case-modal-fullscreen-btn"
-              *ngIf="imagesFor(caseProject).length > 0"
-              (click)="openLightbox($event)"
-              [attr.aria-label]="i18n.t('projects.modal.fullscreen')"
-              [title]="i18n.t('projects.modal.fullscreen')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 9V5a2 2 0 0 1 2-2h4"/>
-          <path d="M21 9V5a2 2 0 0 0-2-2h-4"/>
-          <path d="M3 15v4a2 2 0 0 0 2 2h4"/>
-          <path d="M21 15v4a2 2 0 0 1-2 2h-4"/>
-        </svg>
-      </button>
-    </div>
-
-    <!-- Tira de miniaturas: navega el carrusel del modal. -->
-    <div class="case-modal-thumbs" *ngIf="imagesFor(caseProject).length > 1">
-      <button *ngFor="let img of imagesFor(caseProject); let idx = index; trackBy: trackByImageIdx"
-              type="button"
-              class="case-modal-thumb"
-              [class.is-active]="activeImageIndex(caseProject, -1) === idx"
-              (click)="goToImage(caseProject, idx, $event, -1)"
-              [attr.aria-label]="i18n.t('projects.carousel.go', { n: idx + 1 })">
-        <img [src]="img.url" alt="" loading="lazy" />
-      </button>
-    </div>
-
-    <div class="case-modal-body">
-      <div class="case-modal-meta">
-        <span class="case-modal-date">{{ caseProject.project_date | date:'MMMM yyyy' }}</span>
-        <span class="showcase-pill"
-              [class.showcase-pill--prod]="caseProject.status === 'production'"
-              [class.showcase-pill--dev]="caseProject.status === 'development'"
-              [class.showcase-pill--archived]="caseProject.status === 'archived'"
-              *ngIf="caseProject.status">
-          <span class="showcase-pill-dot"></span>
-          {{ i18n.t('projects.status.' + caseProject.status) }}
-        </span>
-      </div>
-      <h3 class="case-modal-title"
-          [innerHTML]="i18n.lang === 'en' && caseProject.title_en ? caseProject.title_en : caseProject.title">
-      </h3>
-      <div class="case-modal-desc"
-          [innerHTML]="i18n.lang === 'en' && caseProject.description_en ? caseProject.description_en : caseProject.description">
-      </div>
-
-      <div class="case-modal-tech" *ngIf="caseProject.tags">
-        <span class="case-modal-tech-label">{{ i18n.t('projects.modal.tech') }}</span>
-        <div class="showcase-tags">
-          <span class="showcase-tag" *ngFor="let tag of caseProject.tags.split(',')">
-            <img *ngIf="techIcon(tag)" [src]="techIcon(tag)" alt="" class="showcase-tag-icon" loading="lazy" (error)="hideIconOnError($event)" />
-            {{ tag.trim() }}
-          </span>
-        </div>
-      </div>
-
-      <div class="case-modal-actions">
-        <a *ngIf="caseProject.repo_url" [href]="caseProject.repo_url" target="_blank" rel="noopener" class="showcase-btn showcase-btn--ghost">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.69-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.74.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.59.23 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.13 0 1.54-.01 2.78-.01 3.16 0 .31.21.68.8.56C20.21 21.39 23.5 17.07 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
-          {{ i18n.t('projects.code') }}
-        </a>
-        <a *ngIf="caseProject.live_url" [href]="caseProject.live_url" target="_blank" rel="noopener" class="showcase-btn showcase-btn--solid">
-          {{ i18n.t('projects.demo') }} →
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
-
+<!-- Lightbox de pantalla completa: se abre al pulsar el mockup del card -->
 <div class="case-lightbox-backdrop"
-     *ngIf="lightboxOpen && caseProject"
+     *ngIf="lightboxOpen && lightboxProject"
      (click)="closeLightbox($event)"
      role="dialog"
      aria-modal="true">
@@ -398,23 +261,40 @@
        [src]="lbImg"
        class="case-lightbox-img"
        (click)="$event.stopPropagation()"
+       (touchstart)="onLightboxTouchStart($event)"
+       (touchmove)="onLightboxTouchMove($event)"
+       (touchend)="onLightboxTouchEnd($event)"
+       (touchcancel)="onLightboxTouchEnd($event)"
+       [style.transform]="'translate(' + lightboxPanX + 'px, ' + lightboxPanY + 'px) scale(' + lightboxZoom + ')'"
        alt="" />
 
-  <ng-container *ngIf="imagesFor(caseProject).length > 1">
+  <ng-container *ngIf="imagesFor(lightboxProject).length > 1">
     <button type="button"
             class="case-lightbox-arrow case-lightbox-arrow--prev"
-            (click)="prevImage(caseProject, $event, -1)"
+            (click)="prevImage(lightboxProject, $event)"
             [attr.aria-label]="i18n.t('projects.carousel.prev')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
     <button type="button"
             class="case-lightbox-arrow case-lightbox-arrow--next"
-            (click)="nextImage(caseProject, $event, -1)"
+            (click)="nextImage(lightboxProject, $event)"
             [attr.aria-label]="i18n.t('projects.carousel.next')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
     <div class="case-lightbox-counter" aria-hidden="true">
-      {{ i18n.t('projects.carousel.counter', { i: activeImageIndex(caseProject, -1) + 1, n: imagesFor(caseProject).length }) }}
+      {{ i18n.t('projects.carousel.counter', { i: activeImageIndex(lightboxProject) + 1, n: imagesFor(lightboxProject).length }) }}
+    </div>
+
+    <!-- Tira de miniaturas debajo de la imagen principal. -->
+    <div class="case-lightbox-thumbs" (click)="$event.stopPropagation()">
+      <button *ngFor="let img of imagesFor(lightboxProject); let idx = index; trackBy: trackByImageIdx"
+              type="button"
+              class="case-lightbox-thumb"
+              [class.is-active]="activeImageIndex(lightboxProject) === idx"
+              (click)="goToImage(lightboxProject, idx, $event)"
+              [attr.aria-label]="i18n.t('projects.carousel.go', { n: idx + 1 })">
+        <img [src]="img.url" alt="" loading="lazy" />
+      </button>
     </div>
   </ng-container>
 </div>

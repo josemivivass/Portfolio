@@ -36,11 +36,19 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   activeFilter: ProjectFilterId = 'all';
 
   openQrId: number | null = null;
-  caseProject: any = null;
   lightboxOpen = false;
+  lightboxProject: any = null;
+
+  // Zoom/pan en el lightbox (gestos táctiles en móvil).
+  lightboxZoom = 1;
+  lightboxPanX = 0;
+  lightboxPanY = 0;
+  private pinchStart: { distance: number; zoom: number } | null = null;
+  private dragStart: { x: number; y: number; time: number; panX: number; panY: number } | null = null;
+
+  private scrollYBeforeLightbox = 0;
 
   carouselIndex: Record<number, number> = {};
-  private static readonly CASE_KEY = -1;
 
   private langSub!: Subscription;
 
@@ -75,7 +83,12 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.langSub?.unsubscribe();
     if (isPlatformBrowser(this.platformId)) {
-      document.body.style.overflow = '';
+      if (this.lightboxOpen) {
+        this.unlockBodyScroll();
+      } else {
+        document.body.style.overflow = '';
+      }
+      document.body.classList.remove('lightbox-open');
     }
   }
 
@@ -181,6 +194,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     const k = (key !== undefined) ? key : (project?.id ?? 0);
     const cur = this.carouselIndex[k] ?? 0;
     this.carouselIndex[k] = (cur - 1 + total) % total;
+    this.resetLightboxZoom();
   }
 
   nextImage(project: any, event?: Event, key?: number): void {
@@ -190,6 +204,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     const k = (key !== undefined) ? key : (project?.id ?? 0);
     const cur = this.carouselIndex[k] ?? 0;
     this.carouselIndex[k] = (cur + 1) % total;
+    this.resetLightboxZoom();
   }
 
   goToImage(project: any, idx: number, event?: Event, key?: number): void {
@@ -198,6 +213,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     if (idx < 0 || idx >= total) return;
     const k = (key !== undefined) ? key : (project?.id ?? 0);
     this.carouselIndex[k] = idx;
+    this.resetLightboxZoom();
   }
 
   trackByImageIdx(index: number): number {
@@ -205,10 +221,10 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   lightboxImage(): string | null {
-    if (!this.caseProject) return null;
-    const imgs = this.imagesFor(this.caseProject);
+    if (!this.lightboxProject) return null;
+    const imgs = this.imagesFor(this.lightboxProject);
     if (imgs.length === 0) return null;
-    const idx = this.activeImageIndex(this.caseProject, ProjectsComponent.CASE_KEY);
+    const idx = this.activeImageIndex(this.lightboxProject);
     return imgs[Math.min(Math.max(0, idx), imgs.length - 1)]?.url ?? null;
   }
 
@@ -219,39 +235,133 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.openQrId = this.openQrId === project.id ? null : project.id;
   }
 
-  openCase(project: any): void {
-    this.caseProject = project;
-    this.openQrId = null;
-    this.carouselIndex[ProjectsComponent.CASE_KEY] = 0;
-    if (isPlatformBrowser(this.platformId)) {
-      document.body.style.overflow = 'hidden';
-    }
-  }
-
-  closeCase(): void {
-    this.caseProject = null;
-    this.lightboxOpen = false;
-    if (isPlatformBrowser(this.platformId)) {
-      document.body.style.overflow = '';
-    }
-  }
-
-  openLightbox(event?: Event): void {
+  openLightboxFor(project: any, event?: Event): void {
     if (event) { event.stopPropagation(); }
-    if (!this.caseProject) return;
-    if (this.imagesFor(this.caseProject).length === 0) return;
+    if (!project) return;
+    if (this.imagesFor(project).length === 0) return;
+    this.lightboxProject = project;
     this.lightboxOpen = true;
+    this.openQrId = null;
+    this.resetLightboxZoom();
+    if (isPlatformBrowser(this.platformId)) {
+      this.lockBodyScroll();
+      document.body.classList.add('lightbox-open');
+    }
   }
 
   closeLightbox(event?: Event): void {
     if (event) { event.stopPropagation(); }
     this.lightboxOpen = false;
+    this.lightboxProject = null;
+    this.resetLightboxZoom();
+    if (isPlatformBrowser(this.platformId)) {
+      this.unlockBodyScroll();
+      document.body.classList.remove('lightbox-open');
+    }
+  }
+
+  private lockBodyScroll(): void {
+    this.scrollYBeforeLightbox = window.scrollY || window.pageYOffset || 0;
+    const body = document.body;
+    body.style.position = 'fixed';
+    body.style.top = `-${this.scrollYBeforeLightbox}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+    body.style.overflow = 'hidden';
+  }
+
+  private unlockBodyScroll(): void {
+    const body = document.body;
+    body.style.position = '';
+    body.style.top = '';
+    body.style.left = '';
+    body.style.right = '';
+    body.style.width = '';
+    body.style.overflow = '';
+    window.scrollTo(0, this.scrollYBeforeLightbox);
+  }
+
+  onLightboxTouchStart(event: TouchEvent): void {
+    if (event.touches.length === 2) {
+      this.pinchStart = {
+        distance: this.touchDistance(event.touches),
+        zoom: this.lightboxZoom,
+      };
+      this.dragStart = null;
+    } else if (event.touches.length === 1) {
+      const t = event.touches[0];
+      this.dragStart = {
+        x: t.clientX,
+        y: t.clientY,
+        time: Date.now(),
+        panX: this.lightboxPanX,
+        panY: this.lightboxPanY,
+      };
+    }
+  }
+
+  onLightboxTouchMove(event: TouchEvent): void {
+    if (this.pinchStart && event.touches.length === 2) {
+      const dist = this.touchDistance(event.touches);
+      const scale = dist / this.pinchStart.distance;
+      this.lightboxZoom = Math.min(4, Math.max(1, this.pinchStart.zoom * scale));
+      if (this.lightboxZoom === 1) {
+        this.lightboxPanX = 0;
+        this.lightboxPanY = 0;
+      }
+      event.preventDefault();
+    } else if (this.dragStart && event.touches.length === 1 && this.lightboxZoom > 1) {
+      const t = event.touches[0];
+      this.lightboxPanX = this.dragStart.panX + (t.clientX - this.dragStart.x);
+      this.lightboxPanY = this.dragStart.panY + (t.clientY - this.dragStart.y);
+      event.preventDefault();
+    }
+  }
+
+  onLightboxTouchEnd(event: TouchEvent): void {
+    // Swipe horizontal para navegar: solo si no hay zoom activo.
+    if (
+      this.dragStart &&
+      this.lightboxZoom === 1 &&
+      event.changedTouches.length >= 1 &&
+      this.lightboxProject
+    ) {
+      const t = event.changedTouches[0];
+      const dx = t.clientX - this.dragStart.x;
+      const dy = t.clientY - this.dragStart.y;
+      const dt = Date.now() - this.dragStart.time;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && dt < 600) {
+        if (dx < 0) {
+          this.nextImage(this.lightboxProject);
+        } else {
+          this.prevImage(this.lightboxProject);
+        }
+      }
+    }
+    if (event.touches.length === 0) {
+      this.pinchStart = null;
+      this.dragStart = null;
+    }
+  }
+
+  private touchDistance(touches: TouchList): number {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  private resetLightboxZoom(): void {
+    this.lightboxZoom = 1;
+    this.lightboxPanX = 0;
+    this.lightboxPanY = 0;
+    this.pinchStart = null;
+    this.dragStart = null;
   }
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    if (this.lightboxOpen) { this.lightboxOpen = false; this.cdr.detectChanges(); return; }
-    if (this.caseProject) this.closeCase();
+    if (this.lightboxOpen) { this.closeLightbox(); this.cdr.detectChanges(); return; }
     if (this.openQrId !== null) {
       this.openQrId = null;
       this.cdr.detectChanges();
@@ -260,17 +370,17 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown.arrowleft', ['$event'])
   onArrowLeft(event: Event): void {
-    if (this.lightboxOpen && this.caseProject) {
+    if (this.lightboxOpen && this.lightboxProject) {
       event.preventDefault();
-      this.prevImage(this.caseProject, undefined, ProjectsComponent.CASE_KEY);
+      this.prevImage(this.lightboxProject);
     }
   }
 
   @HostListener('document:keydown.arrowright', ['$event'])
   onArrowRight(event: Event): void {
-    if (this.lightboxOpen && this.caseProject) {
+    if (this.lightboxOpen && this.lightboxProject) {
       event.preventDefault();
-      this.nextImage(this.caseProject, undefined, ProjectsComponent.CASE_KEY);
+      this.nextImage(this.lightboxProject);
     }
   }
 }
