@@ -27,7 +27,7 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
   successMsg = '';
   errorMsg = '';
 
-  readonly siteKey = '6LcYQM4sAAAAAJUqt7VydC32KYfLjtISmRvMtYoT';
+  readonly siteKey = '6LeVC-8sAAAAAEPla9832fLJ7LwSEIaIM5ODUg3W';
   @ViewChild('recaptcha') recaptchaEl?: ElementRef<HTMLDivElement>;
   private recaptchaWidgetId: number | null = null;
   private recaptchaPoll?: any;
