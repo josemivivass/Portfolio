@@ -95,4 +95,4 @@ Cloudflare DNS
 
 ## Autor
 
-**José Miguel Vivas Sánchez** — [LinkedIn](https://linkedin.com/in/josemiguelvivassanchez/) · [GitHub](https://github.com/josemivivass)
+*José Miguel Vivas Sánchez* — [LinkedIn](https://linkedin.com/in/josemiguelvivassanchez/) · [GitHub](https://github.com/josemivivass)
