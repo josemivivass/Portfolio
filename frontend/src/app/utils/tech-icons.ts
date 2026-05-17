@@ -81,6 +81,8 @@ const TECH_ICON_MAP: Record<string, string> = {
   'soft skills':                  `${BASE_PATH}softskills.svg`,
   'english as a second language': `${BASE_PATH}english.svg`,
   'testing':                      `${BASE_PATH}testing.svg`,
+  'mariadb':                      `${BASE_PATH}mariadb.svg`,
+  'cloudflare':                   `${BASE_PATH}cloudflare.svg`,
 };
 
 export function techIcon(rawTag: string): string {

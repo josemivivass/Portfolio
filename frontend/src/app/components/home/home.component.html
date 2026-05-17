@@ -40,15 +40,15 @@
           {{ i18n.t('hero.cv') }}
           <svg class="hero-cv-chevron" [class.is-open]="cvMenuOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <div class="hero-cv-menu" *ngIf="cvMenuOpen" role="menu">
-          <a href="/cv-es.pdf" download role="menuitem" (click)="cvMenuOpen = false">
+        <div class="hero-cv-menu" [class.is-open]="cvMenuOpen" role="menu">
+          <button type="button" role="menuitem" (click)="downloadCv('es')">
             <span class="hero-cv-flag">ES</span>
             {{ i18n.t('hero.cv.es') }}
-          </a>
-          <a href="/cv-en.pdf" download role="menuitem" (click)="cvMenuOpen = false">
+          </button>
+          <button type="button" role="menuitem" (click)="downloadCv('en')">
             <span class="hero-cv-flag">EN</span>
             {{ i18n.t('hero.cv.en') }}
-          </a>
+          </button>
         </div>
       </div>
     </div>

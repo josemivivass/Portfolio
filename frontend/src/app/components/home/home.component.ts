@@ -47,6 +47,36 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   cvMenuOpen = false;
 
+  downloadCv(lang: 'es' | 'en'): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const filename = lang === 'es'
+      ? 'CV_ES_JoseMiguelVivasSanchez.pdf'
+      : 'CV_EN_JoseMiguelVivasSanchez.pdf';
+    fetch(`/${filename}`)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      })
+      .catch(err => {
+        console.error('CV download failed:', err);
+        window.open(`/${filename}`, '_blank');
+      })
+      .finally(() => {
+        this.cvMenuOpen = false;
+        this.cdr.detectChanges();
+      });
+  }
+
   private resizeListener: (() => void) | null = null;
   private titleResizeObserver: ResizeObserver | null = null;
 
