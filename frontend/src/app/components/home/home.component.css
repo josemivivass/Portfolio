@@ -813,16 +813,23 @@
     min-height: auto;
     align-content: start;
   }
-  .hero-eyebrow { margin-bottom: 22px; }
+  .hero-text { display: contents; }
+  .hero-eyebrow { order: 1; margin-bottom: 0; }
+  .hero-portrait-wrap { order: 2; }
+  .hero-title { order: 3; }
+  .hero-deck { order: 4; }
+  .hero-typewriter { order: 5; }
+  .hero-actions { order: 6; }
   .hero-title {
     font-size: clamp(1.4rem, calc((100vw - 80px) / 12), 3rem);
     white-space: nowrap;
-    margin: 0 0 18px;
+    margin: 24px 0 18px;
   }
   .hero-portrait-wrap {
     max-width: 280px;
     max-height: none;
     justify-self: center;
+    margin-bottom: 24px;
   }
   .hero-portrait-frame { inset: -10px -10px 10px 10px; }
   .hero-scroll { display: none; }
@@ -860,7 +867,7 @@
 }
 
 @media (max-width: 600px) {
-  .hero { padding: 68px 24px 50px; }
+  .hero { padding: 68px 24px 50px; gap: 24px; }
   .hero-title {
     font-size: clamp(1.2rem, calc((100vw - 48px) / 12), 3rem);
     margin: 0 0 18px;
@@ -872,4 +879,15 @@
   .hero-actions { gap: 6px; }
   .hero-btn { padding: 6px 11px; font-size: 0.72rem; }
   .skill-card { padding: 24px 22px 22px; }
+}
+
+@media (max-width: 420px) {
+  .hero-portrait-wrap {
+    max-width: 240px;
+    aspect-ratio: 1 / 1;
+    margin-bottom: 16px;
+  }
+  .hero-title { margin-bottom: 0; }
+  .hero-deck { margin-bottom: 0; }
+  .hero-typewriter { margin-bottom: 0; }
 }

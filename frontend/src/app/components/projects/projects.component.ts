@@ -239,11 +239,12 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     if (event) { event.stopPropagation(); }
     if (!project) return;
     if (this.imagesFor(project).length === 0) return;
+    const alreadyOpen = this.lightboxOpen;
     this.lightboxProject = project;
     this.lightboxOpen = true;
     this.openQrId = null;
     this.resetLightboxZoom();
-    if (isPlatformBrowser(this.platformId)) {
+    if (isPlatformBrowser(this.platformId) && !alreadyOpen) {
       this.lockBodyScroll();
       document.body.classList.add('lightbox-open');
     }
@@ -279,6 +280,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     body.style.right = '';
     body.style.width = '';
     body.style.overflow = '';
+    void body.offsetHeight;
     window.scrollTo(0, this.scrollYBeforeLightbox);
   }
 

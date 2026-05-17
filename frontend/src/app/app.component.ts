@@ -361,6 +361,8 @@ export class AppComponent implements OnInit, OnDestroy {
   onWheel(event: WheelEvent): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
 
+    if (document.body.classList.contains('lightbox-open')) return;
+
     if (this.isCursorInsideChatbot(event)) {
       event.preventDefault();
       event.stopPropagation();
@@ -430,6 +432,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   onTouchMove(event: TouchEvent): void {
     if (!isPlatformBrowser(this.platformId) || !this.isHomeRoute) return;
+
+    if (document.body.classList.contains('lightbox-open')) return;
 
     if ((event.target as HTMLElement)?.closest('.chatbot-panel, .chatbot-toggle')) {
       this.chatbotWasOpen = true;
