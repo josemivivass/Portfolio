@@ -157,6 +157,8 @@ INSERT INTO skills (tipo, tags) VALUES
 
 INSERT INTO users (email, password_hash, role) VALUES
 ('admin@gmail.com', '$2b$10$4CdvJxThn2PR0wEeo71kkOx8vzvREb8uUv80tnLpHnOq5t2yXrsE2', 'admin'),
+('lauraadmin@gmail.com', '$2b$10$Qtr4ZGL1xywvmfj3trkFVOqttCRLhM5ZOPPSmMcACjX08g.xIUG8m', 'admin'),
+('lauraeditor@gmail.com', '$2b$10$AGgN66Stau9ehOuHkrSdwOyVrw6RmTpA./5j23RD8NckjfSmcbTW6', 'editor'),
 ('pepepe@gmail.com', '$2b$10$ZBPkPqBb6rSIyGyoOmbcDOVls2o9VtWZlm4i8oGbBfpZZGXk99kQm', 'editor'),
 ('popopo@gmail.com', '$2b$10$a/LGkc845utqQOrHq5kV4O.NYFx/RBEnBteVAJ1cYPIwn1/SnqtG2', 'user');
 
