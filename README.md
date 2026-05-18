@@ -35,13 +35,13 @@ git clone https://github.com/josemivivass/Portfolio.git
 cd Portfolio
 ```
 
-**1. Base de datos**
+**1. Base de datos en local con XAMPP**
 
-Inicia MySQL e importa el esquema:
+1. Arranca **Apache** y **MySQL** desde el panel de control de XAMPP.
+2. Abre [phpMyAdmin](http://localhost/phpmyadmin).
+3. Pestaña **SQL**, pega el contenido de `database.sql` y pulsa **Continuar**. El script ya hace `DROP/CREATE DATABASE portfolio` con `utf8mb4`.
 
-```bash
-mysql -u root -p < database.sql
-```
+> En producción la BD vive en **MariaDB 10.5** dentro de la EC2 y se carga por consola con `sudo mysql < database.sql`.
 
 **2. Backend** ([detalles](./backend/README.md))
 

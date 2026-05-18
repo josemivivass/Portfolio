@@ -30,11 +30,15 @@ npm install
 npm start                  # → http://localhost:3000
 ```
 
-Antes del primer arranque, importa el esquema SQL en MySQL:
+Antes del primer arranque, importa el esquema en tu BD local.
 
-```bash
-mysql -u root -p < ../database.sql
-```
+**Con XAMPP en local:**
+
+1. Arranca **Apache** y **MySQL** desde el panel de control de XAMPP.
+2. Abre [phpMyAdmin](http://localhost/phpmyadmin).
+3. Pestaña **SQL**, pega el contenido de `database.sql` y pulsa **Continuar**. El script ya hace `DROP/CREATE DATABASE portfolio` con `utf8mb4`.
+
+> En producción la BD vive en **MariaDB 10.5** dentro de la EC2 y se carga por consola con `sudo mysql < database.sql`.
 
 ## Variables de entorno
 
