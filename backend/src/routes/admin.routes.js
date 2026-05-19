@@ -7,6 +7,7 @@ const { verifyToken, requireRole } = require('../middlewares/auth.middleware');
 
 const editorOrAdmin = [verifyToken, requireRole('admin', 'editor')];
 const adminOnly = [verifyToken, requireRole('admin')];
+const rawSqlBody = express.text({ limit: '50mb', type: ['application/sql', 'text/plain'] });
 
 // Users
 router.get('/users', editorOrAdmin, admin.listUsers);
@@ -46,5 +47,9 @@ router.delete('/contact-messages/:id', adminOnly, admin.deleteContactMessage);
 router.get('/chatbot-messages', editorOrAdmin, admin.listChatbotConversations);
 router.delete('/chatbot-messages/:id', adminOnly, admin.deleteChatbotMessage);
 router.post('/chatbot-conversations/delete', adminOnly, admin.deleteChatbotConversation);
+
+// Backup / restore
+router.get('/backup', adminOnly, admin.downloadBackup);
+router.post('/restore', adminOnly, rawSqlBody, admin.restoreBackup);
 
 module.exports = router;

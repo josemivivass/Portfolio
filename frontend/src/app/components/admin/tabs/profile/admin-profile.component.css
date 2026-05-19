@@ -338,6 +338,8 @@
   .profile-page .profile-col:nth-child(2) > .profile-card:nth-child(2) { order: 3; }
   .profile-page .profile-col:nth-child(1) > .profile-card:nth-child(2) { order: 4; }
   .profile-page .profile-col:nth-child(2) > .profile-card:nth-child(3) { order: 5; }
+  .profile-page .profile-card--backup { order: 99; }
+  .profile-page .profile-card--restore { order: 100; }
 }
 @media (max-width: 640px) {
   .card.profile-card { padding: 22px; }

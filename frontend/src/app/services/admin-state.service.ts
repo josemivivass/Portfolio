@@ -130,6 +130,16 @@ export class AdminStateService {
   readonly profilePhotoError = signal('');
   readonly profileTextsError = signal('');
 
+  // ─── Backup BD ───
+  readonly backupDownloading = signal(false);
+  readonly backupStatus = signal<'idle' | 'saved' | 'error'>('idle');
+  readonly backupError = signal('');
+
+  // ─── Restaurar BD ───
+  readonly restoreUploading = signal(false);
+  readonly restoreStatus = signal<'idle' | 'saved' | 'error'>('idle');
+  readonly restoreError = signal('');
+
   // ─── Chatbot prompt / model ───
   readonly chatbotPrompt = signal('');
   readonly chatbotPromptDefault = signal('');
@@ -1671,5 +1681,98 @@ export class AdminStateService {
     if (ua.includes('Firefox')) return 'Firefox';
     if (ua.includes('Safari')) return 'Safari';
     return ua.substring(0, 24) + '…';
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Backup BD
+  // ═══════════════════════════════════════════════════════
+  async downloadDbBackup(): Promise<void> {
+    if (this.backupDownloading()) return;
+    this.backupDownloading.set(true);
+    this.backupStatus.set('idle');
+    this.backupError.set('');
+
+    try {
+      const res = await fetch(`${environment.apiUrl}/admin/backup`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${this.auth.getToken() ?? ''}` }
+      });
+      if (!res.ok) {
+        const msg = await res.text().catch(() => '');
+        throw new Error(msg || `HTTP ${res.status}`);
+      }
+
+      const dispo = res.headers.get('Content-Disposition') || '';
+      const match = /filename="?([^";]+)"?/i.exec(dispo);
+      const filename = match?.[1] ?? `backup-${Date.now()}.sql`;
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.backupStatus.set('saved');
+      setTimeout(() => this.backupStatus.set('idle'), 3500);
+    } catch (err: any) {
+      console.error('[admin] backup error', err);
+      this.backupError.set(err?.message || 'Error');
+      this.backupStatus.set('error');
+    } finally {
+      this.backupDownloading.set(false);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Restaurar BD
+  // ═══════════════════════════════════════════════════════
+  onRestoreFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    this.askConfirm(
+      this.i18n.t('admin.profile.restore.confirm.title'),
+      this.i18n.t('admin.profile.restore.confirm.message').replace('{file}', file.name),
+      () => this.uploadRestore(file),
+      this.i18n.t('admin.profile.restore.button')
+    );
+  }
+
+  private async uploadRestore(file: File): Promise<void> {
+    if (this.restoreUploading()) return;
+    this.restoreUploading.set(true);
+    this.restoreStatus.set('idle');
+    this.restoreError.set('');
+
+    try {
+      const sql = await file.text();
+      const res = await fetch(`${environment.apiUrl}/admin/restore`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.auth.getToken() ?? ''}`,
+          'Content-Type': 'application/sql'
+        },
+        body: sql
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.detail || data?.message || `HTTP ${res.status}`);
+      }
+      this.restoreStatus.set('saved');
+      setTimeout(() => this.restoreStatus.set('idle'), 5000);
+      this.loadAllData();
+    } catch (err: any) {
+      console.error('[admin] restore error', err);
+      this.restoreError.set(err?.message || 'Error');
+      this.restoreStatus.set('error');
+    } finally {
+      this.restoreUploading.set(false);
+    }
   }
 }

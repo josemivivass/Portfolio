@@ -102,6 +102,65 @@
           }
         </div>
       </div>
+
+      @if (state.isAdmin()) {
+        <div class="card profile-card profile-card--backup">
+          <div class="profile-card-head">
+            <h3>{{ state.i18n.t('admin.profile.backup.title') }}</h3>
+            <p>{{ state.i18n.t('admin.profile.backup.sub') }}</p>
+          </div>
+
+          <div class="profile-texts-footer">
+            <button type="button"
+                    class="btn-primary"
+                    [disabled]="state.backupDownloading()"
+                    (click)="state.downloadDbBackup()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>{{ state.backupDownloading() ? state.i18n.t('admin.profile.backup.loading') : state.i18n.t('admin.profile.backup.button') }}</span>
+            </button>
+            @if (state.backupStatus() === 'saved') {
+              <span class="profile-status profile-status--ok">
+                ✓ {{ state.i18n.t('admin.profile.backup.saved') }}
+              </span>
+            }
+            @if (state.backupStatus() === 'error') {
+              <span class="profile-status profile-status--err">
+                ✗ {{ state.i18n.t('admin.profile.backup.error') }}
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="card profile-card profile-card--restore">
+          <div class="profile-card-head">
+            <h3>{{ state.i18n.t('admin.profile.restore.title') }}</h3>
+            <p>{{ state.i18n.t('admin.profile.restore.sub') }}</p>
+          </div>
+
+          <div class="profile-texts-footer">
+            <label class="btn-primary profile-file-btn"
+                   [class.is-disabled]="state.restoreUploading()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span>{{ state.restoreUploading() ? state.i18n.t('admin.profile.restore.loading') : state.i18n.t('admin.profile.restore.button') }}</span>
+              <input type="file"
+                     accept=".sql,application/sql,text/plain"
+                     (change)="state.onRestoreFileSelected($event)"
+                     hidden
+                     [disabled]="state.restoreUploading()" />
+            </label>
+            @if (state.restoreStatus() === 'saved') {
+              <span class="profile-status profile-status--ok">
+                ✓ {{ state.i18n.t('admin.profile.restore.saved') }}
+              </span>
+            }
+            @if (state.restoreStatus() === 'error') {
+              <span class="profile-status profile-status--err">
+                ✗ {{ state.restoreError() || state.i18n.t('admin.profile.restore.error') }}
+              </span>
+            }
+          </div>
+        </div>
+      }
     </div>
 
     <div class="profile-col">

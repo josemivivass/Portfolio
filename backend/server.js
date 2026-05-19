@@ -24,15 +24,17 @@ const corsOrigins = (process.env.CORS_ORIGINS || '')
   .map(s => s.trim())
   .filter(Boolean);
 
+const corsExposed = ['Content-Disposition'];
 if (corsOrigins.length === 0) {
-  app.use(cors());
+  app.use(cors({ exposedHeaders: corsExposed }));
 } else {
   app.use(cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       if (corsOrigins.includes(origin)) return callback(null, true);
       return callback(new Error(`Origin ${origin} no permitido por CORS`));
-    }
+    },
+    exposedHeaders: corsExposed
   }));
 }
 
