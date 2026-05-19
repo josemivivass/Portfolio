@@ -3,63 +3,19 @@ const path = require('path');
 const crypto = require('crypto');
 const mysql = require('mysql2');
 const pool = require('../config/db');
-
-const PROJECTS_DIR = path.join(__dirname, '..', 'data', 'projects');
-const PROJECT_IMG_URL_PREFIX = '/api/projects/images/';
-const PENDING_FOLDER = '_pending';
-
-function ensureProjectsDir() {
-  if (!fs.existsSync(PROJECTS_DIR)) fs.mkdirSync(PROJECTS_DIR, { recursive: true });
-}
-
-function resolveLocalImagePath(url) {
-  if (typeof url !== 'string' || !url.startsWith(PROJECT_IMG_URL_PREFIX)) return null;
-  const tail = url.slice(PROJECT_IMG_URL_PREFIX.length);
-  const parts = tail.split('/').filter(Boolean);
-  if (parts.length === 1) {
-    const safe = path.basename(parts[0]);
-    if (!safe) return null;
-    return path.join(PROJECTS_DIR, safe);
-  }
-  if (parts.length === 2) {
-    const folder = path.basename(parts[0]);
-    const filename = path.basename(parts[1]);
-    if (!folder || !filename) return null;
-    return path.join(PROJECTS_DIR, folder, filename);
-  }
-  return null;
-}
-
-function deleteLocalImageFile(url) {
-  const filePath = resolveLocalImagePath(url);
-  if (!filePath) return;
-  fs.promises.unlink(filePath).catch(() => { /* ignorar ENOENT, etc. */ });
-}
-
-async function promotePendingImages(images, projectId) {
-  if (!Array.isArray(images) || images.length === 0) return;
-  const pendingPrefix = `${PROJECT_IMG_URL_PREFIX}${PENDING_FOLDER}/`;
-  const targetDir = path.join(PROJECTS_DIR, String(projectId));
-  let dirReady = false;
-  for (const img of images) {
-    if (!img || typeof img.url !== 'string') continue;
-    if (!img.url.startsWith(pendingPrefix)) continue;
-    const filename = path.basename(img.url.slice(pendingPrefix.length));
-    if (!filename) continue;
-    if (!dirReady) {
-      await fs.promises.mkdir(targetDir, { recursive: true });
-      dirReady = true;
-    }
-    const oldPath = path.join(PROJECTS_DIR, PENDING_FOLDER, filename);
-    const newPath = path.join(targetDir, filename);
-    try {
-      await fs.promises.rename(oldPath, newPath);
-      img.url = `${PROJECT_IMG_URL_PREFIX}${projectId}/${filename}`;
-    } catch (e) {
-      console.warn('[admin] no se pudo mover imagen pending', oldPath, e?.message);
-    }
-  }
-}
+const {
+  PROJECTS_DIR,
+  PROJECT_IMG_URL_PREFIX,
+  PENDING_FOLDER,
+  IMG_EXT_RE,
+  ensureProjectsDir,
+  resolveLocalImagePath,
+  deleteLocalImageFile,
+  slugifyProjectTitle,
+  nextPhotoName,
+  promotePendingImages,
+  normalizeProjectImages
+} = require('../utils/project-images');
 
 exports.listUsers = async (req, res) => {
   try {
@@ -184,12 +140,14 @@ async function replaceProjectImages(connection, projectId, images) {
   );
   await connection.query('DELETE FROM project_images WHERE project_id = ?', [projectId]);
   const newUrls = new Set();
+  const newFilenames = new Set();
   if (Array.isArray(images) && images.length > 0) {
     const rows = images
       .filter(img => img && typeof img.url === 'string' && img.url.trim().length > 0)
       .map((img, i) => {
         const url = img.url.trim();
         newUrls.add(url);
+        newFilenames.add(path.basename(url));
         return [
           projectId,
           url,
@@ -203,7 +161,17 @@ async function replaceProjectImages(connection, projectId, images) {
       );
     }
   }
-  return prev.map(r => r.image_url).filter(u => !newUrls.has(u));
+  const orphanFromDb = prev.map(r => r.image_url).filter(u => !newUrls.has(u));
+  const orphanFromFs = [];
+  const dir = path.join(PROJECTS_DIR, String(projectId));
+  let fsFiles = [];
+  try { fsFiles = await fs.promises.readdir(dir); } catch { /* ok */ }
+  for (const f of fsFiles) {
+    if (!IMG_EXT_RE.test(f)) continue;
+    if (newFilenames.has(f)) continue;
+    orphanFromFs.push(`${PROJECT_IMG_URL_PREFIX}${projectId}/${f}`);
+  }
+  return [...new Set([...orphanFromDb, ...orphanFromFs])];
 }
 
 exports.createProject = async (req, res) => {
@@ -228,8 +196,9 @@ exports.createProject = async (req, res) => {
        normType(project_type),
        normStatus(status)]
     );
-    await promotePendingImages(images, result.insertId);
+    await promotePendingImages(images, result.insertId, title);
     await replaceProjectImages(connection, result.insertId, images);
+    await normalizeProjectImages(connection, result.insertId, title);
     await connection.commit();
     res.status(201).json({ id: result.insertId, message: 'Proyecto creado', images });
   } catch (err) {
@@ -273,8 +242,14 @@ exports.updateProject = async (req, res) => {
     if (Array.isArray(images)) {
       orphanUrls = await replaceProjectImages(connection, id, images);
     }
+    
+    await Promise.all(orphanUrls.map(async (u) => {
+      const fp = resolveLocalImagePath(u);
+      if (!fp) return;
+      try { await fs.promises.unlink(fp); } catch { /* ENOENT ok */ }
+    }));
+    await normalizeProjectImages(connection, id, title);
     await connection.commit();
-    orphanUrls.forEach(deleteLocalImageFile);
     res.status(200).json({ message: 'Proyecto actualizado' });
   } catch (err) {
     await connection.rollback();
@@ -556,7 +531,17 @@ exports.uploadProjectImage = async (req, res) => {
     const targetDir = path.join(PROJECTS_DIR, folder);
     await fs.promises.mkdir(targetDir, { recursive: true });
     const ext = MIME_TO_EXT[normalizedMime];
-    const filename = `${Date.now()}_${crypto.randomBytes(6).toString('hex')}.${ext}`;
+
+    let filename;
+    if (folder === PENDING_FOLDER) {
+      filename = `${Date.now()}_${crypto.randomBytes(6).toString('hex')}.${ext}`;
+    } else {
+      const [rows] = await pool.query('SELECT title FROM projects WHERE id = ?', [Number(folder)]);
+      const title = rows[0]?.title || `Proyecto${folder}`;
+      const slug = slugifyProjectTitle(title);
+      filename = await nextPhotoName(targetDir, slug, ext);
+    }
+
     const filePath = path.join(targetDir, filename);
     await fs.promises.writeFile(filePath, buffer);
     const url = `${PROJECT_IMG_URL_PREFIX}${folder}/${filename}`;

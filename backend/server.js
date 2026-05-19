@@ -3,6 +3,9 @@ const cors = require('cors');
 require('dotenv').config();
 
 const pool = require('./src/config/db');
+const { ensureProjectsDir } = require('./src/utils/project-images');
+
+ensureProjectsDir();
 
 const authRoutes = require('./src/routes/auth.routes');
 const trackingRoutes = require('./src/routes/tracking.routes');
