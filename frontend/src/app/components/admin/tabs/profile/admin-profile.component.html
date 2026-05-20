@@ -103,6 +103,70 @@
         </div>
       </div>
 
+      <div class="card profile-card profile-card--cv">
+        <div class="profile-card-head">
+          <h3>{{ state.i18n.t('admin.profile.cv.title') }}</h3>
+          <p>{{ state.i18n.t('admin.profile.cv.sub') }}</p>
+        </div>
+
+        <div class="profile-cv-list">
+          @for (cv of state.cvLangs; track cv.lang) {
+            <div class="profile-cv-row">
+              <div class="profile-cv-top">
+                <span class="profile-cv-lang">{{ state.i18n.t(cv.labelKey) }}</span>
+                <a class="profile-cv-view"
+                   [href]="state.cvUrl(cv.lang)"
+                   target="_blank"
+                   rel="noopener">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span>{{ state.i18n.t('admin.profile.cv.view') }}</span>
+                </a>
+              </div>
+
+              <div class="profile-cv-actions">
+                <label class="btn-ghost profile-file-btn"
+                       [class.is-disabled]="state.cvUploading(cv.lang)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span>{{ state.cvFileName(cv.lang)
+                            ? state.i18n.t('admin.profile.cv.change')
+                            : state.i18n.t('admin.profile.cv.select') }}</span>
+                  <input type="file"
+                         accept="application/pdf,.pdf"
+                         (change)="state.onCvFileSelected(cv.lang, $event)"
+                         hidden
+                         [disabled]="state.cvUploading(cv.lang)" />
+                </label>
+                <button type="button"
+                        class="btn-primary"
+                        [disabled]="!state.cvDataUrl(cv.lang) || state.cvUploading(cv.lang)"
+                        (click)="state.uploadCv(cv.lang)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  <span>{{ state.cvUploading(cv.lang)
+                            ? state.i18n.t('admin.profile.cv.saving')
+                            : state.i18n.t('admin.profile.cv.upload') }}</span>
+                </button>
+              </div>
+
+              @if (state.cvFileName(cv.lang); as name) {
+                <span class="profile-cv-selected">
+                  {{ state.i18n.t('admin.profile.cv.selected') }} <strong>{{ name }}</strong>
+                </span>
+              }
+              @if (state.cvStatus(cv.lang) === 'saved') {
+                <span class="profile-status profile-status--ok">
+                  ✓ {{ state.i18n.t('admin.profile.cv.saved') }}
+                </span>
+              }
+              @if (state.cvStatus(cv.lang) === 'error') {
+                <span class="profile-status profile-status--err">
+                  ✗ {{ state.cvError(cv.lang) }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
       @if (state.isAdmin()) {
         <div class="card profile-card profile-card--backup">
           <div class="profile-card-head">

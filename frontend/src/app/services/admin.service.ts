@@ -18,6 +18,17 @@ export interface ProfileData {
   editable_keys: string[];
 }
 
+export interface CvLangMeta {
+  filename: string;
+  custom: boolean;
+  updated_at: number;
+}
+
+export interface CvMeta {
+  es: CvLangMeta;
+  en: CvLangMeta;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private apiUrl = environment.apiUrl;
@@ -152,6 +163,16 @@ export class AdminService {
   uploadProfilePhoto(dataUrl: string): Observable<{ photo_updated_at: number }> {
     return this.http.post<{ photo_updated_at: number }>(
       `${this.apiUrl}/profile/photo`,
+      { dataUrl },
+      { headers: this.headers() }
+    );
+  }
+  getCvMeta(): Observable<CvMeta> {
+    return this.http.get<CvMeta>(`${this.apiUrl}/profile/cv-meta`, { headers: this.headers() });
+  }
+  uploadCv(lang: 'es' | 'en', dataUrl: string): Observable<{ lang: string; updated_at: number; size: number }> {
+    return this.http.post<{ lang: string; updated_at: number; size: number }>(
+      `${this.apiUrl}/profile/cv/${lang}`,
       { dataUrl },
       { headers: this.headers() }
     );

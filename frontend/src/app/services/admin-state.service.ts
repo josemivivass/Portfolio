@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AdminService, AdminUser, ProfileData } from './admin.service';
+import { AdminService, AdminUser, ProfileData, CvMeta } from './admin.service';
 import { AuthService } from './auth.service';
 import { TranslationService } from './translation.service';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
@@ -36,6 +36,14 @@ interface ConfirmModal {
   confirmLabel: string;
   onConfirm: () => void;
   messageHtml?: boolean;
+}
+
+interface CvUploadState {
+  dataUrl: string | null;
+  fileName: string;
+  uploading: boolean;
+  status: 'idle' | 'saved' | 'error';
+  error: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -139,6 +147,20 @@ export class AdminStateService {
   readonly restoreUploading = signal(false);
   readonly restoreStatus = signal<'idle' | 'saved' | 'error'>('idle');
   readonly restoreError = signal('');
+
+  // ─── CV descargables (PDF) ───
+  readonly cvLangs: { lang: 'es' | 'en'; labelKey: string }[] = [
+    { lang: 'es', labelKey: 'admin.profile.cv.lang.es' },
+    { lang: 'en', labelKey: 'admin.profile.cv.lang.en' }
+  ];
+  readonly cvMeta = signal<CvMeta>({
+    es: { filename: 'CV_ES_JoseMiguelVivasSanchez.pdf', custom: false, updated_at: 0 },
+    en: { filename: 'CV_EN_JoseMiguelVivasSanchez.pdf', custom: false, updated_at: 0 }
+  });
+  private readonly cvState = signal<Record<'es' | 'en', CvUploadState>>({
+    es: { dataUrl: null, fileName: '', uploading: false, status: 'idle', error: '' },
+    en: { dataUrl: null, fileName: '', uploading: false, status: 'idle', error: '' }
+  });
 
   // ─── Chatbot prompt / model ───
   readonly chatbotPrompt = signal('');
@@ -438,7 +460,7 @@ export class AdminStateService {
 
   private loadAllData(): void {
     this.initialLoading.set(true);
-    let pending = 12;
+    let pending = 13;
     const done = () => {
       pending--;
       if (pending <= 0) {
@@ -511,6 +533,10 @@ export class AdminStateService {
         done();
       },
       error: fail('chatbot-model')
+    });
+    this.adminService.getCvMeta().subscribe({
+      next: d => { if (d) this.cvMeta.set(d); done(); },
+      error: fail('cv-meta')
     });
   }
 
@@ -605,6 +631,66 @@ export class AdminStateService {
     });
     this.profileTextsStatus.set('idle');
     this.profileTextsError.set('');
+  }
+
+  // ─── CV descargables ───
+  cvUrl(lang: 'es' | 'en'): string {
+    return `${environment.apiUrl}/profile/cv/${lang}?v=${this.cvMeta()[lang].updated_at}`;
+  }
+  cvFileName(lang: 'es' | 'en'): string { return this.cvState()[lang].fileName; }
+  cvDataUrl(lang: 'es' | 'en'): string | null { return this.cvState()[lang].dataUrl; }
+  cvUploading(lang: 'es' | 'en'): boolean { return this.cvState()[lang].uploading; }
+  cvStatus(lang: 'es' | 'en'): 'idle' | 'saved' | 'error' { return this.cvState()[lang].status; }
+  cvError(lang: 'es' | 'en'): string { return this.cvState()[lang].error; }
+
+  private patchCv(lang: 'es' | 'en', patch: Partial<CvUploadState>): void {
+    this.cvState.update(s => ({ ...s, [lang]: { ...s[lang], ...patch } }));
+  }
+
+  onCvFileSelected(lang: 'es' | 'en', event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const okType = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+    if (!okType || file.size > 5 * 1024 * 1024) {
+      this.patchCv(lang, {
+        dataUrl: null, fileName: '',
+        status: 'error', error: this.i18n.t('admin.profile.cv.invalid')
+      });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.patchCv(lang, {
+        dataUrl: String(reader.result || ''), fileName: file.name,
+        status: 'idle', error: ''
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  uploadCv(lang: 'es' | 'en'): void {
+    const current = this.cvState()[lang];
+    if (!current.dataUrl || current.uploading) return;
+    this.patchCv(lang, { uploading: true, status: 'idle', error: '' });
+    this.adminService.uploadCv(lang, current.dataUrl).subscribe({
+      next: (res) => {
+        this.cvMeta.update(m => ({
+          ...m,
+          [lang]: { ...m[lang], custom: true, updated_at: res?.updated_at ?? Date.now() }
+        }));
+        this.patchCv(lang, { uploading: false, status: 'saved', dataUrl: null, fileName: '' });
+        setTimeout(() => this.patchCv(lang, { status: 'idle' }), 4000);
+      },
+      error: (err) => {
+        this.patchCv(lang, {
+          uploading: false, status: 'error',
+          error: err?.error?.message || this.i18n.t('admin.profile.cv.error')
+        });
+        console.error(err);
+      }
+    });
   }
 
   cancelEditProfileTexts(): void {

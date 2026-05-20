@@ -52,7 +52,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     const filename = lang === 'es'
       ? 'CV_ES_JoseMiguelVivasSanchez.pdf'
       : 'CV_EN_JoseMiguelVivasSanchez.pdf';
-    fetch(`/${filename}`)
+    const url = `${environment.apiUrl}/profile/cv/${lang}`;
+    fetch(url)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.blob();
@@ -69,7 +70,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       })
       .catch(err => {
         console.error('CV download failed:', err);
-        window.open(`/${filename}`, '_blank');
+        window.open(url, '_blank');
       })
       .finally(() => {
         this.cvMenuOpen = false;

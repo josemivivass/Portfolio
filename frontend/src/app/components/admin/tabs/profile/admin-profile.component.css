@@ -111,6 +111,85 @@
 .profile-status--ok  { color: var(--accent); }
 .profile-status--err { color: var(--danger); }
 
+/* CV descargables */
+.profile-cv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.profile-cv-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-alt);
+}
+.profile-cv-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.profile-cv-lang {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.profile-cv-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+.profile-cv-view:hover { text-decoration: underline; }
+.profile-cv-view svg { width: 14px; height: 14px; }
+.profile-cv-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.profile-cv-actions .btn-ghost,
+.profile-cv-actions .btn-primary {
+  padding: 7px 14px;
+  font-size: 0.76rem;
+}
+.profile-cv-actions .btn-primary {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+.profile-cv-actions .btn-primary:hover {
+  background: rgba(45, 106, 79, 0.18);
+  transform: none;
+  box-shadow: none;
+}
+.profile-cv-actions .btn-ghost svg,
+.profile-cv-actions .btn-primary svg {
+  width: 13px;
+  height: 13px;
+}
+.profile-cv-selected {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+.profile-cv-selected strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.profile-cv-row .profile-status {
+  margin: 0;
+  text-align: left;
+}
+
 /* Textos (display) */
 .profile-texts-list {
   display: flex;
@@ -338,6 +417,7 @@
   .profile-page .profile-col:nth-child(2) > .profile-card:nth-child(2) { order: 3; }
   .profile-page .profile-col:nth-child(1) > .profile-card:nth-child(2) { order: 4; }
   .profile-page .profile-col:nth-child(2) > .profile-card:nth-child(3) { order: 5; }
+  .profile-page .profile-card--cv { order: 98; }
   .profile-page .profile-card--backup { order: 99; }
   .profile-page .profile-card--restore { order: 100; }
 }
