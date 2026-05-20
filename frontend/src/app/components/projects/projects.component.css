@@ -1346,3 +1346,87 @@
   .showcase-filters { gap: 6px; }
   .showcase-filter  { padding: 5px 11px; font-size: 0.72rem; }
 }
+
+/* ═══════════ Proyectos tipo notebook (.ipynb) ═══════════ */
+
+/* Cabecera tipo Jupyter */
+.mockup-nb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--c-surface-alt);
+  border-bottom: 1px solid var(--pj-rule);
+}
+.mockup-nb-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.mockup-nb-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--c-primary);
+}
+.mockup-nb-name {
+  font-family: var(--pj-mono);
+  font-size: 0.78rem;
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mockup-nb-kernel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 3px 10px 3px 8px;
+  border: 1px solid var(--pj-rule);
+  border-radius: 999px;
+  background: var(--c-surface);
+  font-family: var(--pj-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.01em;
+  color: var(--c-text-secondary);
+  white-space: nowrap;
+}
+.mockup-nb-kernel-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--c-green-vivid);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.nb-embed {
+  background: #ffffff;
+}
+.nb-embed::before {
+  content: '';
+  display: block;
+  width: 100%;
+  padding-top: 62.5%;
+}
+.nb-embed app-notebook {
+  position: absolute;
+  inset: 0;
+}
+
+/* Icono de Colab (máscara CSS) */
+.showcase-btn-colab-icon {
+  width: 14px;
+  height: 14px;
+  display: block;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}

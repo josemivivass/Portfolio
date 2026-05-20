@@ -19,6 +19,22 @@
 .admin-shell .btn-new-compact { align-items: center; gap: 8px; }
 .admin-shell .btn-new-compact .btn-new-icon { display: none; }
 
+.admin-shell .page-head-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+@media (max-width: 860px) {
+  .admin-shell .page-head:has(.btn-new-compact) > .page-head-actions {
+    flex: 0 0 auto;
+  }
+  .admin-shell .page-head-actions .btn-new-compact .btn-new-icon {
+    font-size: 1.1rem;
+    transform: translateY(1px);
+  }
+}
+
 .admin-shell .page-head {
   display: flex;
   justify-content: space-between;
@@ -187,15 +203,17 @@
   flex-shrink: 0;
 }
 
-/* Celda de tags en la tabla: una sola línea, recortada con … cuando
-   los chips se desbordan. `max-width` evita que la celda se trague
-   las demás columnas si el proyecto tiene muchos tags. */
+/* Celda de tags en la tabla: una sola línea. Cuando los chips se desbordan
+   se difumina el borde derecho — así un chip recortado se desvanece entero
+   (icono incluido) y no queda ningún logo suelto colgando tras el corte.
+   `max-width` evita que la celda se trague las demás columnas. */
 .admin-shell .data-table .tag-cell { max-width: 320px; }
 .admin-shell .data-table .tag-cell-inner {
   display: block;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 26px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 26px), transparent);
 }
 .admin-shell .data-table .tag-cell-inner .tag-chip { margin-right: 4px; }
 

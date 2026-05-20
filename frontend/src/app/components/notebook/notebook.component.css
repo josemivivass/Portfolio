@@ -1,0 +1,239 @@
+/* Visor de notebooks .ipynb. Encapsulation.None: todo va prefijado con .nb
+   para que las reglas alcancen también al HTML inyectado vía [innerHTML].
+   Los colores salen de colors.css (sección "Notebook"). */
+
+.nb {
+  height: 100%;
+  overflow-y: scroll;
+  overflow-x: auto;
+  background: var(--c-nb-bg);
+  color: var(--c-nb-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.55;
+  -webkit-overflow-scrolling: touch;
+  /* Misma barra de scroll que la página principal (Firefox) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-primary) transparent;
+}
+
+.nb::-webkit-scrollbar {
+  display: block !important;
+  width: 8px;
+  height: 0;
+  background: transparent;
+}
+.nb::-webkit-scrollbar-track,
+.nb::-webkit-scrollbar-track-piece {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.nb::-webkit-scrollbar-thumb {
+  background-color: var(--c-primary);
+  border-radius: 10px;
+  border: none;
+  min-height: 40px;
+}
+.nb::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--c-primary) 80%, black);
+}
+/* Sin flechas: copiado tal cual de styles.css (html.home-route) */
+.nb::-webkit-scrollbar-button,
+.nb::-webkit-scrollbar-button:start,
+.nb::-webkit-scrollbar-button:end,
+.nb::-webkit-scrollbar-button:single-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+.nb::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ── Estados ── */
+.nb-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  padding: 16px;
+  color: var(--c-nb-text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+.nb-state--error { color: var(--c-nb-error-text); }
+.nb-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2.5px solid var(--c-nb-spinner-track);
+  border-top-color: var(--c-nb-accent);
+  border-radius: 50%;
+  animation: nb-spin 0.7s linear infinite;
+}
+@keyframes nb-spin { to { transform: rotate(360deg); } }
+
+/* ── Celdas ── */
+.nb-cell { padding: 4px 14px; }
+.nb-cell:first-child { padding-top: 12px; }
+.nb-cell:last-child { padding-bottom: 14px; }
+
+/* ── Celda markdown ── */
+.nb-md > :first-child { margin-top: 0; }
+.nb-md > :last-child { margin-bottom: 0; }
+.nb-md h1, .nb-md h2, .nb-md h3, .nb-md h4 {
+  line-height: 1.3;
+  margin: 14px 0 8px;
+  font-weight: 700;
+}
+.nb-md h1 { font-size: 1.6em; border-bottom: 1px solid var(--c-nb-border); padding-bottom: 4px; }
+.nb-md h2 { font-size: 1.35em; border-bottom: 1px solid var(--c-nb-border); padding-bottom: 3px; }
+.nb-md h3 { font-size: 1.15em; }
+.nb-md h4 { font-size: 1em; }
+.nb-md p { margin: 8px 0; }
+.nb-md ul, .nb-md ol { margin: 8px 0; padding-left: 22px; }
+.nb-md li { margin: 2px 0; }
+.nb-md a { color: var(--c-nb-link); text-decoration: none; }
+.nb-md a:hover { text-decoration: underline; }
+.nb-md img { max-width: 100%; height: auto; }
+.nb-md hr { border: 0; border-top: 1px solid var(--c-nb-border); margin: 14px 0; }
+.nb-md blockquote {
+  margin: 8px 0;
+  padding: 2px 12px;
+  border-left: 3px solid var(--c-nb-border-cell);
+  color: var(--c-nb-text-muted);
+}
+.nb-md code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.88em;
+  background: var(--c-nb-inline-code-bg);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+.nb-md pre {
+  background: var(--c-nb-code-bg);
+  padding: 10px 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.nb-md pre code { background: none; padding: 0; }
+.nb-md table { border-collapse: collapse; margin: 8px 0; font-size: 0.95em; }
+.nb-md th, .nb-md td { border: 1px solid var(--c-nb-border-cell); padding: 4px 9px; }
+.nb-md th { background: var(--c-nb-code-bg); }
+
+/* ── Celda de código ── */
+.nb-code {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+  background: var(--c-nb-code-bg);
+  border: 1px solid var(--c-nb-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.nb-prompt {
+  flex-shrink: 0;
+  padding: 9px 8px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 10px;
+  color: var(--c-nb-accent);
+  background: var(--c-nb-prompt-bg);
+  white-space: nowrap;
+  user-select: none;
+}
+.nb-src {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 9px 12px 9px 0;
+  overflow-x: auto;
+}
+.nb-src code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--c-nb-text);
+  white-space: pre;
+}
+
+/* ── Salidas ── */
+.nb-out { margin: 6px 0 6px 0; }
+.nb-out img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.nb-out-text {
+  margin: 0;
+  padding: 8px 12px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--c-nb-code-bg);
+  border-radius: 6px;
+}
+.nb-out--error .nb-out-text {
+  background: var(--c-nb-error-bg);
+  color: var(--c-nb-error-text);
+}
+.nb-out-html { overflow-x: auto; }
+.nb-out-html table {
+  border-collapse: collapse;
+  font-size: 11px;
+  margin: 2px 0;
+}
+.nb-out-html th, .nb-out-html td {
+  border: 1px solid var(--c-nb-border-cell);
+  padding: 3px 9px;
+  text-align: right;
+  white-space: nowrap;
+}
+.nb-out-html th { background: var(--c-nb-code-bg); font-weight: 700; }
+.nb-out-html tr:nth-child(even) td { background: var(--c-nb-row-alt); }
+
+/* ── Resaltado de sintaxis (highlight.js, tema GitHub claro) ── */
+.nb .hljs-doctag,
+.nb .hljs-keyword,
+.nb .hljs-meta .hljs-keyword,
+.nb .hljs-template-tag,
+.nb .hljs-template-variable,
+.nb .hljs-type,
+.nb .hljs-variable.language_ { color: var(--c-nb-hl-keyword); }
+.nb .hljs-title,
+.nb .hljs-title.class_,
+.nb .hljs-title.class_.inherited__,
+.nb .hljs-title.function_ { color: var(--c-nb-hl-title); }
+.nb .hljs-attr,
+.nb .hljs-attribute,
+.nb .hljs-literal,
+.nb .hljs-meta,
+.nb .hljs-number,
+.nb .hljs-operator,
+.nb .hljs-variable,
+.nb .hljs-selector-attr,
+.nb .hljs-selector-class,
+.nb .hljs-selector-id { color: var(--c-nb-hl-attr); }
+.nb .hljs-regexp,
+.nb .hljs-string,
+.nb .hljs-meta .hljs-string { color: var(--c-nb-hl-string); }
+.nb .hljs-built_in,
+.nb .hljs-symbol { color: var(--c-nb-hl-builtin); }
+.nb .hljs-comment,
+.nb .hljs-code,
+.nb .hljs-formula { color: var(--c-nb-hl-comment); }
+.nb .hljs-name,
+.nb .hljs-quote,
+.nb .hljs-selector-tag,
+.nb .hljs-selector-pseudo { color: var(--c-nb-hl-name); }
+.nb .hljs-subst { color: var(--c-nb-hl-subst); }
+.nb .hljs-section { color: var(--c-nb-hl-attr); font-weight: 700; }
+.nb .hljs-bullet { color: var(--c-nb-hl-bullet); }
+.nb .hljs-emphasis { font-style: italic; }
+.nb .hljs-strong { font-weight: 700; }
+.nb .hljs-addition { color: var(--c-nb-hl-name); background: var(--c-nb-hl-addition-bg); }
+.nb .hljs-deletion { color: var(--c-nb-hl-deletion); background: var(--c-nb-hl-deletion-bg); }

@@ -129,4 +129,34 @@
 
   /* Tinte de iconos en tags/skills */
   --c-tag-icon-filter: brightness(0) saturate(100%) invert(34%) sepia(99%) saturate(3000%) hue-rotate(202deg) brightness(101%) contrast(101%);
+
+  /* ── Notebook (visor .ipynb, tema claro tipo GitHub) ── */
+  --c-nb-bg:             #ffffff;
+  --c-nb-text:           #1f2328;
+  --c-nb-text-muted:     #57606a;
+  --c-nb-accent:         #1f6feb;
+  --c-nb-link:           #0969da;
+  --c-nb-border:         #e4e7eb;
+  --c-nb-border-cell:    #d0d7de;
+  --c-nb-code-bg:        #f6f8fa;
+  --c-nb-inline-code-bg: rgba(175, 184, 193, 0.25);
+  --c-nb-prompt-bg:      rgba(31, 111, 235, 0.07);
+  --c-nb-row-alt:        #fafbfc;
+  --c-nb-spinner-track:  rgba(0, 0, 0, 0.12);
+  --c-nb-error-text:     #b42318;
+  --c-nb-error-bg:       #fdecea;
+
+  /* ── Notebook · resaltado de sintaxis (highlight.js, GitHub claro) ── */
+  --c-nb-hl-keyword:     #d73a49;
+  --c-nb-hl-title:       #6f42c1;
+  --c-nb-hl-attr:        #005cc5;
+  --c-nb-hl-string:      #032f62;
+  --c-nb-hl-builtin:     #e36209;
+  --c-nb-hl-comment:     #6a737d;
+  --c-nb-hl-name:        #22863a;
+  --c-nb-hl-subst:       #24292e;
+  --c-nb-hl-bullet:      #735c0f;
+  --c-nb-hl-addition-bg: #f0fff4;
+  --c-nb-hl-deletion:    #b31d28;
+  --c-nb-hl-deletion-bg: #ffeef0;
 }

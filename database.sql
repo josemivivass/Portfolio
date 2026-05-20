@@ -42,6 +42,7 @@ CREATE TABLE projects (
     project_date DATE,
     repo_url VARCHAR(255),
     live_url VARCHAR(255),
+    notebook_url VARCHAR(500) DEFAULT NULL,
     tags VARCHAR(255),
     is_featured BOOLEAN DEFAULT FALSE,
     project_type ENUM('web','android','ai','other') DEFAULT 'web',

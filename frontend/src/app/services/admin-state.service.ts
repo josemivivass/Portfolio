@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { TranslationService } from './translation.service';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { techIcon, hideIconOnError } from '../utils/tech-icons';
+import { parseNotebookUrl, isNotebookUrl, notebookName } from '../utils/notebook';
 import { environment } from '../../environments/environment';
 
 export type AdminTab = 'dashboard' | 'users' | 'projects' | 'experience' | 'education' | 'visitors' | 'logins' | 'messages' | 'chatbot' | 'profile';
@@ -95,6 +96,7 @@ export class AdminStateService {
 
   // ─── Edición (objetos mutables apuntados por signals) ───
   readonly editingProject = signal<any | null>(null);
+  readonly editingNotebook = signal<any | null>(null);
   readonly editingExperience = signal<any | null>(null);
   readonly editingUser = signal<(AdminUser & { _original?: AdminUser }) | null>(null);
   readonly editingProfileTexts = signal<{ es: Record<string, string>; en: Record<string, string> } | null>(null);
@@ -1170,6 +1172,10 @@ export class AdminStateService {
   }
 
   editProject(p: any): void {
+    if (p?.notebook_url) {
+      this.editNotebook(p);
+      return;
+    }
     const images = Array.isArray(p.images) ? p.images.map((img: any) => ({ ...img })) : [];
     this.editingProject.set({
       ...p,
@@ -1178,6 +1184,85 @@ export class AdminStateService {
     });
     this.projectImagesUploading.set(0);
     this.projectImagesUploadError.set('');
+  }
+
+  //  Notebooks (.ipynb)
+  newNotebook(): void {
+    this.editingNotebook.set({
+      id: null,
+      title: '', title_en: '', description: '', description_en: '',
+      project_date: '', tags: '', is_featured: false,
+      notebook_url: '', project_type: 'ai', status: '',
+      repo_url: null, live_url: null, images: []
+    });
+  }
+
+  editNotebook(p: any): void {
+    this.editingNotebook.set({
+      ...p,
+      project_type: 'ai',
+      notebook_url: p.notebook_url || '',
+      project_date: p.project_date ? p.project_date.substring(0, 10) : '',
+      images: []
+    });
+  }
+
+  cancelNotebookEdit(): void { this.editingNotebook.set(null); }
+
+  notebookLinkValid(): boolean {
+    return isNotebookUrl(this.editingNotebook()?.notebook_url);
+  }
+
+  notebookLinkName(): string {
+    const ref = parseNotebookUrl(this.editingNotebook()?.notebook_url);
+    return ref && /\.ipynb$/i.test(ref.path) ? notebookName(ref) : '';
+  }
+
+  saveNotebook(): void {
+    const n = this.editingNotebook();
+    if (!n || !this.notebookLinkValid()) return;
+    const payload = {
+      ...n,
+      project_type: 'ai',
+      images: [],
+      repo_url: n.repo_url ?? null,
+      live_url: n.live_url ?? null
+    };
+    this.editingNotebook.set(null);
+
+    if (payload.id) {
+      const list = this.projects();
+      const idx = list.findIndex(x => x.id === payload.id);
+      const prev = idx >= 0 ? list[idx] : null;
+      if (idx >= 0) {
+        this.projects.set([
+          ...list.slice(0, idx),
+          { ...list[idx], ...payload },
+          ...list.slice(idx + 1)
+        ]);
+      }
+      this.adminService.updateProject(payload.id, payload).subscribe({
+        error: (err) => {
+          if (idx >= 0 && prev) {
+            const cur = this.projects();
+            this.projects.set([
+              ...cur.slice(0, idx),
+              prev,
+              ...cur.slice(idx + 1)
+            ]);
+          }
+          alert(this.i18n.t('admin.error.project.save'));
+          console.error(err);
+        }
+      });
+    } else {
+      this.adminService.createProject(payload).subscribe({
+        next: (res: any) => {
+          this.projects.set([{ ...payload, id: res?.id }, ...this.projects()]);
+        },
+        error: (err) => { alert(this.i18n.t('admin.error.project.create')); console.error(err); }
+      });
+    }
   }
 
   // ─── Galería del proyecto en edición ───
