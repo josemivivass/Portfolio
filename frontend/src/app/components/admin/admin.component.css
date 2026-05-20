@@ -788,6 +788,31 @@ select:focus {
   line-height: 1.4;
 }
 
+/* ─── Enlace del notebook (.ipynb) en el modal de notebooks ─── */
+.project-notebook {
+  margin-top: 4px;
+  padding: 16px;
+  background: var(--c-surface-alt);
+  border: 1px dashed var(--c-border-card);
+  border-radius: 12px;
+}
+.project-notebook input {
+  width: 100%;
+  box-sizing: border-box;
+}
+.project-notebook-msg {
+  margin: 10px 0 0;
+  font-size: 0.78rem;
+  color: var(--danger, #d33);
+}
+.project-notebook-msg--ok {
+  color: var(--c-primary);
+}
+.project-notebook-msg strong {
+  font-weight: 700;
+}
+
+
 /* Zona de subida — un <label> grande que abre el selector y acepta drop. */
 .project-gallery-dropzone {
   display: flex;

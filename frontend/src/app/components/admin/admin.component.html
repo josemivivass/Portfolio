@@ -256,6 +256,94 @@
     </div>
   }
 
+  <!-- ─── Notebook create / edit modal ─── -->
+  @if (state.editingNotebook(); as editingNotebook) {
+    <div class="edit-modal-backdrop" (click)="state.cancelNotebookEdit()">
+      <form class="card edit-modal" (click)="$event.stopPropagation()" (ngSubmit)="state.saveNotebook()">
+        <div class="edit-modal-header">
+          <h3>{{ editingNotebook.id ? state.i18n.t('admin.notebook.edit.title') : state.i18n.t('admin.notebook.create.title') }}</h3>
+          <button type="button" class="edit-modal-close" (click)="state.cancelNotebookEdit()" [attr.aria-label]="state.i18n.t('admin.action.close')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="edit-modal-body">
+          <div class="grid-2">
+            <div class="modal-bilingual-field full">
+              <span class="profile-text-label">{{ state.i18n.t('admin.projects.field.title') }}</span>
+              <div class="profile-text-cols">
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
+                  <quill-editor class="editor-title" [(ngModel)]="editingNotebook.title" name="title" [modules]="quillConfigTitle" placeholder="" required></quill-editor>
+                </div>
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
+                  <quill-editor class="editor-title" [(ngModel)]="editingNotebook.title_en" name="title_en" [modules]="quillConfigTitle" placeholder=""></quill-editor>
+                </div>
+              </div>
+            </div>
+            <div class="modal-bilingual-field full">
+              <span class="profile-text-label">{{ state.i18n.t('admin.projects.field.desc') }}</span>
+              <div class="profile-text-cols">
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.es') }}</span>
+                  <quill-editor class="editor-desc" [(ngModel)]="editingNotebook.description" name="description" [modules]="quillConfigDesc" placeholder=""></quill-editor>
+                </div>
+                <div class="profile-text-col">
+                  <span class="profile-lang-tag">{{ state.i18n.t('admin.profile.lang.en') }}</span>
+                  <quill-editor class="editor-desc" [(ngModel)]="editingNotebook.description_en" name="description_en" [modules]="quillConfigDesc" placeholder=""></quill-editor>
+                </div>
+              </div>
+            </div>
+            <label>{{ state.i18n.t('admin.projects.field.date') }}<input type="date" [(ngModel)]="editingNotebook.project_date" name="project_date"></label>
+            <label>{{ state.i18n.t('admin.projects.field.tags') }}<input [(ngModel)]="editingNotebook.tags" name="tags"></label>
+            <label>
+              {{ state.i18n.t('admin.projects.field.type') }}
+              <select [ngModel]="'ai'" name="project_type" [ngModelOptions]="{ standalone: true }" disabled>
+                <option value="ai">{{ state.i18n.t('admin.projects.type.ai') }}</option>
+              </select>
+            </label>
+            <label>
+              {{ state.i18n.t('admin.projects.field.status') }}
+              <select [(ngModel)]="editingNotebook.status" name="status">
+                <option value="">—</option>
+                <option value="production">{{ state.i18n.t('admin.projects.status.production') }}</option>
+                <option value="development">{{ state.i18n.t('admin.projects.status.development') }}</option>
+                <option value="archived">{{ state.i18n.t('admin.projects.status.archived') }}</option>
+              </select>
+            </label>
+            <!-- ─── Enlace del archivo .ipynb en GitHub ─── -->
+            <div class="full project-notebook">
+              <div class="project-gallery-header">
+                <h4 class="project-gallery-title">{{ state.i18n.t('admin.notebook.link.title') }}</h4>
+                <p class="project-gallery-sub">{{ state.i18n.t('admin.notebook.link.sub') }}</p>
+              </div>
+              <input [(ngModel)]="editingNotebook.notebook_url"
+                     name="notebook_url"
+                     placeholder="https://github.com/usuario/repo/blob/main/archivo.ipynb" />
+              @if (editingNotebook.notebook_url) {
+                @if (state.notebookLinkValid()) {
+                  <p class="project-notebook-msg project-notebook-msg--ok">
+                    ✓ {{ state.i18n.t('admin.notebook.link.ok') }} <strong>{{ state.notebookLinkName() }}.ipynb</strong>
+                  </p>
+                } @else {
+                  <p class="project-notebook-msg">✗ {{ state.i18n.t('admin.notebook.link.invalid') }}</p>
+                }
+              }
+            </div>
+            <label class="checkbox full">
+              <input type="checkbox" [(ngModel)]="editingNotebook.is_featured" name="is_featured">
+              {{ state.i18n.t('admin.projects.field.featured') }}
+            </label>
+          </div>
+        </div>
+        <div class="edit-modal-footer">
+          <button type="button" class="btn-secondary" (click)="state.cancelNotebookEdit()">{{ state.i18n.t('admin.action.cancel') }}</button>
+          <button type="submit" class="btn-primary" [disabled]="!state.notebookLinkValid()">{{ state.i18n.t('admin.action.save') }}</button>
+        </div>
+      </form>
+    </div>
+  }
+
   <!-- ─── Experience edit / create modal ─── -->
   @if (state.editingExperience(); as editingExperience) {
     <div class="edit-modal-backdrop" (click)="state.cancelExperienceEdit()">

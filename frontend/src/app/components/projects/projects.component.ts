@@ -9,13 +9,15 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ProjectService, resolveApiAssetUrl } from '../../services/project.service';
 import { TranslationService } from '../../services/translation.service';
 import { techIcon, hideIconOnError } from '../../utils/tech-icons';
+import { parseNotebookUrl, colabUrl, notebookName } from '../../utils/notebook';
+import { NotebookComponent } from '../notebook/notebook.component';
 
 type ProjectFilterId = 'all' | 'web' | 'android' | 'ai' | 'other';
 
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NotebookComponent],
   templateUrl: './projects.component.html',
   styleUrls: ['./projects.component.css']
 })
@@ -32,12 +34,15 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     { id: 'all',     labelKey: 'projects.filter.all' },
     { id: 'web',     labelKey: 'projects.filter.web' },
     { id: 'android', labelKey: 'projects.filter.android' },
+    { id: 'ai',      labelKey: 'projects.filter.ai' },
   ];
   activeFilter: ProjectFilterId = 'all';
 
   openQrId: number | null = null;
   lightboxOpen = false;
   lightboxProject: any = null;
+
+  readonly colabMask = `url(${techIcon('colab')})`;
 
   // Zoom/pan en el lightbox (gestos táctiles en móvil).
   lightboxZoom = 1;
@@ -118,6 +123,24 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   get filteredProjects(): any[] {
     if (this.activeFilter === 'all') return this.projects;
     return this.projects.filter(p => this.getType(p) === this.activeFilter);
+  }
+
+  get shownFilters(): { id: ProjectFilterId; labelKey: string }[] {
+    return this.projectFilters.filter(f => f.id === 'all' || this.countByFilter(f.id) > 0);
+  }
+
+  isNotebook(project: any): boolean {
+    return !!parseNotebookUrl(project?.notebook_url);
+  }
+
+  notebookFileName(project: any): string {
+    const ref = parseNotebookUrl(project?.notebook_url);
+    return ref ? notebookName(ref) : '';
+  }
+
+  colabUrlFor(project: any): string {
+    const ref = parseNotebookUrl(project?.notebook_url);
+    return ref ? colabUrl(ref) : '';
   }
 
   setFilter(id: ProjectFilterId): void {

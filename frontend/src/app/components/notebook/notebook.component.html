@@ -1,0 +1,40 @@
+<div class="nb">
+
+  <!-- Estado de carga -->
+  <div class="nb-state" *ngIf="loading">
+    <span class="nb-spinner" aria-hidden="true"></span>
+    <span>{{ i18n.t('projects.notebook.loading') }}</span>
+  </div>
+
+  <!-- Estado de error -->
+  <div class="nb-state nb-state--error" *ngIf="failed && !loading">
+    {{ i18n.t('projects.notebook.error') }}
+  </div>
+
+  <!-- Celdas del notebook -->
+  <ng-container *ngIf="doc && !loading && !failed">
+    <div class="nb-cell" *ngFor="let cell of doc.cells">
+
+      <!-- Celda markdown -->
+      <div class="nb-md" *ngIf="cell.type === 'markdown'" [innerHTML]="cell.html | safeHtml"></div>
+
+      <!-- Celda de código -->
+      <ng-container *ngIf="cell.type === 'code'">
+        <div class="nb-code" *ngIf="cell.source && cell.source.trim()">
+          <span class="nb-prompt">{{ cell.prompt }}</span>
+          <pre class="nb-src"><code class="hljs" [innerHTML]="cell.sourceHtml"></code></pre>
+        </div>
+
+        <div class="nb-out"
+             *ngFor="let out of cell.outputs"
+             [class.nb-out--error]="out.error">
+          <img *ngIf="out.kind === 'image'" [src]="out.src" alt="" loading="lazy" />
+          <div class="nb-out-html" *ngIf="out.kind === 'html'" [innerHTML]="out.html | safeHtml"></div>
+          <pre class="nb-out-text" *ngIf="out.kind === 'text'">{{ out.text }}</pre>
+        </div>
+      </ng-container>
+
+    </div>
+  </ng-container>
+
+</div>

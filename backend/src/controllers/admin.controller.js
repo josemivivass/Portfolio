@@ -132,6 +132,12 @@ const ALLOWED_TYPES   = ['web', 'android', 'ai', 'other'];
 const ALLOWED_STATUS  = ['production', 'development', 'archived'];
 const normType   = (v) => ALLOWED_TYPES.includes(v) ? v : 'web';
 const normStatus = (v) => ALLOWED_STATUS.includes(v) ? v : null;
+const normNotebookUrl = (v) => {
+  if (typeof v !== 'string') return null;
+  const t = v.trim();
+  if (!t || !/^https?:\/\//i.test(t)) return null;
+  return t.slice(0, 500);
+};
 
 async function replaceProjectImages(connection, projectId, images) {
   const [prev] = await connection.query(
@@ -177,7 +183,7 @@ async function replaceProjectImages(connection, projectId, images) {
 exports.createProject = async (req, res) => {
   const {
     title, title_en, description, description_en, project_date,
-    repo_url, live_url, tags, is_featured,
+    repo_url, live_url, notebook_url, tags, is_featured,
     project_type, status,
     images
   } = req.body;
@@ -188,11 +194,11 @@ exports.createProject = async (req, res) => {
     const [result] = await connection.query(
       `INSERT INTO projects
         (title, title_en, description, description_en, project_date,
-         repo_url, live_url, tags, is_featured,
+         repo_url, live_url, notebook_url, tags, is_featured,
          project_type, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [title, title_en, description, description_en, project_date,
-       repo_url, live_url, tags, !!is_featured,
+       repo_url, live_url, normNotebookUrl(notebook_url), tags, !!is_featured,
        normType(project_type),
        normStatus(status)]
     );
@@ -214,7 +220,7 @@ exports.updateProject = async (req, res) => {
   const { id } = req.params;
   const {
     title, title_en, description, description_en, project_date,
-    repo_url, live_url, tags, is_featured,
+    repo_url, live_url, notebook_url, tags, is_featured,
     project_type, status,
     images
   } = req.body;
@@ -225,12 +231,12 @@ exports.updateProject = async (req, res) => {
     const [result] = await connection.query(
       `UPDATE projects SET
          title = ?, title_en = ?, description = ?, description_en = ?,
-         project_date = ?, repo_url = ?, live_url = ?,
+         project_date = ?, repo_url = ?, live_url = ?, notebook_url = ?,
          tags = ?, is_featured = ?,
          project_type = ?, status = ?
        WHERE id = ?`,
       [title, title_en, description, description_en, project_date,
-       repo_url, live_url, tags, !!is_featured,
+       repo_url, live_url, normNotebookUrl(notebook_url), tags, !!is_featured,
        normType(project_type),
        normStatus(status), id]
     );

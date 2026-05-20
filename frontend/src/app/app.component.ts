@@ -411,9 +411,21 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  //Si el target está sobre `.showcase-list` y aún hay scroll interno, lo absorbe ahí
+  //El visor de notebook (.nb) y el telón (.showcase-list) tienen scroll propio.
   private scrollableContainerAbsorbs(target: HTMLElement | null, deltaY: number): boolean {
     if (!target || deltaY === 0) return false;
+
+    // El notebook embebido tiene prioridad: si aún puede scrollear, el scroll va ahí.
+    const nb = target.closest('.nb') as HTMLElement | null;
+    if (nb) {
+      const nbAtTop = nb.scrollTop <= 0;
+      const nbAtBottom = nb.scrollTop + nb.clientHeight >= nb.scrollHeight - 1;
+      if (!((deltaY > 0 && nbAtBottom) || (deltaY < 0 && nbAtTop))) {
+        nb.scrollTop += deltaY;
+        return true;
+      }
+    }
+
     const list = target.closest('.showcase-list') as HTMLElement | null;
     if (!list) return false;
     const atTop = list.scrollTop <= 0;
