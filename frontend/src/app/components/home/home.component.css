@@ -103,7 +103,7 @@
 .hero-deck ::ng-deep s,
 .hero-deck ::ng-deep strike { text-decoration: line-through; }
 
-/* Typewriter */
+/* Typewriter — siempre en una sola línea (los tags que no caben se omiten) */
 .hero-typewriter {
   font-family: var(--ff-mono);
   font-size: 0.72rem;
@@ -115,18 +115,21 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 .hero-typewriter-label {
   color: var(--c-primary);
   font-weight: 500;
+  flex-shrink: 0;
 }
 .hero-typewriter-text {
   color: var(--c-text-body);
-  white-space: pre-wrap;
+  white-space: nowrap;
 }
 .hero-typewriter-caret {
   display: inline-block;
+  flex-shrink: 0;
   width: 8px;
   height: 1em;
   background: var(--c-primary);
@@ -183,6 +186,18 @@
 .hero-cv-wrap {
   position: relative;
   display: inline-flex;
+}
+/* En el hero de escritorio el botón de CV baja a su propia línea, bajo el resto */
+.hero-actions .hero-cv-wrap {
+  flex-basis: 100%;
+  margin-top: 4px;
+}
+.hero-actions .hero-cv-menu {
+  left: 0;
+  transform: none;
+}
+.hero-actions .hero-cv-menu.is-open {
+  animation: hm-cv-menu-in 0.18s ease-out;
 }
 .hero-cv-chevron {
   margin-left: 2px;
@@ -900,4 +915,195 @@
   .hero-title { margin-bottom: 0; }
   .hero-deck { margin-bottom: 0; }
   .hero-typewriter { margin-bottom: 0; }
+}
+
+/* ════════════════════════════════════════════════════════
+   MASTHEAD MÓVIL — Portrait masthead
+   Landing dedicada para móvil: retrato a sangre arriba y
+   cuerpo editorial debajo. Sustituye al hero de escritorio
+   en pantallas estrechas y reutiliza .hero-btn / .hero-cv-*.
+   ════════════════════════════════════════════════════════ */
+.hero-mobile { display: none; }
+
+@keyframes hm-cv-menu-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  /* La sección hero pasa a comportarse como masthead a sangre */
+  .hero {
+    display: block;
+    padding: 0;
+    gap: 0;
+    min-height: auto;
+    max-width: 100%;
+  }
+  .hero > .hero-text,
+  .hero > .hero-portrait-wrap,
+  .hero > .hero-scroll { display: none; }
+
+  .hero-mobile {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Cabecera — retrato a sangre, siempre media pantalla del dispositivo */
+  .hm-header {
+    position: relative;
+    width: 100%;
+    height: 50vh;
+    height: 50svh;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: var(--c-accent-bg);
+  }
+  .hm-photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .hm-photo-frame {
+    position: absolute;
+    inset: 12px;
+    border: 1px solid rgba(0, 123, 255, 0.45);
+    pointer-events: none;
+  }
+
+  /* Cuerpo */
+  .hm-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 24px 22px 30px;
+  }
+
+  /* Eyebrow — disciplinas, encima del nombre */
+  .hm-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 10px;
+    font-family: var(--ff-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--c-primary);
+  }
+  .hm-eyebrow::before {
+    content: '';
+    flex-shrink: 0;
+    width: 26px;
+    height: 1px;
+    background: var(--c-primary);
+  }
+
+  /* Nombre */
+  .hm-name {
+    font-family: var(--ff-serif);
+    font-weight: 300;
+    font-size: clamp(40px, 13.5vw, 56px);
+    line-height: 0.94;
+    letter-spacing: -0.028em;
+    color: var(--c-text-heading);
+    margin: 0;
+    text-wrap: balance;
+  }
+  .hm-name-full { display: block; }
+  .hm-name-full ::ng-deep em { font-weight: 400; }
+
+  /* Bajada */
+  .hm-deck {
+    font-family: var(--ff-serif);
+    font-weight: 300;
+    font-size: clamp(13.5px, 3.9vw, 15px);
+    line-height: 1.5;
+    color: var(--c-text-body);
+    margin: 2px 0 0;
+    text-wrap: pretty;
+  }
+
+  /* Typewriter — siempre en una sola línea (los tags que no caben se omiten) */
+  .hm-tw {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 4px 0 0;
+    min-height: 1.4em;
+    overflow: hidden;
+    font-family: var(--ff-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+  }
+  .hm-tw-label { color: var(--c-primary); font-weight: 500; flex-shrink: 0; }
+  .hm-tw-text  { color: var(--c-text-body); white-space: nowrap; }
+  .hm-tw-caret {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 7px;
+    height: 1em;
+    background: var(--c-primary);
+    vertical-align: -2px;
+    animation: hero-caret-blink 1s steps(2, start) infinite;
+  }
+
+  /* Acciones — reutilizan .hero-btn y .hero-cv-* del hero de escritorio */
+  .hm-actions {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  /* Botones de contacto: solo icono, se reparten el ancho de la línea */
+  .hm-actions > .hero-btn {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    padding: 13px 9px;
+  }
+  .hm-actions > .hero-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  /* El botón CV iguala la altura de la fila y escala su contenido */
+  .hm-actions > .hero-cv-wrap .hero-btn {
+    height: 100%;
+    font-size: 1rem;
+  }
+  .hm-actions > .hero-cv-wrap .hero-btn > svg:not(.hero-cv-chevron) {
+    width: 18px;
+    height: 18px;
+  }
+  .hm-actions > .hero-cv-wrap .hero-cv-chevron {
+    width: 15px;
+    height: 15px;
+  }
+  .hero-mobile .hero-btn--solid {
+    background: var(--c-primary);
+    border-color: var(--c-primary);
+    color: #fff;
+  }
+  .hero-mobile .hero-btn--solid:hover {
+    background: var(--c-primary-hover);
+    border-color: var(--c-primary-hover);
+    color: #fff;
+  }
+  /* El menú del CV se ancla a la izquierda para no desbordar el viewport */
+  .hero-mobile .hero-cv-menu {
+    left: 0;
+    transform: none;
+    min-width: min(240px, calc(100vw - 44px));
+  }
+  .hero-mobile .hero-cv-menu.is-open { animation: hm-cv-menu-in 0.18s ease-out; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-tw-caret { animation: none; }
 }
