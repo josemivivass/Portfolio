@@ -13,6 +13,7 @@ import { HomeComponent } from './components/home/home.component';
 import { TranslationService } from './services/translation.service';
 import { AuthService } from './services/auth.service';
 import { TrackingService } from './services/tracking.service';
+import { SeoService } from './services/seo.service';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
 import { PreloaderComponent } from './components/preloader/preloader.component';
 
@@ -66,7 +67,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private router: Router,
     public i18n: TranslationService,
     private auth: AuthService,
-    private tracking: TrackingService
+    private tracking: TrackingService,
+    private seo: SeoService
   ) {
     if (isPlatformBrowser(this.platformId)) {
       gsap.registerPlugin(ScrollTrigger);
@@ -78,6 +80,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+
+    this.seo.init();
 
     window.addEventListener('wheel', this.wheelHandler, { passive: false });
     window.addEventListener('touchmove', this.touchMoveHandler, { passive: false });
