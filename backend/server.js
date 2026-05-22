@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 require('dotenv').config();
 
 const pool = require('./src/config/db');
@@ -22,6 +23,11 @@ const profileRoutes = require('./src/routes/profile.routes');
 const app = express();
 
 app.set('trust proxy', 1);
+
+// Cabeceras de seguridad HTTP; CORP en cross-origin para no bloquear las imágenes y CVs que sirve el backend.
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
 
 const corsOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
