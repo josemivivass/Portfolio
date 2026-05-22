@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const pool = require('./src/config/db');
 const { ensureProjectsDir } = require('./src/utils/project-images');
+const backupScheduler = require('./src/services/backup-scheduler');
 
 ensureProjectsDir();
 
@@ -66,4 +67,5 @@ app.use('/api/profile', profileRoutes);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en el puerto ${PORT}`);
+  backupScheduler.start();
 });

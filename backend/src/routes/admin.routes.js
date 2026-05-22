@@ -50,6 +50,7 @@ router.post('/chatbot-conversations/delete', adminOnly, admin.deleteChatbotConve
 
 // Backup / restore
 router.get('/backup', adminOnly, admin.downloadBackup);
+router.post('/backup/drive', adminOnly, admin.runDriveBackup);
 router.post('/restore', adminOnly, rawSqlBody, admin.restoreBackup);
 
 module.exports = router;

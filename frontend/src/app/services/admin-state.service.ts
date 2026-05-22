@@ -145,6 +145,11 @@ export class AdminStateService {
   readonly backupStatus = signal<'idle' | 'saved' | 'error'>('idle');
   readonly backupError = signal('');
 
+  // ─── Backup a Google Drive ───
+  readonly driveBackupUploading = signal(false);
+  readonly driveBackupStatus = signal<'idle' | 'saved' | 'error'>('idle');
+  readonly driveBackupError = signal('');
+
   // ─── Restaurar BD ───
   readonly restoreUploading = signal(false);
   readonly restoreStatus = signal<'idle' | 'saved' | 'error'>('idle');
@@ -1895,6 +1900,35 @@ export class AdminStateService {
       this.backupStatus.set('error');
     } finally {
       this.backupDownloading.set(false);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Backup a Google Drive
+  // ═══════════════════════════════════════════════════════
+  async uploadDriveBackup(): Promise<void> {
+    if (this.driveBackupUploading()) return;
+    this.driveBackupUploading.set(true);
+    this.driveBackupStatus.set('idle');
+    this.driveBackupError.set('');
+
+    try {
+      const res = await fetch(`${environment.apiUrl}/admin/backup/drive`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${this.auth.getToken() ?? ''}` }
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.detail || data?.message || `HTTP ${res.status}`);
+      }
+      this.driveBackupStatus.set('saved');
+      setTimeout(() => this.driveBackupStatus.set('idle'), 4000);
+    } catch (err: any) {
+      console.error('[admin] drive backup error', err);
+      this.driveBackupError.set(err?.message || 'Error');
+      this.driveBackupStatus.set('error');
+    } finally {
+      this.driveBackupUploading.set(false);
     }
   }
 

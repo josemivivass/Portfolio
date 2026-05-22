@@ -335,8 +335,8 @@ const ES: Record<string, string> = {
   'admin.profile.cv.error': 'No se pudo subir el CV',
   'admin.profile.cv.invalid': 'Selecciona un archivo PDF de menos de 5 MB.',
   'admin.profile.backup.title': 'Backup de base de datos',
-  'admin.profile.backup.sub': 'Descarga un archivo .sql con la estructura y todos los datos actuales. Sirve para restaurar la BD reimportándolo en phpMyAdmin o en MariaDB.',
-  'admin.profile.backup.button': 'Descargar backup',
+  'admin.profile.backup.sub': 'Genera un volcado .sql con la estructura y todos los datos actuales. Puedes descargarlo a tu equipo o subirlo a la carpeta «backups» de Google Drive, además del backup automático.',
+  'admin.profile.backup.button': 'Descargar backup .sql',
   'admin.profile.backup.loading': 'Generando…',
   'admin.profile.backup.saved': 'Backup descargado',
   'admin.profile.backup.error': 'No se pudo generar el backup',
@@ -348,6 +348,10 @@ const ES: Record<string, string> = {
   'admin.profile.restore.error': 'No se pudo restaurar la base de datos',
   'admin.profile.restore.confirm.title': '¿Restaurar la base de datos?',
   'admin.profile.restore.confirm.message': 'Vas a ejecutar el archivo «{file}» sobre la BD. Si contiene DROP DATABASE perderás todos los datos actuales y no se puede deshacer. Asegúrate de tener un backup reciente.',
+  'admin.profile.drive.button': 'Subir backup a Drive',
+  'admin.profile.drive.loading': 'Subiendo…',
+  'admin.profile.drive.saved': 'Backup subido a Drive',
+  'admin.profile.drive.error': 'No se pudo subir el backup a Drive',
 
   // Dashboard
   'admin.dashboard.title': 'Dashboard',
@@ -851,8 +855,8 @@ const EN: Record<string, string> = {
   'admin.profile.cv.error': 'Could not upload the CV',
   'admin.profile.cv.invalid': 'Pick a PDF file under 5 MB.',
   'admin.profile.backup.title': 'Database backup',
-  'admin.profile.backup.sub': 'Download a .sql file with the current schema and data. You can restore the DB by re-importing it in phpMyAdmin or MariaDB.',
-  'admin.profile.backup.button': 'Download backup',
+  'admin.profile.backup.sub': 'Generates a .sql dump with the current schema and all data. You can download it to your computer or upload it to the "backups" folder in Google Drive, on top of the automatic backup.',
+  'admin.profile.backup.button': 'Download backup .sql',
   'admin.profile.backup.loading': 'Generating…',
   'admin.profile.backup.saved': 'Backup downloaded',
   'admin.profile.backup.error': 'Could not generate the backup',
@@ -864,6 +868,10 @@ const EN: Record<string, string> = {
   'admin.profile.restore.error': 'Could not restore the database',
   'admin.profile.restore.confirm.title': 'Restore the database?',
   'admin.profile.restore.confirm.message': 'About to execute "{file}" on the DB. If it contains DROP DATABASE you will lose all current data and this cannot be undone. Make sure you have a recent backup.',
+  'admin.profile.drive.button': 'Upload backup to Drive',
+  'admin.profile.drive.loading': 'Uploading…',
+  'admin.profile.drive.saved': 'Backup uploaded to Drive',
+  'admin.profile.drive.error': 'Could not upload the backup to Drive',
 
   // Dashboard
   'admin.dashboard.title': 'Dashboard',
