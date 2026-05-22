@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const pool = require('./src/config/db');
@@ -35,20 +36,20 @@ const corsOrigins = (process.env.CORS_ORIGINS || '')
   .filter(Boolean);
 
 const corsExposed = ['Content-Disposition'];
-if (corsOrigins.length === 0) {
-  app.use(cors({ exposedHeaders: corsExposed }));
-} else {
-  app.use(cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (corsOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error(`Origin ${origin} no permitido por CORS`));
-    },
-    exposedHeaders: corsExposed
-  }));
-}
+// credentials:true es imprescindible para que viaje la cookie de sesión httpOnly.
+app.use(cors({
+  origin: (origin, callback) => {
+    // Sin Origin (curl, SSR, same-origin) o sin CORS_ORIGINS configurado: permitido.
+    if (!origin || corsOrigins.length === 0) return callback(null, true);
+    if (corsOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`Origin ${origin} no permitido por CORS`));
+  },
+  credentials: true,
+  exposedHeaders: corsExposed
+}));
 
 app.use(express.json({ limit: '7mb' }));
+app.use(cookieParser());
 
 app.get('/api/health', async (_req, res) => {
   try {

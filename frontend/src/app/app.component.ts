@@ -89,8 +89,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
 
-    const token = localStorage.getItem('token');
-    this.isLoggedIn = !!token;
+    this.isLoggedIn = this.auth.isAuthenticated();
     this.canAccessAdmin = this.auth.canAccessAdminPanel();
 
     this.tracking.logEntry();
@@ -638,8 +637,8 @@ export class AppComponent implements OnInit, OnDestroy {
       sessionStorage.setItem('preAuthState', JSON.stringify({
         scrollY: window.scrollY
       }));
-      localStorage.removeItem('token');
-      window.location.reload();
+      const reload = () => window.location.reload();
+      this.auth.logout().subscribe({ next: reload, error: reload });
     }
   }
 }

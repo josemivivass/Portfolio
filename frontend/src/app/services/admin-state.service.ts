@@ -441,12 +441,7 @@ export class AdminStateService {
       return false;
     }
 
-    const token = this.auth.getToken();
-    if (token) {
-      try {
-        this.currentUserEmail.set(JSON.parse(atob(token.split('.')[1]))?.email ?? '');
-      } catch {}
-    }
+    this.currentUserEmail.set(this.auth.getEmail() ?? '');
 
     this.loadAllData();
     return true;
@@ -1871,7 +1866,7 @@ export class AdminStateService {
     try {
       const res = await fetch(`${environment.apiUrl}/admin/backup`, {
         method: 'GET',
-        headers: { Authorization: `Bearer ${this.auth.getToken() ?? ''}` }
+        credentials: 'include'
       });
       if (!res.ok) {
         const msg = await res.text().catch(() => '');
@@ -1915,7 +1910,7 @@ export class AdminStateService {
     try {
       const res = await fetch(`${environment.apiUrl}/admin/backup/drive`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${this.auth.getToken() ?? ''}` }
+        credentials: 'include'
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
@@ -1959,10 +1954,8 @@ export class AdminStateService {
       const sql = await file.text();
       const res = await fetch(`${environment.apiUrl}/admin/restore`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.auth.getToken() ?? ''}`,
-          'Content-Type': 'application/sql'
-        },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/sql' },
         body: sql
       });
       if (!res.ok) {

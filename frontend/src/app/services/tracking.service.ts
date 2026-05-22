@@ -2,6 +2,7 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class TrackingService {
@@ -12,6 +13,7 @@ export class TrackingService {
 
   constructor(
     private http: HttpClient,
+    private auth: AuthService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
@@ -27,7 +29,7 @@ export class TrackingService {
     const payload = {
       visitor_uuid: this.getOrCreateUuid(),
       user_agent: navigator.userAgent,
-      is_logged_in: !!localStorage.getItem('token')
+      is_logged_in: this.auth.isAuthenticated()
     };
 
     this.http.post(this.apiUrl, payload).subscribe({

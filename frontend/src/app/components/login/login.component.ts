@@ -34,28 +34,19 @@ export class LoginComponent {
     });
 
     if (isPlatformBrowser(this.platformId)) {
-      const token = localStorage.getItem('token');
-      if (token) {
-        this.isLoggedIn = true;
-        this.userEmail = this.decodeEmail(token);
-      }
+      this.isLoggedIn = this.authService.isAuthenticated();
+      this.userEmail = this.authService.getEmail() ?? '';
       if (this.route.snapshot.queryParamMap.get('expired') === '1') {
         this.errorMessage = 'Tu sesión ha expirado. Vuelve a iniciar sesión.';
       }
     }
   }
 
-  private decodeEmail(token: string): string {
-    try {
-      return JSON.parse(atob(token.split('.')[1])).email ?? '';
-    } catch { return ''; }
-  }
-
   togglePassword(): void { this.showPassword = !this.showPassword; }
 
   logout(): void {
-    this.authService.logout();
-    window.location.reload();
+    const reload = () => window.location.reload();
+    this.authService.logout().subscribe({ next: reload, error: reload });
   }
 
   onSubmit(): void {
