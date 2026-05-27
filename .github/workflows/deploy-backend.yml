@@ -1,0 +1,37 @@
+name: Deploy backend to EC2
+
+# Se dispara automáticamente al hacer push a main si hay cambios en backend/
+# (o si se edita el propio workflow). También se puede lanzar manualmente
+# desde la pestaña Actions de GitHub con "Run workflow".
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: SSH deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pull, install y restart en EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd ${{ secrets.EC2_REPO_PATH }}
+            git fetch origin main
+            git reset --hard origin/main
+            cd backend
+            npm install --omit=dev --no-audit --no-fund
+            pm2 restart portfolio-api --update-env
+            pm2 save
+            echo "Deploy completado: $(git rev-parse --short HEAD)"
