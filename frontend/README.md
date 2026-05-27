@@ -10,7 +10,9 @@ SPA en **Angular 21** con SSR (Express + `@angular/ssr`), animaciones GSAP / Thr
 | Renderizado | SSR via `@angular/ssr` + Express |
 | Animación | GSAP + ScrollTrigger, Three.js |
 | Editor rico | ngx-quill (admin) |
-| Estilos | CSS plano con variables (`colors.css`, `fonts.css`) |
+| Notebooks | Marked + highlight.js (visor `.ipynb`) |
+| SEO | servicio propio + `Title` / `Meta` de Angular |
+| Estilos | CSS plano con variables (`colors.css`, `fonts.css`)
 | Lenguaje | TypeScript 5.9 |
 
 ## Requisitos
@@ -47,21 +49,23 @@ src/
 │   │   ├── home/             Landing (hero, about, experience, education, skills)
 │   │   ├── experience/       Scroll horizontal de experiencia
 │   │   ├── projects/         Telón de proyectos con lightbox
+│   │   ├── notebook/         Visor de notebooks .ipynb (proyectos de IA)
 │   │   ├── contact/          Formulario de contacto
 │   │   ├── chatbot/          Widget de chat con IA
 │   │   ├── background/       Fondo animado (Three.js)
 │   │   ├── preloader/        Intro animada
 │   │   ├── login/ register/  Auth
 │   │   └── admin/            Panel admin con tabs (dashboard, profile, projects, …)
-│   ├── services/             translation, auth, profile, project, experience, chatbot, tracking, …
+│   ├── services/             translation, auth, seo, profile, project, experience, chatbot, tracking, …
 │   ├── guards/               admin.guard, admin-exit.guard
-│   ├── interceptors/         auth.interceptor (JWT en headers)
-│   ├── utils/tech-icons.ts   Mapeo tecnología → SVG en /icons
+│   ├── interceptors/         auth.interceptor (envía la cookie de sesión con withCredentials)
+│   ├── pipes/safe-html.pipe.ts  Sanitización para el visor de notebooks
+│   ├── utils/                tech-icons (tecnología → SVG), notebook (parser .ipynb), notebook-render
 │   └── app.routes.ts
 ├── environments/             environment.ts / environment.prod.ts
 ├── styles.css  colors.css  fonts.css
 └── server.ts                 Entrada SSR
-public/                       Assets servidos en la raíz (/icons, CVs en PDF, favicon)
+public/                       Assets servidos en la raíz (/icons, CVs en PDF, og-image, robots.txt, sitemap.xml, favicon)
 ```
 
 ## Configuración de entornos
@@ -95,10 +99,18 @@ Para datos bilingües del backend (ej. `edu.title` / `edu.title_en`):
 
 ## CVs descargables
 
-El menú "Descargar CV" del hero usa descarga programática (`fetch` + Blob) para evitar conflictos con el ciclo de vida de Angular. Coloca los PDFs en `public/` con nombres exactos:
+El menú "Descargar CV" del hero usa descarga programática (`fetch` + Blob) para evitar conflictos con el ciclo de vida de Angular. Los PDFs se sirven desde `public/`:
 
 - `CV_ES_JoseMiguelVivasSanchez.pdf`
 - `CV_EN_JoseMiguelVivasSanchez.pdf`
+
+Ambos se pueden actualizar desde el panel admin (*Perfil → CVs descargables*), que reemplaza el fichero correspondiente en el bundle servido.
+
+## Auth
+
+- La cookie de sesión `portfolio_session` (httpOnly, Secure, SameSite=Lax) la pone el backend al iniciar sesión.
+- `auth.interceptor.ts` añade `withCredentials: true` a cualquier petición al API host para que el navegador envíe la cookie automáticamente.
+- Si una respuesta de la API devuelve `401` (sesión caducada/inválida) y no es una llamada de login/register/logout, el interceptor llama a `auth.logout()` para limpiar el estado local.
 
 ## Convenciones
 

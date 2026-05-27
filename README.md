@@ -19,10 +19,11 @@ Monorepo con dos aplicaciones:
 
 - **Landing** con hero animado (GSAP + ScrollTrigger), fondo 3D (Three.js), typewriter dinámico y secciones por capítulos romanos: About · Experience · Education · Skills · Projects.
 - **i18n** propio ES / EN con servicio de traducción y contenido bilingüe en base de datos.
-- **Panel admin** protegido por JWT: gestión de perfil, experiencias, proyectos, educación, habilidades, mensajes, visitas, usuarios y chatbot.
-- **Chatbot** con LLM vía Groq Cloud.
+- **Panel admin** protegido por sesión JWT en cookie `httpOnly`: gestión de perfil, experiencias, proyectos (web · móvil · IA), notebooks, educación, habilidades, mensajes, visitas, usuarios y chatbot.
+- **Visor de notebooks** (.ipynb) integrado: convierte los notebooks de IA enlazados desde GitHub y los renderiza con resaltado de sintaxis.
+- **Chatbot** con LLM vía Groq Cloud y selector de modelo desde el admin.
 - **Tracking** de accesos y formulario de contacto con envío por email (Gmail + reCAPTCHA v3).
-- **CVs descargables** en Español e Inglés directamente desde el hero.
+- **CVs descargables** en Español e Inglés directamente desde el hero, actualizables desde el panel admin.
 - **Backups automáticos** de la base de datos a Google Drive (diarios, con rotación), además de backup y restauración manual desde el panel admin.
 - **SEO**: meta tags y descripción, Open Graph / Twitter Cards para la previsualización al compartir, datos estructurados JSON-LD, `robots.txt` y `sitemap.xml`. Bilingüe (ES / EN).
 
@@ -90,7 +91,7 @@ Cloudflare DNS
 ```
 
 - **Frontend:** AWS Amplify, despliegue automático en push a `main`.
-- **Backend:** EC2 + Caddy (reverse proxy con HTTPS) + PM2 (process manager) + MariaDB 10.5.
+- **Backend:** EC2 + Caddy (reverse proxy con HTTPS) + PM2 (process manager) + MariaDB 10.5. Despliegue automático en push a `main` vía **GitHub Actions** (`.github/workflows/deploy-backend.yml`): SSH al EC2 → `git reset --hard origin/main` → `npm install --omit=dev` → `pm2 restart portfolio-api --update-env`.
 - **DNS y registrar:** Cloudflare.
 
 ---
