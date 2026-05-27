@@ -377,6 +377,34 @@ exports.listLoginLogs = async (req, res) => {
   }
 };
 
+exports.deleteVisitorLog = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [result] = await pool.query('DELETE FROM visitor_logs WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Visita no encontrada' });
+    }
+    res.status(200).json({ message: 'Visita eliminada' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al eliminar visita' });
+  }
+};
+
+exports.deleteLoginLog = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [result] = await pool.query('DELETE FROM login_logs WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Inicio de sesión no encontrado' });
+    }
+    res.status(200).json({ message: 'Inicio de sesión eliminado' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al eliminar inicio de sesión' });
+  }
+};
+
 exports.listContactMessages = async (req, res) => {
   try {
     const [rows] = await pool.query(

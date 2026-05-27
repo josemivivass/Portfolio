@@ -543,6 +543,10 @@ const ES: Record<string, string> = {
   'admin.confirm.education.msg': '¿Seguro que quieres eliminar la educación "{name}"? Esta acción no se puede deshacer.',
   'admin.confirm.message.title': 'Eliminar mensaje',
   'admin.confirm.message.msg': '¿Seguro que quieres eliminar el mensaje de "{name}"? Esta acción no se puede deshacer.',
+  'admin.confirm.visitor.title': 'Eliminar visita',
+  'admin.confirm.visitor.msg': '¿Seguro que quieres eliminar la visita de "{ip}" del {date}? Esta acción no se puede deshacer.',
+  'admin.confirm.login.title': 'Eliminar inicio de sesión',
+  'admin.confirm.login.msg': '¿Seguro que quieres eliminar el inicio de sesión de "{email}" del {date}? Esta acción no se puede deshacer.',
 
   // Errors / alerts
   'admin.error.role': 'No se pudo actualizar el rol',
@@ -561,6 +565,8 @@ const ES: Record<string, string> = {
   'admin.error.skills.save': 'Error al guardar habilidades',
   'admin.error.message.delete': 'Error al eliminar mensaje',
   'admin.error.message.update': 'No se pudo actualizar el mensaje',
+  'admin.error.visitor.delete': 'Error al eliminar visita',
+  'admin.error.login.delete': 'Error al eliminar inicio de sesión',
 
   // Admin Chatbot
   'admin.tab.chatbot': 'Chatbot',
@@ -1076,6 +1082,10 @@ const EN: Record<string, string> = {
   'admin.confirm.experience.msg': 'Are you sure you want to delete the experience "{name}"? This action cannot be undone.',
   'admin.confirm.message.title': 'Delete message',
   'admin.confirm.message.msg': 'Are you sure you want to delete the message from "{name}"? This action cannot be undone.',
+  'admin.confirm.visitor.title': 'Delete visit',
+  'admin.confirm.visitor.msg': 'Are you sure you want to delete the visit from "{ip}" on {date}? This action cannot be undone.',
+  'admin.confirm.login.title': 'Delete login',
+  'admin.confirm.login.msg': 'Are you sure you want to delete the login from "{email}" on {date}? This action cannot be undone.',
 
   // Errors / alerts
   'admin.error.role': 'Could not update the role',
@@ -1094,6 +1104,8 @@ const EN: Record<string, string> = {
   'admin.error.skills.save': 'Error saving skills',
   'admin.error.message.delete': 'Error deleting message',
   'admin.error.message.update': 'Could not update the message',
+  'admin.error.visitor.delete': 'Error deleting visit',
+  'admin.error.login.delete': 'Error deleting login',
 
   // Admin Chatbot
   'admin.tab.chatbot': 'Chatbot',

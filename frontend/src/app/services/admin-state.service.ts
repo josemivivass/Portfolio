@@ -1545,6 +1545,54 @@ export class AdminStateService {
     );
   }
 
+  deleteVisitorLog(v: any): void {
+    if (!this.isAdmin()) return;
+    this.askConfirm(
+      this.i18n.t('admin.confirm.visitor.title'),
+      this.i18n.t('admin.confirm.visitor.msg', {
+        ip: v.ip_address || '—',
+        date: new Date(v.entry_time).toLocaleString()
+      }),
+      () => {
+        const prev = this.visitorLogs();
+        this.visitorLogs.set(prev.filter(x => x.id !== v.id));
+        this.buildCharts();
+        this.adminService.deleteVisitorLog(v.id).subscribe({
+          error: (err) => {
+            this.visitorLogs.set(prev);
+            this.buildCharts();
+            alert(this.i18n.t('admin.error.visitor.delete'));
+            console.error(err);
+          }
+        });
+      }
+    );
+  }
+
+  deleteLoginLog(l: any): void {
+    if (!this.isAdmin()) return;
+    this.askConfirm(
+      this.i18n.t('admin.confirm.login.title'),
+      this.i18n.t('admin.confirm.login.msg', {
+        email: l.email || '—',
+        date: new Date(l.login_time).toLocaleString()
+      }),
+      () => {
+        const prev = this.loginLogs();
+        this.loginLogs.set(prev.filter(x => x.id !== l.id));
+        this.buildCharts();
+        this.adminService.deleteLoginLog(l.id).subscribe({
+          error: (err) => {
+            this.loginLogs.set(prev);
+            this.buildCharts();
+            alert(this.i18n.t('admin.error.login.delete'));
+            console.error(err);
+          }
+        });
+      }
+    );
+  }
+
   // ═══════════════════════════════════════════════════════
   //  Confirm modal
   // ═══════════════════════════════════════════════════════

@@ -122,8 +122,14 @@ export class AdminService {
   listVisitorLogs(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/admin/visitor-logs`, { headers: this.headers() });
   }
+  deleteVisitorLog(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/admin/visitor-logs/${id}`, { headers: this.headers() });
+  }
   listLoginLogs(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/admin/login-logs`, { headers: this.headers() });
+  }
+  deleteLoginLog(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/admin/login-logs/${id}`, { headers: this.headers() });
   }
   listContactMessages(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/admin/contact-messages`, { headers: this.headers() });

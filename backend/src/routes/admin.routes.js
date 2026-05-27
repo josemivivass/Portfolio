@@ -36,9 +36,11 @@ router.post('/skills', editorOrAdmin, skills.createSkill);
 router.put('/skills/:id', editorOrAdmin, skills.updateSkill);
 router.delete('/skills/:id', adminOnly, skills.deleteSkill);
 
-// Logs / mensajes (admin y editor pueden consultar)
+// Logs / mensajes (admin y editor pueden consultar; sólo admin puede borrar)
 router.get('/visitor-logs', editorOrAdmin, admin.listVisitorLogs);
+router.delete('/visitor-logs/:id', adminOnly, admin.deleteVisitorLog);
 router.get('/login-logs', editorOrAdmin, admin.listLoginLogs);
+router.delete('/login-logs/:id', adminOnly, admin.deleteLoginLog);
 router.get('/contact-messages', editorOrAdmin, admin.listContactMessages);
 router.patch('/contact-messages/:id/answered', editorOrAdmin, admin.updateContactMessageAnswered);
 router.delete('/contact-messages/:id', adminOnly, admin.deleteContactMessage);

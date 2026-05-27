@@ -53,10 +53,13 @@
             <span>{{ state.i18n.t('admin.logins.col.zone') }}</span>
             <span class="sort-icon" [attr.data-dir]="state.sortDir('logins','time_zone')"></span>
           </th>
+          @if (state.isAdmin()) {
+            <th style="width:60px;text-align:right"></th>
+          }
         </tr>
       </thead>
       <tbody>
-        @for (l of state.sortedLoginLogs(); track $index) {
+        @for (l of state.sortedLoginLogs(); track l.id) {
           <tr>
             <td class="mono">{{ l.login_time | date:'dd-MM-yyyy' }}</td>
             <td>{{ l.email || '—' }}</td>
@@ -65,9 +68,18 @@
             <td>{{ l.language || '—' }}</td>
             <td class="mono">{{ l.screen_resolution || '—' }}</td>
             <td>{{ l.time_zone || '—' }}</td>
+            @if (state.isAdmin()) {
+              <td style="text-align:right">
+                <div class="actions">
+                  <button type="button" class="btn-delete" (click)="state.deleteLoginLog(l)" [attr.aria-label]="state.i18n.t('admin.action.delete')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                </div>
+              </td>
+            }
           </tr>
         } @empty {
-          <tr><td colspan="7" class="empty">{{ state.i18n.t('admin.logins.empty') }}</td></tr>
+          <tr><td [attr.colspan]="state.isAdmin() ? 8 : 7" class="empty">{{ state.i18n.t('admin.logins.empty') }}</td></tr>
         }
       </tbody>
     </table>
@@ -90,7 +102,7 @@
   </div>
 
   <div class="mobile-list log-list">
-    @for (l of state.sortedLoginLogs(); track $index) {
+    @for (l of state.sortedLoginLogs(); track l.id) {
       <article class="mobile-card log-card">
         <header class="log-card-head">
           <time>{{ l.login_time | date:'dd/MM/yyyy HH:mm' }}</time>
@@ -103,6 +115,11 @@
           <div><dt>{{ state.i18n.t('admin.logins.col.resolution') }}</dt><dd>{{ l.screen_resolution || '—' }}</dd></div>
           <div class="full"><dt>{{ state.i18n.t('admin.logins.col.zone') }}</dt><dd>{{ l.time_zone || '—' }}</dd></div>
         </dl>
+        @if (state.isAdmin()) {
+          <footer class="mobile-card-actions">
+            <button class="btn-delete" (click)="state.deleteLoginLog(l)">{{ state.i18n.t('admin.action.delete') }}</button>
+          </footer>
+        }
       </article>
     } @empty {
       <div class="empty-state">
