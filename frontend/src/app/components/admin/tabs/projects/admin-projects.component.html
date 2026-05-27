@@ -4,16 +4,14 @@
       <h1>{{ state.i18n.t('admin.projects.title') }}</h1>
       <p class="page-sub">{{ state.isAdmin() ? state.i18n.t('admin.projects.sub.full') : state.i18n.t('admin.projects.sub.editor') }}</p>
     </div>
-    <div class="page-head-actions">
-      <button class="btn-primary btn-new-compact" (click)="state.newProject()" [attr.aria-label]="state.i18n.t('admin.projects.new')">
-        <span class="btn-new-label">{{ state.i18n.t('admin.projects.new') }}</span>
-        <span class="btn-new-icon" aria-hidden="true">+P</span>
-      </button>
-      <button class="btn-primary btn-new-compact" (click)="state.newNotebook()" [attr.aria-label]="state.i18n.t('admin.notebook.new')">
-        <span class="btn-new-label">{{ state.i18n.t('admin.notebook.new') }}</span>
-        <span class="btn-new-icon" aria-hidden="true">+N</span>
-      </button>
-    </div>
+    <button class="btn-primary btn-new-compact btn-new-first" (click)="state.newProject()" [attr.aria-label]="state.i18n.t('admin.projects.new')">
+      <span class="btn-new-label">{{ state.i18n.t('admin.projects.new') }}</span>
+      <span class="btn-new-icon" aria-hidden="true">+P</span>
+    </button>
+    <button class="btn-primary btn-new-compact" (click)="state.newNotebook()" [attr.aria-label]="state.i18n.t('admin.notebook.new')">
+      <span class="btn-new-label">{{ state.i18n.t('admin.notebook.new') }}</span>
+      <span class="btn-new-icon" aria-hidden="true">+N</span>
+    </button>
   </header>
 
   <div class="card table-card">

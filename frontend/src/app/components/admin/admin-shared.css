@@ -4,9 +4,12 @@
    ancestradas en `.admin-shell` para que NO afecten a nada fuera del
    panel. Este archivo concentra lo que comparten varias tabs y/o el
    shell del padre, evitando duplicarlo en cada componente.
+
+   Estilo editorial: Newsreader serif, Geist sans, Geist Mono.
+   Acento azul #007bff. Italic siempre azul. Eyebrows mono con regla.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ─── Page header ─────────────────────────────────── */
+/* ─── Page header editorial ───────────────────────── */
 .admin-shell .page {
   padding: 0 24px;
   display: flex;
@@ -21,55 +24,85 @@
 
 .admin-shell .page-head-actions {
   display: flex;
-  gap: 12px;
+  flex-direction: row;
+  gap: 10px;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.admin-shell .page-head .btn-new-compact {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.admin-shell .page-head .btn-new-compact.btn-new-first {
+  margin-left: auto;
+}
+
+.admin-shell .page-head:has(.btn-new-compact) > .page-head-actions {
+  flex-wrap: nowrap;
+  gap: 10px;
 }
 @media (max-width: 860px) {
   .admin-shell .page-head:has(.btn-new-compact) > .page-head-actions {
     flex: 0 0 auto;
+    width: auto;
+    gap: 8px;
+    flex-wrap: nowrap;
   }
   .admin-shell .page-head-actions .btn-new-compact .btn-new-icon {
-    font-size: 1.1rem;
-    transform: translateY(1px);
+    font-size: 1.4rem;
+    transform: translateY(-1px);
   }
 }
 
 .admin-shell .page-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   margin-bottom: 32px;
-  padding-bottom: 18px;
+  padding-bottom: 20px;
   border-bottom: 1px solid var(--border);
-  gap: 16px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.admin-shell .page-head > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .admin-shell .page-head h1 {
   margin: 0;
-  font-size: 1.85rem;
-  font-weight: 400;
-  color: var(--brand);
-  letter-spacing: -0.4px;
   font-family: var(--ff-serif);
+  font-weight: 300;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  color: var(--text-heading);
+  letter-spacing: -0.018em;
+  line-height: 1.05;
+  text-wrap: balance;
 }
-.admin-shell .page-head h1::before {
-  content: '';
-  display: inline-block;
-  width: 4px;
-  height: 22px;
-  background: var(--accent);
-  margin-right: 14px;
-  vertical-align: middle;
-  border-radius: 2px;
-  box-shadow: 0 0 10px rgba(45, 106, 79, 0.5);
+.admin-shell .page-head h1 em {
+  font-style: italic;
+  color: var(--accent);
+  font-weight: 400;
 }
 .admin-shell .page-sub {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 300;
   color: var(--text-muted);
   font-size: 0.92rem;
-  margin: 4px 0 0;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 640px;
+}
+.admin-shell .page-sub em {
+  color: var(--accent);
+  font-style: italic;
 }
 
-/* ─── Card / Table base ───────────────────────────── */
+/* ─── Card base ───────────────────────────────────── */
 .admin-shell .page .card {
   display: block;
   width: 100%;
@@ -77,43 +110,51 @@
   box-sizing: border-box;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 4px;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: none;
   padding: 0;
-  margin: 0 0 22px 0;
+  margin: 0 0 22px;
 }
 .admin-shell .messages-list { width: 100%; box-sizing: border-box; }
 .admin-shell .stats-grid,
 .admin-shell .chart-grid { width: 100%; box-sizing: border-box; }
 
+/* ─── Tablas editoriales ──────────────────────────── */
 .admin-shell .data-table {
   width: 100%;
   border-collapse: collapse;
+  font-family: var(--ff-sans);
 }
 .admin-shell .data-table th,
 .admin-shell .data-table td {
-  padding: 15px 22px;
+  padding: 16px 22px;
   text-align: left;
-  font-size: 0.86rem;
-  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--text-body);
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
 }
 .admin-shell .data-table th {
-  background: var(--surface-alt);
-  font-weight: 800;
-  color: var(--text-label);
+  background: transparent;
+  font-family: var(--ff-mono);
+  font-weight: 500;
+  color: var(--accent);
   text-transform: uppercase;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  padding-top: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
 }
 .admin-shell .data-table th.sortable {
   cursor: pointer;
   user-select: none;
-  transition: background 0.15s, color 0.15s;
+  transition: color 0.15s;
 }
 .admin-shell .data-table th.sortable:hover {
-  background: var(--accent-softer);
-  color: var(--accent);
+  background: transparent;
+  color: var(--text-heading);
 }
 .admin-shell .data-table th.sortable > span:first-child {
   display: inline-block;
@@ -122,11 +163,11 @@
 .admin-shell .data-table th .sort-icon {
   position: relative;
   display: inline-block;
-  width: 10px;
-  height: 14px;
+  width: 8px;
+  height: 12px;
   margin-left: 6px;
   vertical-align: middle;
-  opacity: 0.35;
+  opacity: 0.4;
   transition: opacity 0.15s, color 0.15s;
 }
 .admin-shell .data-table th .sort-icon::before,
@@ -136,77 +177,107 @@
   left: 1px;
   width: 0;
   height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
 }
 .admin-shell .data-table th .sort-icon::before {
-  top: 1px;
-  border-bottom: 4px solid currentColor;
+  top: 0;
+  border-bottom: 3px solid currentColor;
 }
 .admin-shell .data-table th .sort-icon::after {
-  bottom: 1px;
-  border-top: 4px solid currentColor;
+  bottom: 0;
+  border-top: 3px solid currentColor;
 }
-.admin-shell .data-table th.sortable:hover .sort-icon { opacity: 0.6; }
-.admin-shell .data-table th.sorted { color: var(--accent); background: var(--accent-softer); }
+.admin-shell .data-table th.sortable:hover .sort-icon { opacity: 0.7; }
+.admin-shell .data-table th.sorted {
+  color: var(--accent);
+  background: transparent;
+}
 .admin-shell .data-table th.sorted .sort-icon { opacity: 1; color: var(--accent); }
 .admin-shell .data-table th .sort-icon[data-dir="asc"]::after { border-top-color: transparent; }
 .admin-shell .data-table th .sort-icon[data-dir="desc"]::before { border-bottom-color: transparent; }
 .admin-shell .data-table tr:last-child td { border-bottom: none; }
 .admin-shell .data-table tbody tr { transition: background 0.15s; }
-.admin-shell .data-table tbody tr:hover { background: var(--surface-alt); }
-.admin-shell .data-table .mono { font-family: var(--ff-mono); font-size: 0.78rem; color: var(--text-muted); }
+.admin-shell .data-table tbody tr:hover { background: var(--accent-softer); }
+.admin-shell .data-table tbody tr:hover td { color: var(--text-heading); }
+.admin-shell .data-table .mono {
+  font-family: var(--ff-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
 
 .admin-shell .empty {
   text-align: center;
   color: var(--text-muted);
-  padding: 50px 20px;
-  font-size: 0.9rem;
+  padding: 60px 24px;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 1.02rem;
 }
 
+/* ─── Pills editoriales ───────────────────────────── */
 .admin-shell .pill {
-  display: inline-block;
-  padding: 4px 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
   border-radius: 999px;
-  background: var(--accent-soft);
+  background: transparent;
+  border: 1px solid var(--accent);
   color: var(--accent);
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-family: var(--ff-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.18em;
+  line-height: 1.4;
 }
-.admin-shell .pill.pill-dark { background: var(--brand); color: #fff; }
-.admin-shell .pill.pill-amber { background: var(--c-amber-light); color: var(--c-amber-dark); }
+.admin-shell .pill.pill-dark {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+.admin-shell .pill.pill-amber {
+  background: transparent;
+  color: var(--c-amber-bar);
+  border-color: var(--c-amber-bar);
+}
 
 .admin-shell .actions { gap: 8px; white-space: nowrap; }
-.admin-shell .actions::before { content: ''; display: inline-block; width: 0; height: 30px; vertical-align: middle; }
+.admin-shell .actions::before {
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 30px;
+  vertical-align: middle;
+}
 .admin-shell .actions > button { vertical-align: middle; }
 
-/* Chip de tag (logo + texto). Se usa tanto en la tabla desktop como
-   en las mobile-cards. */
 .admin-shell .tag-chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 3px 10px;
-  background: var(--accent-softer);
+  background: transparent;
   color: var(--accent);
+  border: 1px solid var(--accent);
   border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-family: var(--ff-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   vertical-align: middle;
+  line-height: 1.4;
 }
 .admin-shell .tag-chip-icon {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   flex-shrink: 0;
 }
 
-/* Celda de tags en la tabla: una sola línea. Cuando los chips se desbordan
-   se difumina el borde derecho — así un chip recortado se desvanece entero
-   (icono incluido) y no queda ningún logo suelto colgando tras el corte.
-   `max-width` evita que la celda se trague las demás columnas. */
 .admin-shell .data-table .tag-cell { max-width: 320px; }
 .admin-shell .data-table .tag-cell-inner {
   display: block;
@@ -217,110 +288,155 @@
 }
 .admin-shell .data-table .tag-cell-inner .tag-chip { margin-right: 4px; }
 
-/* ─── Buttons ─────────────────────────────────────── */
+/* ─── Buttons editoriales ─────────────────────────── */
 .admin-shell button.btn-primary,
 .admin-shell button.btn-secondary,
 .admin-shell button.btn-edit,
 .admin-shell button.btn-delete,
 .admin-shell button.btn-danger,
 .admin-shell button.btn-ghost {
-  border: none;
-  border-radius: 10px;
-  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-family: var(--ff-sans);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 0.18s;
+  transition: all 0.22s ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-family: inherit;
-  letter-spacing: 0.01em;
+  gap: 8px;
+  line-height: 1.2;
 }
+.admin-shell button.btn-primary svg,
+.admin-shell button.btn-secondary svg,
+.admin-shell button.btn-edit svg,
+.admin-shell button.btn-delete svg,
+.admin-shell button.btn-danger svg,
+.admin-shell button.btn-ghost svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
 .admin-shell button.btn-primary {
-  background: var(--accent);
+  background: var(--text-heading);
   color: #fff;
-  box-shadow: var(--shadow-accent);
+  border-color: var(--text-heading);
+  box-shadow: none;
 }
-.admin-shell button.btn-primary:hover {
-  background: var(--accent-hover);
+.admin-shell button.btn-primary:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-accent-lg);
 }
+.admin-shell button.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .admin-shell button.btn-secondary {
   background: transparent;
-  color: var(--text-label);
-  border: 1.5px solid var(--border-strong);
+  color: var(--text-heading);
+  border: 1px solid var(--border);
 }
-.admin-shell button.btn-secondary:hover {
-  background: var(--surface-alt);
-  border-color: var(--text-muted);
-}
-.admin-shell button.btn-edit {
-  background: var(--accent-soft);
+.admin-shell button.btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent);
   color: var(--accent);
-  padding: 7px 14px;
+}
+.admin-shell button.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-shell button.btn-edit {
+  background: transparent;
+  color: var(--accent);
+  padding: 6px 14px;
   font-size: 0.76rem;
-  border: 1px solid transparent;
+  border: 1px solid var(--accent);
 }
 .admin-shell button.btn-edit:hover {
-  background: rgba(45, 106, 79, 0.18);
+  background: var(--accent);
+  color: #fff;
 }
+
 .admin-shell button.btn-delete {
   background: transparent;
   color: var(--danger);
-  border: 1.5px solid rgba(220, 53, 69, 0.25);
-  padding: 7px 14px;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  padding: 6px 14px;
   font-size: 0.76rem;
 }
 .admin-shell button.btn-delete:hover {
-  background: rgba(220, 53, 69, 0.08);
+  background: var(--danger);
+  color: #fff;
   border-color: var(--danger);
 }
+
 .admin-shell button.btn-danger {
   background: var(--danger);
   color: #fff;
-  padding: 11px 20px;
+  border-color: var(--danger);
+  padding: 11px 22px;
   font-size: 0.86rem;
-  box-shadow: 0 4px 14px rgba(220, 53, 69, 0.35);
 }
 .admin-shell button.btn-danger:hover {
-  background: #b91c1c;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.45);
+  background: var(--c-danger-text);
+  border-color: var(--c-danger-text);
 }
+
+.admin-shell button.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  padding: 8px 14px;
+  font-size: 0.78rem;
+}
+.admin-shell button.btn-ghost:hover {
+  color: var(--accent);
+  border-color: var(--border);
+}
+
 .admin-shell button:active:not(:disabled) { transform: translateY(0); }
 
-/* ─── Charts (compartidos: dashboard, visitors, logins) ─── */
+/* ─── Charts editoriales (dashboard, visitors, logins) ─── */
 .admin-shell .chart-card,
 .admin-shell .card.chart-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px 20px;
-  box-shadow: var(--shadow);
+  border-radius: 4px;
+  padding: 24px 26px;
+  box-shadow: none;
 }
 .admin-shell .chart-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 .admin-shell .chart-head h3 {
   margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text);
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.25rem;
+  color: var(--text-heading);
+  letter-spacing: -0.015em;
 }
 .admin-shell .chart-pill {
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-family: var(--ff-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
   color: var(--accent);
-  background: var(--accent-soft);
-  padding: 4px 10px;
-  border-radius: 999px;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.2em;
 }
 
 .admin-shell .bar-chart {
@@ -336,308 +452,341 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px;
   height: 100%;
   cursor: pointer;
 }
 .admin-shell .bar {
   width: 100%;
   min-height: 2px;
-  border-radius: 4px 4px 0 0;
-  transition: opacity 0.2s, transform 0.2s;
+  border-radius: 0;
+  transition: opacity 0.2s;
 }
-.admin-shell .bar-blue { background: linear-gradient(180deg, var(--c-primary-light), var(--c-primary)); }
-.admin-shell .bar-amber { background: linear-gradient(180deg, var(--c-amber-bar-light), var(--c-amber-bar)); }
-.admin-shell .bar-col:hover .bar { opacity: 0.88; transform: scaleY(1.02); transform-origin: bottom; }
+.admin-shell .bar-blue  { background: var(--accent); }
+.admin-shell .bar-amber { background: var(--c-amber-bar); }
+.admin-shell .bar-col:hover .bar { opacity: 0.82; }
 .admin-shell .bar-label {
-  font-size: 0.65rem;
+  font-family: var(--ff-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 500;
 }
 
-/* ─── Messages toolbar (compartido: messages, chatbot) ─── */
+/* ─── Messages toolbar editorial (messages, chatbot) ─── */
 .admin-shell .messages-toolbar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 18px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
-  padding: 8px 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  margin-bottom: 22px;
+  padding: 0 0 18px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border-light);
+  border-radius: 0;
 }
 .admin-shell .messages-search {
   position: relative;
-  flex: 0 1 300px;
-  max-width: 300px;
-  min-width: 200px;
+  flex: 0 1 340px;
+  max-width: 340px;
+  min-width: 220px;
   display: flex;
   align-items: center;
 }
 .admin-shell .messages-search svg {
   position: absolute;
-  left: 11px;
+  left: 0;
   width: 14px;
   height: 14px;
-  color: var(--text-muted);
+  color: var(--accent);
   pointer-events: none;
 }
 .admin-shell .messages-search input {
   width: 100%;
-  padding: 8px 12px 8px 33px;
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  background: #fff;
-  font-size: 0.82rem;
-  font-family: inherit;
-  color: var(--text);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  padding: 8px 12px 12px 24px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  border-radius: 0;
+  font-family: var(--ff-serif);
+  font-weight: 300;
+  font-size: 1.05rem;
+  color: var(--text-heading);
+  transition: border-color 0.2s;
+  letter-spacing: -0.005em;
+}
+.admin-shell .messages-search input::placeholder {
+  color: var(--text-soft);
+  font-style: italic;
 }
 .admin-shell .messages-search input:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+  border-bottom-color: var(--accent);
 }
 .admin-shell .messages-select {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.66rem;
+  gap: 10px;
+  font-family: var(--ff-mono);
+  font-size: 0.62rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 700;
-  color: var(--text-muted);
+  letter-spacing: 0.2em;
+  font-weight: 500;
+  color: var(--accent);
 }
 .admin-shell .messages-select select {
-  min-width: 120px;
-  padding: 6px 10px;
-  font-size: 0.8rem;
-  border-radius: 8px;
+  min-width: 130px;
+  padding: 6px 28px 6px 0;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 0.95rem;
+  letter-spacing: -0.005em;
   text-transform: none;
-  letter-spacing: 0;
-  font-weight: 600;
-  color: var(--text);
+  color: var(--text-heading);
+  background: transparent
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007bff' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>")
+    no-repeat right 4px center / 12px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.admin-shell .messages-select select:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
 }
 
-/* ─── Empty state ─────────────────────────────────── */
+/* ─── Empty state editorial ───────────────────────── */
 .admin-shell .empty-state {
   text-align: center;
-  padding: 70px 20px;
+  padding: 80px 24px;
   color: var(--text-muted);
-  background: var(--surface);
-  border: 1px dashed var(--border-strong);
-  border-radius: 14px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 1.02rem;
 }
 
-/* ─── Profile text label (usado en tab profile y modales del shell) ─── */
 .admin-shell .profile-text-label {
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--text-label);
+  font-family: var(--ff-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  color: var(--accent);
   text-transform: uppercase;
 }
 
-/* ─── Profile file btn (usado en profile y en modal del prompt chatbot) ─── */
 .admin-shell .profile-file-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 14px;
-  border-radius: 10px;
-  border: 1.5px solid var(--border-strong);
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
   background: transparent;
-  color: var(--text-label);
-  font-size: 0.76rem;
-  font-weight: 700;
+  color: var(--text-heading);
+  font-family: var(--ff-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: background 0.18s, border-color 0.18s, color 0.18s;
-  font-family: inherit;
+  transition: all 0.18s;
 }
 .admin-shell .profile-file-btn:hover {
-  background: var(--surface-alt);
-  border-color: var(--text-muted);
-  color: var(--text);
+  background: transparent;
+  border-color: var(--accent);
+  color: var(--accent);
 }
-.admin-shell .profile-file-btn svg { width: 14px; height: 14px; }
+.admin-shell .profile-file-btn svg { width: 13px; height: 13px; }
 
-/* ─── Mobile lists (display:none por defecto, se activan en @media) ─── */
 .admin-shell .mobile-list,
 .admin-shell .mobile-toolbar { display: none; }
 
-/* ESTILOS DEL EDITOR QUILL  */
-quill-editor {
+/* QUILL EDITOR — adaptado al sistema editorial */
+.admin-shell quill-editor {
   display: flex;
   flex-direction: column;
   width: 100%;
-  border-radius: 10px;
-  margin-bottom: 12px;
+  border-radius: 0;
+  margin-bottom: 8px;
+  min-width: 0;
 }
 
-quill-editor:focus-within {
-  box-shadow: 0 0 0 3px var(--accent-soft);
-  border-radius: 10px;
-}
-
-.ql-toolbar.ql-snow {
+.admin-shell .ql-toolbar.ql-snow {
   box-sizing: border-box !important;
   border: 1px solid var(--border) !important;
-  border-bottom: 1px solid var(--border) !important;
-  border-radius: 10px 10px 0 0 !important;
+  border-bottom: 0 !important;
+  border-radius: 0 !important;
   background: var(--surface-alt) !important;
-  font-family: inherit !important;
-  padding: 8px 66px 8px 12px !important; 
+  font-family: var(--ff-sans) !important;
+  padding: 6px 10px !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
   transition: border-color 0.15s;
 }
 
-.ql-container.ql-snow {
+.admin-shell .ql-container.ql-snow {
   box-sizing: border-box !important;
   border: 1px solid var(--border) !important;
-  border-top: none !important;
-  border-radius: 0 0 10px 10px !important;
+  border-radius: 0 !important;
   background: var(--surface) !important;
-  color: var(--text) !important;
-  font-family: inherit !important;
-  font-size: 0.88rem !important;
-  height: auto !important; 
-}
-
-.ql-editor {
-  padding: 12px 14px !important;
-  line-height: 1.5;
+  color: var(--text-heading) !important;
+  font-family: var(--ff-serif) !important;
+  font-weight: 300 !important;
+  font-size: 0.98rem !important;
   height: auto !important;
 }
 
-quill-editor.editor-title .ql-editor {
-  min-height: 46px;
+.admin-shell .ql-editor {
+  padding: 12px 14px !important;
+  line-height: 1.55;
+  height: auto !important;
 }
 
-quill-editor.editor-desc .ql-editor {
-  min-height: 96px;
-}
+.admin-shell quill-editor.editor-title .ql-editor { min-height: 46px; }
+.admin-shell quill-editor.editor-desc  .ql-editor { min-height: 110px; }
 
-quill-editor:focus-within .ql-toolbar.ql-snow,
-quill-editor:focus-within .ql-container.ql-snow {
+.admin-shell quill-editor:focus-within .ql-toolbar.ql-snow,
+.admin-shell quill-editor:focus-within .ql-container.ql-snow {
   border-color: var(--accent) !important;
 }
 
-/* Ajuste compacto de botones */
-.ql-toolbar.ql-snow button {
+/* Quill — botones compactos */
+.admin-shell .ql-toolbar.ql-snow button {
   width: 22px !important;
   height: 22px !important;
   padding: 2px !important;
 }
-
-.ql-toolbar.ql-snow button svg {
+.admin-shell .ql-toolbar.ql-snow button svg {
   width: 14px !important;
   height: 14px !important;
 }
-
-.ql-toolbar.ql-snow .ql-formats {
+.admin-shell .ql-toolbar.ql-snow .ql-formats {
   margin-right: 8px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
-
-.ql-toolbar.ql-snow .ql-picker {
+.admin-shell .ql-toolbar.ql-snow .ql-picker {
   height: 22px !important;
   line-height: 22px !important;
 }
-
-.ql-toolbar.ql-snow .ql-picker-label {
+.admin-shell .ql-toolbar.ql-snow .ql-picker-label {
   padding-left: 4px !important;
   padding-right: 14px !important;
   font-size: 0.75rem !important;
 }
-
-.ql-toolbar.ql-snow .ql-picker-label svg {
+.admin-shell .ql-toolbar.ql-snow .ql-picker-label svg {
   right: 0 !important;
   width: 12px !important;
   height: 12px !important;
   margin-top: -6px !important;
 }
 
-/* ESTILOS PARA HTML INYECTADO*/
-.rich-text-cell b,
-.rich-text-cell strong,
-.rich-text-title b,
-.rich-text-title strong {
-  font-weight: bold !important;
+/* HTML INYECTADO (rich text del Quill renderizado) */
+.admin-shell .rich-text-cell b,
+.admin-shell .rich-text-cell strong,
+.admin-shell .rich-text-title b,
+.admin-shell .rich-text-title strong {
+  font-weight: 600 !important;
+  color: var(--text-heading);
 }
-
-.rich-text-cell i,
-.rich-text-cell em,
-.rich-text-title i,
-.rich-text-title em {
+.admin-shell .rich-text-cell i,
+.admin-shell .rich-text-cell em,
+.admin-shell .rich-text-title i,
+.admin-shell .rich-text-title em {
   font-style: italic !important;
+  color: var(--accent) !important;
 }
-
-.rich-text-cell p,
-.rich-text-title p {
+.admin-shell .rich-text-cell p,
+.admin-shell .rich-text-title p {
   margin: 0;
   padding: 0;
   display: inline;
 }
 
-.profile-text-value b,
-.profile-text-value strong { font-weight: 700 !important; color: var(--text); }
-.profile-text-value i,
-.profile-text-value em { font-style: italic !important; }
-.profile-text-value u { text-decoration: underline !important; }
-.profile-text-value s,
-.profile-text-value strike { text-decoration: line-through !important; }
-.profile-text-value p { margin: 0 0 8px; }
-.profile-text-value p:last-child { margin-bottom: 0; }
-.profile-text-value ol,
-.profile-text-value ul { margin: 0 0 8px 0; padding-left: 1.2rem; }
-.profile-text-value h1,
-.profile-text-value h2,
-.profile-text-value h3 { margin: 0 0 8px; color: var(--text); }
-.profile-text-value a { color: var(--accent); text-decoration: underline; }
+.admin-shell .profile-text-value b,
+.admin-shell .profile-text-value strong {
+  font-weight: 500 !important;
+  color: var(--text-heading);
+}
+.admin-shell .profile-text-value i,
+.admin-shell .profile-text-value em {
+  font-style: italic !important;
+  color: var(--accent);
+}
+.admin-shell .profile-text-value u { text-decoration: underline !important; }
+.admin-shell .profile-text-value s,
+.admin-shell .profile-text-value strike { text-decoration: line-through !important; }
+.admin-shell .profile-text-value p { margin: 0 0 10px; }
+.admin-shell .profile-text-value p:last-child { margin-bottom: 0; }
+.admin-shell .profile-text-value ol,
+.admin-shell .profile-text-value ul { margin: 0 0 10px 0; padding-left: 1.2rem; }
+.admin-shell .profile-text-value h1,
+.admin-shell .profile-text-value h2,
+.admin-shell .profile-text-value h3 {
+  margin: 0 0 10px;
+  color: var(--text-heading);
+  font-family: var(--ff-serif);
+  font-weight: 400;
+}
+.admin-shell .profile-text-value a { color: var(--accent); text-decoration: underline; }
 
-/* ─── Responsive ──────────────────────────────────── */
+/* RESPONSIVE */
 @media (max-width: 1100px) {
   .admin-shell .chart-grid { grid-template-columns: 1fr; }
 }
 
+/* ─── MÓVIL ≤ 860 px ─────────────────────────────── */
 @media (max-width: 860px) {
   .admin-shell .page { width: 100%; padding: 0; }
   .admin-shell .page-head {
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
-    margin-bottom: 22px;
-    padding-bottom: 14px;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 22px;
   }
-  .admin-shell .page-head > div { min-width: 0; }
+  .admin-shell .page-head > div { min-width: 0; gap: 10px; }
   .admin-shell .page-head h1 {
-    font-size: 1.5rem;
-    letter-spacing: -0.4px;
+    font-size: clamp(1.5rem, 6.5vw, 1.85rem);
+    line-height: 1.1;
   }
-  .admin-shell .page-head h1::before {
-    height: 18px;
-    margin-right: 10px;
-  }
-  .admin-shell .page-sub { font-size: 0.85rem; }
-  .admin-shell .page-head .btn-primary {
+  .admin-shell .page-sub { font-size: 0.88rem; max-width: none; }
+  .admin-shell .page-head .btn-primary:not(.btn-new-compact) {
     width: 100%;
-    padding: 12px 16px;
+    justify-content: center;
+    padding: 12px 18px;
+    min-height: 44px;
   }
+  .admin-shell .page-head:not(:has(.btn-new-compact)) .page-head-actions { width: 100%; }
 
-  /* Compact "+" button on mobile for projects/experience headers */
   .admin-shell .page-head:has(.btn-new-compact) {
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
   }
   .admin-shell .page-head:has(.btn-new-compact) > div { flex: 1; min-width: 0; }
   .admin-shell .page-head .btn-primary.btn-new-compact {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border-radius: 50%;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
+    margin-top: 6px;
   }
   .admin-shell .btn-new-compact .btn-new-label { display: none; }
   .admin-shell .btn-new-compact .btn-new-icon {
@@ -648,185 +797,227 @@ quill-editor:focus-within .ql-container.ql-snow {
     height: 100%;
     font-size: 1.5rem;
     line-height: 1;
-    font-weight: 700;
+    font-weight: 400;
     transform: translateY(-1px);
   }
 
-  /* Charts shared on mobile */
-  .admin-shell .chart-grid { gap: 10px; margin-bottom: 12px; }
+  /* Charts mobile editorial */
+  .admin-shell .chart-grid { gap: 14px; margin-bottom: 14px; }
   .admin-shell .card.chart-card,
-  .admin-shell .chart-card { padding: 8px 10px; border-radius: 12px; }
+  .admin-shell .chart-card { padding: 18px 18px; border-radius: 4px; }
   .admin-shell .chart-head {
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
-    margin-bottom: 6px;
+    gap: 8px;
+    margin-bottom: 16px;
   }
-  .admin-shell .chart-head h3 { font-size: 0.85rem; }
-  .admin-shell .bar-chart {
-    height: 140px;
-    gap: 4px;
-  }
+  .admin-shell .chart-head h3 { font-size: 1.05rem; }
+  .admin-shell .bar-chart { height: 140px; gap: 4px; }
 
-  /* Tables hidden on mobile, cards take over */
   .admin-shell .card.table-card { display: none; }
   .admin-shell .mobile-list {
     display: flex;
     flex-direction: column;
     gap: 14px;
   }
+
   .admin-shell .mobile-toolbar {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    padding: 6px 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding: 0 0 14px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border-light);
+    border-radius: 0;
   }
   .admin-shell .mobile-sort {
     flex: 1;
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 8px;
-    font-size: 0.62rem;
+    gap: 10px;
+    font-family: var(--ff-mono);
+    font-size: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    font-weight: 500;
+    color: var(--accent);
     min-width: 0;
   }
   .admin-shell .mobile-sort > span { white-space: nowrap; }
   .admin-shell .mobile-sort select {
     flex: 1;
     min-width: 0;
-    padding: 6px 10px;
-    font-size: 0.8rem;
-    border-radius: 8px;
+    padding: 6px 22px 8px 0;
+    font-family: var(--ff-serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 0.95rem;
+    letter-spacing: -0.005em;
     text-transform: none;
-    letter-spacing: 0;
-    font-weight: 600;
-    color: var(--text);
+    color: var(--text-heading);
+    background: transparent
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007bff' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>")
+      no-repeat right 2px center / 12px;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .admin-shell .mobile-sort select:focus {
+    outline: none;
+    border-bottom-color: var(--accent);
   }
   .admin-shell .dir-btn {
-    width: 32px;
-    height: 32px;
-    border: 1.5px solid var(--border);
-    background: #fff;
-    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border);
+    background: transparent;
+    border-radius: 999px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: var(--accent);
     flex-shrink: 0;
-    margin-top: 0;
     transition: background 0.18s, border-color 0.18s;
   }
-  .admin-shell .dir-btn:hover { background: var(--accent-softer); border-color: var(--accent); }
+  .admin-shell .dir-btn:hover {
+    background: var(--accent-softer);
+    border-color: var(--accent);
+  }
   .admin-shell .dir-btn .dir-arrow {
-    font-size: 0.8rem;
-    font-weight: 900;
+    font-family: var(--ff-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
     display: inline-block;
     transition: transform 0.2s;
   }
   .admin-shell .dir-btn .dir-arrow.desc { transform: rotate(180deg); }
 
+  /* ─── MOBILE CARDS editorial (projects, experience, users, education…) ─── */
   .admin-shell .mobile-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 18px;
-    box-shadow: var(--shadow);
+    border-radius: 4px;
+    padding: 22px 24px;
+    box-shadow: none;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
     position: relative;
     overflow: hidden;
+    transition: border-color 0.2s;
   }
   .admin-shell .mobile-card::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
     bottom: 0;
-    width: 3px;
+    left: 0;
+    width: 2px;
     background: var(--accent);
-    box-shadow: 0 0 10px rgba(45, 106, 79, 0.35);
+    opacity: 1;
   }
+  .admin-shell .mobile-card:hover { border-color: var(--accent); }
   .admin-shell .mobile-card-head {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: center;
+    gap: 14px;
     min-width: 0;
   }
   .admin-shell .mobile-card-avatar {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
-    background: var(--accent-soft);
+    background: transparent;
+    border: 1px solid var(--accent);
     color: var(--accent);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
-    font-size: 0.94rem;
+    font-family: var(--ff-serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.1rem;
     flex-shrink: 0;
+    letter-spacing: -0.02em;
   }
   .admin-shell .mobile-card-title {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
   }
   .admin-shell .mobile-card-title strong {
-    font-size: 0.95rem;
-    font-weight: 800;
-    color: var(--brand);
+    font-family: var(--ff-serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.18rem;
+    color: var(--text-heading);
+    letter-spacing: -0.012em;
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   .admin-shell .mobile-card-sub {
-    font-size: 0.74rem;
+    font-family: var(--ff-mono);
+    font-size: 0.62rem;
     color: var(--text-muted);
-    font-weight: 600;
-    letter-spacing: 0.01em;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
   }
   .admin-shell .mobile-card-head .pill {
     flex-shrink: 0;
-    align-self: flex-start;
+    align-self: center;
   }
   .admin-shell .mobile-card-body {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
   }
   .admin-shell .mobile-card-desc {
     margin: 0;
-    font-size: 0.84rem;
+    font-family: var(--ff-serif);
+    font-weight: 300;
+    font-size: 0.98rem;
     line-height: 1.55;
-    color: var(--text);
+    color: var(--text-body);
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  .admin-shell .mobile-card-desc em,
+  .admin-shell .mobile-card-desc i {
+    font-style: italic;
+    color: var(--accent);
+  }
   .admin-shell .mobile-meta-row {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.78rem;
+    gap: 8px;
+    font-family: var(--ff-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
     color: var(--text-muted);
-    font-weight: 600;
+    font-weight: 500;
   }
   .admin-shell .mobile-meta-row svg {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
     flex-shrink: 0;
+    color: var(--accent);
   }
   .admin-shell .mobile-tags {
     display: flex;
@@ -836,81 +1027,119 @@ quill-editor:focus-within .ql-container.ql-snow {
   .admin-shell .mobile-card-actions {
     display: flex;
     gap: 10px;
-    padding-top: 4px;
-    border-top: 1px solid var(--border);
+    padding-top: 14px;
+    border-top: 1px solid var(--border-light);
     margin-top: 2px;
-    padding-top: 12px;
   }
   .admin-shell .mobile-card-actions .btn-edit,
   .admin-shell .mobile-card-actions .btn-delete {
     flex: 1;
-    padding: 9px 14px;
+    padding: 10px 14px;
     font-size: 0.78rem;
+    justify-content: center;
+    min-height: 42px;
   }
 
-  /* Log cards (visitors / logins) */
-  .admin-shell .log-card { padding: 14px 16px; }
-  .admin-shell .log-card::before { background: var(--amber); box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+  /* ─── LOG CARDS editorial (visitors / logins) ─── */
+  .admin-shell .log-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 22px;
+    box-shadow: none;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .admin-shell .log-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: var(--c-amber-bar);
+    opacity: 1;
+    box-shadow: none;
+  }
+  .admin-shell .log-card:hover { border-color: var(--c-amber-bar); }
   .admin-shell .log-card-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 12px;
     flex-wrap: wrap;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 2px;
   }
   .admin-shell .log-card-head time {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--brand);
     font-family: var(--ff-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-heading);
   }
   .admin-shell .log-email {
-    font-size: 0.8rem;
+    font-family: var(--ff-mono);
+    font-size: 0.72rem;
     color: var(--accent);
-    font-weight: 700;
+    font-weight: 500;
     max-width: 60%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    letter-spacing: 0.04em;
   }
   .admin-shell .log-grid {
     margin: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px 14px;
+    gap: 12px 20px;
   }
   .admin-shell .log-grid > div { min-width: 0; }
   .admin-shell .log-grid > div.full { grid-column: 1 / -1; }
   .admin-shell .log-grid dt {
-    font-size: 0.6rem;
+    font-family: var(--ff-mono);
+    font-size: 0.58rem;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-    color: var(--text-muted);
-    margin-bottom: 2px;
+    letter-spacing: 0.2em;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 4px;
   }
   .admin-shell .log-grid dd {
     margin: 0;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--text);
+    font-family: var(--ff-serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 0.98rem;
+    color: var(--text-heading);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    letter-spacing: -0.005em;
+    line-height: 1.3;
   }
   .admin-shell .log-grid dd.mono {
     font-family: var(--ff-mono);
-    font-size: 0.72rem;
+    font-style: normal;
+    font-size: 0.74rem;
     color: var(--text-muted);
+    letter-spacing: 0.04em;
+    font-weight: 500;
   }
 
-  /* Messages toolbar on mobile (también para chatbot) */
+  /* ─── Messages toolbar mobile (vertical editorial) ─── */
   .admin-shell .messages-toolbar {
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
-    padding: 8px 10px;
+    gap: 14px;
+    padding: 0 0 14px;
   }
   .admin-shell .messages-search {
     width: 100%;
@@ -922,12 +1151,49 @@ quill-editor:focus-within .ql-container.ql-snow {
     width: 100%;
     justify-content: space-between;
   }
-  .admin-shell .messages-select select { flex: 1; margin-left: 8px; min-width: 0; }
+  .admin-shell .messages-select select {
+    flex: 1;
+    margin-left: 12px;
+    min-width: 0;
+  }
+
+  /* Quill compacto en móvil */
+  .admin-shell .ql-toolbar.ql-snow { padding: 4px 8px !important; gap: 2px; }
+  .admin-shell .ql-toolbar.ql-snow .ql-formats { margin-right: 4px !important; }
 }
 
+/* ─── MÓVIL pequeño ≤ 480 px ─────────────────────── */
 @media (max-width: 480px) {
-  .admin-shell .mobile-card { padding: 14px 14px; }
-  .admin-shell .mobile-card-title strong { font-size: 0.9rem; }
-  .admin-shell .log-email { max-width: 100%; }
+  .admin-shell .page-head { gap: 12px; margin-bottom: 24px; padding-bottom: 18px; }
+  .admin-shell .page-head h1 { font-size: 1.4rem; }
+  .admin-shell .page-sub { font-size: 0.86rem; }
+
+  .admin-shell .chart-card,
+  .admin-shell .card.chart-card { padding: 14px 14px; }
+  .admin-shell .chart-head h3 { font-size: 0.98rem; }
   .admin-shell .bar-chart { height: 120px; }
+
+  .admin-shell .mobile-card { padding: 18px 20px; gap: 12px; }
+  .admin-shell .mobile-card-avatar { width: 38px; height: 38px; font-size: 1rem; }
+  .admin-shell .mobile-card-title strong { font-size: 1.05rem; }
+  .admin-shell .mobile-card-desc { font-size: 0.94rem; }
+
+  .admin-shell .log-card { padding: 18px 20px; }
+  .admin-shell .log-email { max-width: 100%; }
+  .admin-shell .log-grid { gap: 12px 16px; }
+  .admin-shell .log-grid dd { font-size: 0.94rem; }
+
+  .admin-shell .dir-btn { width: 34px; height: 34px; }
+  .admin-shell .dir-btn .dir-arrow { font-size: 0.76rem; }
+
+  .admin-shell .empty-state { padding: 56px 18px; font-size: 0.96rem; }
+  .admin-shell .empty { padding: 48px 16px; }
+}
+
+/* ─── Pantallas mínimas ≤ 360 px ──────────────────── */
+@media (max-width: 360px) {
+  .admin-shell .page-head h1 { font-size: 1.3rem; }
+  .admin-shell .mobile-card { padding: 16px 16px; }
+  .admin-shell .mobile-card-title strong { font-size: 1rem; }
+  .admin-shell .log-card { padding: 16px 16px; }
 }

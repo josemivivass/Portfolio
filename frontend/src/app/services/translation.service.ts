@@ -383,7 +383,7 @@ const ES: Record<string, string> = {
   'admin.stat.chatbot.foot': '{n} conversaciones',
   'admin.chart.activity.title': 'Actividad — últimos 14 días',
   'admin.chart.logins14.title': 'Logins — últimos 14 días',
-  'admin.chart.tokens.title': 'Tokens gastados — histórico',
+  'admin.chart.tokens.title': 'Tokens gastados — últimos 14 días',
 
   // Users
   'admin.users.title': 'Usuarios',
@@ -916,7 +916,7 @@ const EN: Record<string, string> = {
   'admin.stat.chatbot.foot': '{n} conversations',
   'admin.chart.activity.title': 'Activity — last 14 days',
   'admin.chart.logins14.title': 'Logins — last 14 days',
-  'admin.chart.tokens.title': 'Tokens spent — history',
+  'admin.chart.tokens.title': 'Tokens spent — last 14 days',
 
   // Users
   'admin.users.title': 'Users',
