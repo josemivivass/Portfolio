@@ -13,6 +13,7 @@
     <div class="bar-chart">
       @for (bar of state.visitorChart(); track bar.date) {
         <div class="bar-col" [title]="bar.date + ' · ' + bar.value">
+          <span class="bar-value" [class.is-zero]="bar.value === 0">{{ bar.value }}</span>
           <div class="bar bar-blue" [style.height.%]="bar.height"></div>
           <span class="bar-label">{{ bar.label }}</span>
         </div>
