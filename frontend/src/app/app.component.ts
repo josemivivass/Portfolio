@@ -120,8 +120,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private applyRoute(url: string): void {
     const pathOnly = url.split(/[?#]/)[0];
+    const wasHome = this.isHomeRoute;
     this.isHomeRoute = pathOnly === '/' || pathOnly === '';
     this.isAdminRoute = pathOnly.startsWith('/admin');
+    const returningToHome = !wasHome && this.isHomeRoute;
 
     if (isPlatformBrowser(this.platformId)) {
       const showBar = this.isHomeRoute || this.isAdminRoute;
@@ -241,6 +243,23 @@ export class AppComponent implements OnInit, OnDestroy {
         this.homeComponent?.initAnimations();
         this.cdr.detectChanges();
       }, 3200);
+      return;
+    }
+
+    if (returningToHome) {
+      const savedStr = sessionStorage.getItem('preAuthState');
+      sessionStorage.removeItem('preAuthState');
+      const savedScrollY = savedStr ? (JSON.parse(savedStr).scrollY ?? 0) : 0;
+
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        this.homeComponent?.initAnimations();
+        this.cdr.detectChanges();
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+          ScrollTrigger.refresh();
+        });
+      }, 60);
     }
   }
 
@@ -528,16 +547,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.targetScrollY = target;
     window.scrollTo(0, target);
     if (!this.virtualScrollEnabled) this.startVirtualScroll();
-  }
-
-  returnToHome(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    if (this.isAdminRoute) {
-      this.exitAdmin();
-      return;
-    }
-    sessionStorage.setItem('authReturn', '1');
-    this.router.navigateByUrl('/');
   }
 
   enterAdmin(): void {

@@ -24,10 +24,6 @@ body.lightbox-open .mobile-menu-backdrop {
   display: none !important;
 }
 
-body.on-contact-route .page-back-arrow {
-  display: none !important;
-}
-
 body,
 body * {
   scrollbar-width: none;

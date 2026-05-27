@@ -38,11 +38,7 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
     private router: Router,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {
-    if (isPlatformBrowser(this.platformId)) {
-      document.body.classList.add('on-contact-route');
-    }
-  }
+  ) {}
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -63,9 +59,6 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.recaptchaPoll) clearInterval(this.recaptchaPoll);
     if (this.langSub) this.langSub.unsubscribe();
-    if (isPlatformBrowser(this.platformId)) {
-      document.body.classList.remove('on-contact-route');
-    }
   }
 
   private renderRecaptcha(): void {
