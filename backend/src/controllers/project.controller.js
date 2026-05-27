@@ -1,8 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const pool = require('../config/db');
-
-const PROJECTS_DIR = path.join(__dirname, '..', 'data', 'projects');
+const {
+  PROJECTS_DIR,
+  IMG_EXT_RE,
+  normalizeProjectImages,
+  isProjectImagesOutOfSync
+} = require('../utils/project-images');
 
 const EXT_TO_MIME = {
   '.jpg': 'image/jpeg',
@@ -14,7 +18,25 @@ const EXT_TO_MIME = {
 
 async function attachImages(projects) {
   if (!Array.isArray(projects) || projects.length === 0) return projects;
-  const ids = projects.map(p => p.id);
+
+  for (const p of projects) {
+    let outOfSync = false;
+    try { outOfSync = await isProjectImagesOutOfSync(pool, p.id); } catch { /* noop */ }
+    if (!outOfSync) continue;
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+      await normalizeProjectImages(conn, p.id, p.title);
+      await conn.commit();
+    } catch (err) {
+      await conn.rollback().catch(() => {});
+      console.warn('[attachImages] normalize falló para proyecto', p.id, err?.message);
+    } finally {
+      conn.release();
+    }
+  }
+
+  const ids = projects.map((p) => p.id);
   const [images] = await pool.query(
     `SELECT id, project_id, image_url, position
        FROM project_images
@@ -31,7 +53,7 @@ async function attachImages(projects) {
       position: img.position
     });
   }
-  return projects.map(p => ({ ...p, images: byProject.get(p.id) || [] }));
+  return projects.map((p) => ({ ...p, images: byProject.get(p.id) || [] }));
 }
 
 exports.getAllProjects = async (req, res) => {

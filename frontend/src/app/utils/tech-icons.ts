@@ -83,6 +83,9 @@ const TECH_ICON_MAP: Record<string, string> = {
   'testing':                      `${BASE_PATH}testing.svg`,
   'mariadb':                      `${BASE_PATH}mariadb.svg`,
   'cloudflare':                   `${BASE_PATH}cloudflare.svg`,
+  'colab':                        `${BASE_PATH}googlecolab.svg`,
+  'google colab':                 `${BASE_PATH}googlecolab.svg`,
+  'googlecolab':                  `${BASE_PATH}googlecolab.svg`,
 };
 
 export function techIcon(rawTag: string): string {

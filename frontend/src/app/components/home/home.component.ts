@@ -44,6 +44,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private tagGroups: string[] = [];
   typedRole = '';
   private typewriterTimer: any = null;
+  private twMeasureCanvas: HTMLCanvasElement | null = null;
 
   cvMenuOpen = false;
 
@@ -52,7 +53,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     const filename = lang === 'es'
       ? 'CV_ES_JoseMiguelVivasSanchez.pdf'
       : 'CV_EN_JoseMiguelVivasSanchez.pdf';
-    fetch(`/${filename}`)
+    const url = `${environment.apiUrl}/profile/cv/${lang}`;
+    fetch(url)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.blob();
@@ -69,7 +71,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       })
       .catch(err => {
         console.error('CV download failed:', err);
-        window.open(`/${filename}`, '_blank');
+        window.open(url, '_blank');
       })
       .finally(() => {
         this.cvMenuOpen = false;
@@ -245,6 +247,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     let idx = 0;
     let charIdx = 0;
     let deleting = false;
+    let full = '';   //grupo actual ya recortado a una sola línea
 
     const TYPE_MS   = 55;
     const DELETE_MS = 25;
@@ -253,7 +256,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const tick = () => {
       if (idx >= this.tagGroups.length) idx = 0;
-      const full = this.tagGroups[idx];
+
+      //Al arrancar un grupo nuevo recalculamos qué tags caben en una sola línea
+      if (!deleting && charIdx === 0) {
+        full = this.fitTypewriterGroup(this.tagGroups[idx]);
+      }
 
       if (!deleting) {
         charIdx++;
@@ -295,6 +302,59 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.stopTypewriter();
     this.typedRole = '';
     this.startTypewriter();
+  }
+
+  //Recorta un grupo de tags a los que caben en una sola línea del typewriter
+  //visible (masthead móvil o hero de escritorio). Los que no caben se omiten.
+  private fitTypewriterGroup(group: string): string {
+    if (!isPlatformBrowser(this.platformId)) return group;
+
+    //Elige el typewriter que esté visible en este momento
+    const variants = [
+      { text: '.hm-tw-text',           label: '.hm-tw-label',           caret: '.hm-tw-caret' },
+      { text: '.hero-typewriter-text', label: '.hero-typewriter-label', caret: '.hero-typewriter-caret' },
+    ];
+    let textEl: HTMLElement | null = null;
+    let v: (typeof variants)[number] | null = null;
+    for (const candidate of variants) {
+      const el = document.querySelector(candidate.text) as HTMLElement | null;
+      if (el && el.offsetParent !== null) { textEl = el; v = candidate; break; }
+    }
+    const twEl = textEl?.parentElement ?? null;
+    if (!textEl || !twEl || !v) return group;
+
+    const tags = group.split('·').map(t => t.trim()).filter(Boolean);
+    if (tags.length <= 1) return group;
+
+    const gap = parseFloat(getComputedStyle(twEl).columnGap) || 0;
+    const labelEl = twEl.querySelector(v.label) as HTMLElement | null;
+    const caretEl = twEl.querySelector(v.caret) as HTMLElement | null;
+
+    let avail = twEl.clientWidth - 2;
+    if (labelEl) avail -= labelEl.offsetWidth + gap;
+    if (caretEl) avail -= caretEl.offsetWidth + gap;
+    if (avail <= 0) return tags[0];
+
+    if (!this.twMeasureCanvas) this.twMeasureCanvas = document.createElement('canvas');
+    const ctx = this.twMeasureCanvas.getContext('2d');
+    if (!ctx) return group;
+
+    const ts = getComputedStyle(textEl);
+    ctx.font = `${ts.fontStyle} ${ts.fontWeight} ${ts.fontSize} ${ts.fontFamily}`;
+    const letterSpacing = parseFloat(ts.letterSpacing) || 0;
+    const upper = ts.textTransform === 'uppercase';
+    const widthOf = (s: string): number => {
+      const txt = upper ? s.toUpperCase() : s;
+      return ctx.measureText(txt).width + letterSpacing * txt.length;
+    };
+
+    let fitted = tags[0];
+    for (let i = 1; i < tags.length; i++) {
+      const candidate = `${fitted} · ${tags[i]}`;
+      if (widthOf(candidate) > avail) break;
+      fitted = candidate;
+    }
+    return fitted;
   }
 
   ngOnDestroy(): void {

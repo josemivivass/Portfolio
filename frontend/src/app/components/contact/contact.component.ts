@@ -1,7 +1,7 @@
 import { Component, ChangeDetectorRef, ElementRef, ViewChild, AfterViewInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { TranslationService } from '../../services/translation.service';
 import { environment } from '../../../environments/environment';
@@ -11,7 +11,7 @@ declare const grecaptcha: any;
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './contact.component.html',
   styleUrls: ['./contact.component.css']
 })
@@ -43,7 +43,7 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    // El script de reCAPTCHA se carga async desde index.html. Esperamos a que esté listo.
+    // grecaptcha se carga async desde index.html, esperamos a que esté listo
     this.recaptchaPoll = setInterval(() => {
       if (typeof grecaptcha !== 'undefined' && grecaptcha.render && this.recaptchaEl) {
         clearInterval(this.recaptchaPoll);
@@ -51,7 +51,6 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
       }
     }, 200);
 
-    // Re-renderizamos el captcha cuando el usuario cambia el idioma del sitio
     this.langSub = this.i18n.lang$.subscribe(() => {
       if (this.recaptchaWidgetId !== null) this.renderRecaptcha();
     });
@@ -64,7 +63,7 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
 
   private renderRecaptcha(): void {
     if (typeof grecaptcha === 'undefined' || !grecaptcha.render || !this.recaptchaEl) return;
-    // grecaptcha.render no permite re-renderizar el mismo div, así que vaciamos antes
+    // grecaptcha.render no admite re-render del mismo div, hay que vaciarlo antes
     this.recaptchaEl.nativeElement.innerHTML = '';
     try {
       this.recaptchaWidgetId = grecaptcha.render(this.recaptchaEl.nativeElement, {
@@ -138,7 +137,6 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
     }
 
     this.isSubmitting = true;
-    // Forzamos actualización visual para que muestre "Enviando..."
     this.cdr.detectChanges();
 
     try {
@@ -172,13 +170,11 @@ export class ContactComponent implements AfterViewInit, OnDestroy {
       this.successMsg = this.i18n.t('contact.success');
       this.isSent = true;
       this.isSubmitting = false;
-      this.formData = { name: '', email: '', message: '' }; // Limpiamos formulario
+      this.formData = { name: '', email: '', message: '' };
       this.resetRecaptcha();
-
-      // Forzamos actualización visual para que el botón se ponga verde inmediatamente
       this.cdr.detectChanges();
 
-      // Restauramos el botón a su estado original pasados 4 segundos por si quiere enviar otro
+      // tras 4s vuelve al estado inicial por si el usuario quiere enviar otro mensaje
       setTimeout(() => {
         this.isSent = false;
         this.successMsg = '';

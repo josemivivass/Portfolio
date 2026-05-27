@@ -35,23 +35,14 @@ export class RegisterComponent {
     }, { validators: this.passwordMatchValidator });
 
     if (isPlatformBrowser(this.platformId)) {
-      const token = localStorage.getItem('token');
-      if (token) {
-        this.isLoggedIn = true;
-        this.userEmail  = this.decodeEmail(token);
-      }
+      this.isLoggedIn = this.authService.isAuthenticated();
+      this.userEmail  = this.authService.getEmail() ?? '';
     }
   }
 
-  private decodeEmail(token: string): string {
-    try {
-      return JSON.parse(atob(token.split('.')[1])).email ?? '';
-    } catch { return ''; }
-  }
-
   logout(): void {
-    this.authService.logout();
-    window.location.reload();
+    const reload = () => window.location.reload();
+    this.authService.logout().subscribe({ next: reload, error: reload });
   }
 
   passwordMatchValidator(control: AbstractControl) {

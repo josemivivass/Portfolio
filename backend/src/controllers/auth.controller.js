@@ -2,6 +2,17 @@ const pool = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+const TOKEN_MAX_AGE = 24 * 60 * 60 * 1000; // 24 h, igual que la expiración del JWT
+
+function authCookieOptions(req) {
+  return {
+    httpOnly: true,
+    secure: req.secure,
+    sameSite: 'lax',
+    path: '/'
+  };
+}
+
 exports.register = async (req, res) => {
   const { email, password } = req.body;
 
@@ -65,9 +76,15 @@ exports.login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.status(200).json({ token, role: user.role, message: 'Login exitoso' });
+    res.cookie('token', token, { ...authCookieOptions(req), maxAge: TOKEN_MAX_AGE });
+    res.status(200).json({ role: user.role, email: user.email, message: 'Login exitoso' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error en el servidor durante el login' });
   }
+};
+
+exports.logout = (req, res) => {
+  res.clearCookie('token', authCookieOptions(req));
+  res.status(200).json({ message: 'Sesión cerrada' });
 };

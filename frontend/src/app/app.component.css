@@ -260,48 +260,6 @@
   .mobile-menu-panel { display: flex; }
 }
 
-.page-back-arrow {
-  position: fixed;
-  top: 40px;
-  left: 40px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--c-text-muted);
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: var(--ff-serif);
-  letter-spacing: 0.5px;
-  z-index: 1100;
-  transition: all 0.25s ease;
-}
-.page-back-arrow svg {
-  width: 18px;
-  height: 18px;
-  stroke-width: 2.5;
-  transition: transform 0.25s ease;
-}
-.page-back-arrow:hover {
-  color: var(--c-primary);
-}
-.page-back-arrow:hover svg {
-  transform: translateX(-4px);
-}
-
-@media (max-width: 900px) {
-  .page-back-arrow {
-    top: 20px;
-    left: 20px;
-  }
-  .main-app-container:has(.admin-shell) .page-back-arrow {
-    display: none;
-  }
-  .main-app-container:has(.admin-shell.menu-open) .page-back-arrow {
-    display: inline-flex;
-  }
-}
-
 .main-app-container.is-standalone-route .main-content {
   padding-left: 0;
   padding-right: 0;

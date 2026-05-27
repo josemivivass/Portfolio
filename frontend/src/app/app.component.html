@@ -5,14 +5,6 @@
 <div class="main-app-container"
      [class.is-standalone-route]="!isHomeRoute">
 
-  <a *ngIf="!isHomeRoute" href="javascript:void(0)" (click)="returnToHome()" class="page-back-arrow" aria-label="Volver al inicio">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="19" y1="12" x2="5" y2="12"></line>
-      <polyline points="12 19 5 12 12 5"></polyline>
-    </svg>
-    <span>{{ i18n.t('login.back') }}</span>
-  </a>
-
   <div *ngIf="isHomeRoute" class="page-corner">
     <ng-container *ngIf="isLoggedIn; else loggedOutCorner">
       <span class="user-status">{{ i18n.t('nav.connected') }}</span>

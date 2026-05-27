@@ -1,8 +1,14 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const pool = require('./src/config/db');
+const { ensureProjectsDir } = require('./src/utils/project-images');
+const backupScheduler = require('./src/services/backup-scheduler');
+
+ensureProjectsDir();
 
 const authRoutes = require('./src/routes/auth.routes');
 const trackingRoutes = require('./src/routes/tracking.routes');
@@ -19,24 +25,31 @@ const app = express();
 
 app.set('trust proxy', 1);
 
+// Cabeceras de seguridad HTTP; CORP en cross-origin para no bloquear las imágenes y CVs que sirve el backend.
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
+
 const corsOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
   .map(s => s.trim())
   .filter(Boolean);
 
-if (corsOrigins.length === 0) {
-  app.use(cors());
-} else {
-  app.use(cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (corsOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error(`Origin ${origin} no permitido por CORS`));
-    }
-  }));
-}
+const corsExposed = ['Content-Disposition'];
+// credentials:true es imprescindible para que viaje la cookie de sesión httpOnly.
+app.use(cors({
+  origin: (origin, callback) => {
+    // Sin Origin (curl, SSR, same-origin) o sin CORS_ORIGINS configurado: permitido.
+    if (!origin || corsOrigins.length === 0) return callback(null, true);
+    if (corsOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`Origin ${origin} no permitido por CORS`));
+  },
+  credentials: true,
+  exposedHeaders: corsExposed
+}));
 
 app.use(express.json({ limit: '7mb' }));
+app.use(cookieParser());
 
 app.get('/api/health', async (_req, res) => {
   try {
@@ -61,4 +74,5 @@ app.use('/api/profile', profileRoutes);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en el puerto ${PORT}`);
+  backupScheduler.start();
 });

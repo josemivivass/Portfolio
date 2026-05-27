@@ -8,6 +8,18 @@ const DEFAULT_PHOTO = path.join(
   __dirname, '..', '..', '..', 'frontend', 'public', 'images', 'perfil.jpg'
 );
 
+const CV_DIR = path.join(DATA_DIR, 'cv');
+const CV_LANGS = ['es', 'en'];
+const CV_FILENAMES = {
+  es: 'CV_ES_JoseMiguelVivasSanchez.pdf',
+  en: 'CV_EN_JoseMiguelVivasSanchez.pdf'
+};
+const CV_DEFAULT_DIR = path.join(__dirname, '..', '..', '..', 'frontend', 'public');
+const MAX_CV_BYTES = 5 * 1024 * 1024; // 5 MB
+
+const cvStoredPath = (lang) => path.join(CV_DIR, CV_FILENAMES[lang]);
+const cvDefaultPath = (lang) => path.join(CV_DEFAULT_DIR, CV_FILENAMES[lang]);
+
 const EDITABLE_KEYS = ['hero.tagline', 'about'];
 
 const KEY_TO_COLS = {
@@ -281,5 +293,74 @@ exports.uploadPhoto = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Error al guardar la foto' });
+  }
+};
+
+exports.getCv = (req, res) => {
+  const lang = String(req.params.lang || '').toLowerCase();
+  if (!CV_LANGS.includes(lang)) {
+    return res.status(400).json({ message: 'Idioma no válido' });
+  }
+  const stored = cvStoredPath(lang);
+  const file = fs.existsSync(stored) ? stored : cvDefaultPath(lang);
+  if (!fs.existsSync(file)) {
+    return res.status(404).json({ message: 'CV no encontrado' });
+  }
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename="${CV_FILENAMES[lang]}"`);
+  res.setHeader('Cache-Control', 'no-store');
+  fs.createReadStream(file).pipe(res);
+};
+
+exports.getCvMeta = async (req, res) => {
+  try {
+    const meta = {};
+    for (const lang of CV_LANGS) {
+      const updated = await fetchMeta(`cv_${lang}_updated_at`, '0');
+      meta[lang] = {
+        filename: CV_FILENAMES[lang],
+        custom: fs.existsSync(cvStoredPath(lang)),
+        updated_at: Number(updated) || 0
+      };
+    }
+    res.status(200).json(meta);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al leer la información de los CV' });
+  }
+};
+
+exports.uploadCv = async (req, res) => {
+  const lang = String(req.params.lang || '').toLowerCase();
+  if (!CV_LANGS.includes(lang)) {
+    return res.status(400).json({ message: 'Idioma no válido' });
+  }
+  const { dataUrl } = req.body || {};
+  if (typeof dataUrl !== 'string') {
+    return res.status(400).json({ message: 'Archivo requerido' });
+  }
+  const match = /^data:application\/pdf;base64,(.+)$/.exec(dataUrl);
+  if (!match) {
+    return res.status(400).json({ message: 'Formato no soportado (sube un archivo PDF)' });
+  }
+  const buffer = Buffer.from(match[1], 'base64');
+  if (buffer.length === 0) {
+    return res.status(400).json({ message: 'El PDF está vacío' });
+  }
+  if (buffer.length > MAX_CV_BYTES) {
+    return res.status(413).json({ message: 'El PDF supera el límite de 5 MB' });
+  }
+  if (buffer.slice(0, 5).toString('latin1') !== '%PDF-') {
+    return res.status(400).json({ message: 'El archivo no es un PDF válido' });
+  }
+  try {
+    if (!fs.existsSync(CV_DIR)) fs.mkdirSync(CV_DIR, { recursive: true });
+    fs.writeFileSync(cvStoredPath(lang), buffer);
+    const ts = Date.now();
+    await upsertMeta(`cv_${lang}_updated_at`, ts);
+    res.status(200).json({ lang, updated_at: ts, size: buffer.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al guardar el CV' });
   }
 };

@@ -7,6 +7,7 @@ const { verifyToken, requireRole } = require('../middlewares/auth.middleware');
 
 const editorOrAdmin = [verifyToken, requireRole('admin', 'editor')];
 const adminOnly = [verifyToken, requireRole('admin')];
+const rawSqlBody = express.text({ limit: '50mb', type: ['application/sql', 'text/plain'] });
 
 // Users
 router.get('/users', editorOrAdmin, admin.listUsers);
@@ -35,9 +36,11 @@ router.post('/skills', editorOrAdmin, skills.createSkill);
 router.put('/skills/:id', editorOrAdmin, skills.updateSkill);
 router.delete('/skills/:id', adminOnly, skills.deleteSkill);
 
-// Logs / mensajes (admin y editor pueden consultar)
+// Logs / mensajes (admin y editor pueden consultar; sólo admin puede borrar)
 router.get('/visitor-logs', editorOrAdmin, admin.listVisitorLogs);
+router.delete('/visitor-logs/:id', adminOnly, admin.deleteVisitorLog);
 router.get('/login-logs', editorOrAdmin, admin.listLoginLogs);
+router.delete('/login-logs/:id', adminOnly, admin.deleteLoginLog);
 router.get('/contact-messages', editorOrAdmin, admin.listContactMessages);
 router.patch('/contact-messages/:id/answered', editorOrAdmin, admin.updateContactMessageAnswered);
 router.delete('/contact-messages/:id', adminOnly, admin.deleteContactMessage);
@@ -46,5 +49,10 @@ router.delete('/contact-messages/:id', adminOnly, admin.deleteContactMessage);
 router.get('/chatbot-messages', editorOrAdmin, admin.listChatbotConversations);
 router.delete('/chatbot-messages/:id', adminOnly, admin.deleteChatbotMessage);
 router.post('/chatbot-conversations/delete', adminOnly, admin.deleteChatbotConversation);
+
+// Backup / restore
+router.get('/backup', adminOnly, admin.downloadBackup);
+router.post('/backup/drive', adminOnly, admin.runDriveBackup);
+router.post('/restore', adminOnly, rawSqlBody, admin.restoreBackup);
 
 module.exports = router;

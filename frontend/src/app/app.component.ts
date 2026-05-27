@@ -13,6 +13,7 @@ import { HomeComponent } from './components/home/home.component';
 import { TranslationService } from './services/translation.service';
 import { AuthService } from './services/auth.service';
 import { TrackingService } from './services/tracking.service';
+import { SeoService } from './services/seo.service';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
 import { PreloaderComponent } from './components/preloader/preloader.component';
 
@@ -66,7 +67,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private router: Router,
     public i18n: TranslationService,
     private auth: AuthService,
-    private tracking: TrackingService
+    private tracking: TrackingService,
+    private seo: SeoService
   ) {
     if (isPlatformBrowser(this.platformId)) {
       gsap.registerPlugin(ScrollTrigger);
@@ -79,14 +81,15 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
+    this.seo.init();
+
     window.addEventListener('wheel', this.wheelHandler, { passive: false });
     window.addEventListener('touchmove', this.touchMoveHandler, { passive: false });
 
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
 
-    const token = localStorage.getItem('token');
-    this.isLoggedIn = !!token;
+    this.isLoggedIn = this.auth.isAuthenticated();
     this.canAccessAdmin = this.auth.canAccessAdminPanel();
 
     this.tracking.logEntry();
@@ -117,8 +120,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private applyRoute(url: string): void {
     const pathOnly = url.split(/[?#]/)[0];
+    const wasHome = this.isHomeRoute;
     this.isHomeRoute = pathOnly === '/' || pathOnly === '';
     this.isAdminRoute = pathOnly.startsWith('/admin');
+    const returningToHome = !wasHome && this.isHomeRoute;
 
     if (isPlatformBrowser(this.platformId)) {
       const showBar = this.isHomeRoute || this.isAdminRoute;
@@ -238,6 +243,23 @@ export class AppComponent implements OnInit, OnDestroy {
         this.homeComponent?.initAnimations();
         this.cdr.detectChanges();
       }, 3200);
+      return;
+    }
+
+    if (returningToHome) {
+      const savedStr = sessionStorage.getItem('preAuthState');
+      sessionStorage.removeItem('preAuthState');
+      const savedScrollY = savedStr ? (JSON.parse(savedStr).scrollY ?? 0) : 0;
+
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        this.homeComponent?.initAnimations();
+        this.cdr.detectChanges();
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+          ScrollTrigger.refresh();
+        });
+      }, 60);
     }
   }
 
@@ -411,9 +433,21 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  //Si el target está sobre `.showcase-list` y aún hay scroll interno, lo absorbe ahí
+  //El visor de notebook (.nb) y el telón (.showcase-list) tienen scroll propio.
   private scrollableContainerAbsorbs(target: HTMLElement | null, deltaY: number): boolean {
     if (!target || deltaY === 0) return false;
+
+    // El notebook embebido tiene prioridad: si aún puede scrollear, el scroll va ahí.
+    const nb = target.closest('.nb') as HTMLElement | null;
+    if (nb) {
+      const nbAtTop = nb.scrollTop <= 0;
+      const nbAtBottom = nb.scrollTop + nb.clientHeight >= nb.scrollHeight - 1;
+      if (!((deltaY > 0 && nbAtBottom) || (deltaY < 0 && nbAtTop))) {
+        nb.scrollTop += deltaY;
+        return true;
+      }
+    }
+
     const list = target.closest('.showcase-list') as HTMLElement | null;
     if (!list) return false;
     const atTop = list.scrollTop <= 0;
@@ -515,16 +549,6 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!this.virtualScrollEnabled) this.startVirtualScroll();
   }
 
-  returnToHome(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    if (this.isAdminRoute) {
-      this.exitAdmin();
-      return;
-    }
-    sessionStorage.setItem('authReturn', '1');
-    this.router.navigateByUrl('/');
-  }
-
   enterAdmin(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     this.router.navigateByUrl('/admin');
@@ -622,8 +646,8 @@ export class AppComponent implements OnInit, OnDestroy {
       sessionStorage.setItem('preAuthState', JSON.stringify({
         scrollY: window.scrollY
       }));
-      localStorage.removeItem('token');
-      window.location.reload();
+      const reload = () => window.location.reload();
+      this.auth.logout().subscribe({ next: reload, error: reload });
     }
   }
 }

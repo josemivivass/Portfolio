@@ -1,10 +1,11 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AdminService, AdminUser, ProfileData } from './admin.service';
+import { AdminService, AdminUser, ProfileData, CvMeta } from './admin.service';
 import { AuthService } from './auth.service';
 import { TranslationService } from './translation.service';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { techIcon, hideIconOnError } from '../utils/tech-icons';
+import { parseNotebookUrl, isNotebookUrl, notebookName } from '../utils/notebook';
 import { environment } from '../../environments/environment';
 
 export type AdminTab = 'dashboard' | 'users' | 'projects' | 'experience' | 'education' | 'visitors' | 'logins' | 'messages' | 'chatbot' | 'profile';
@@ -36,6 +37,14 @@ interface ConfirmModal {
   confirmLabel: string;
   onConfirm: () => void;
   messageHtml?: boolean;
+}
+
+interface CvUploadState {
+  dataUrl: string | null;
+  fileName: string;
+  uploading: boolean;
+  status: 'idle' | 'saved' | 'error';
+  error: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -87,6 +96,7 @@ export class AdminStateService {
 
   // ─── Edición (objetos mutables apuntados por signals) ───
   readonly editingProject = signal<any | null>(null);
+  readonly editingNotebook = signal<any | null>(null);
   readonly editingExperience = signal<any | null>(null);
   readonly editingUser = signal<(AdminUser & { _original?: AdminUser }) | null>(null);
   readonly editingProfileTexts = signal<{ es: Record<string, string>; en: Record<string, string> } | null>(null);
@@ -129,6 +139,35 @@ export class AdminStateService {
   readonly profilePhotoStatus = signal<'idle' | 'saved' | 'error'>('idle');
   readonly profilePhotoError = signal('');
   readonly profileTextsError = signal('');
+
+  // ─── Backup BD ───
+  readonly backupDownloading = signal(false);
+  readonly backupStatus = signal<'idle' | 'saved' | 'error'>('idle');
+  readonly backupError = signal('');
+
+  // ─── Backup a Google Drive ───
+  readonly driveBackupUploading = signal(false);
+  readonly driveBackupStatus = signal<'idle' | 'saved' | 'error'>('idle');
+  readonly driveBackupError = signal('');
+
+  // ─── Restaurar BD ───
+  readonly restoreUploading = signal(false);
+  readonly restoreStatus = signal<'idle' | 'saved' | 'error'>('idle');
+  readonly restoreError = signal('');
+
+  // ─── CV descargables (PDF) ───
+  readonly cvLangs: { lang: 'es' | 'en'; labelKey: string }[] = [
+    { lang: 'es', labelKey: 'admin.profile.cv.lang.es' },
+    { lang: 'en', labelKey: 'admin.profile.cv.lang.en' }
+  ];
+  readonly cvMeta = signal<CvMeta>({
+    es: { filename: 'CV_ES_JoseMiguelVivasSanchez.pdf', custom: false, updated_at: 0 },
+    en: { filename: 'CV_EN_JoseMiguelVivasSanchez.pdf', custom: false, updated_at: 0 }
+  });
+  private readonly cvState = signal<Record<'es' | 'en', CvUploadState>>({
+    es: { dataUrl: null, fileName: '', uploading: false, status: 'idle', error: '' },
+    en: { dataUrl: null, fileName: '', uploading: false, status: 'idle', error: '' }
+  });
 
   // ─── Chatbot prompt / model ───
   readonly chatbotPrompt = signal('');
@@ -402,12 +441,7 @@ export class AdminStateService {
       return false;
     }
 
-    const token = this.auth.getToken();
-    if (token) {
-      try {
-        this.currentUserEmail.set(JSON.parse(atob(token.split('.')[1]))?.email ?? '');
-      } catch {}
-    }
+    this.currentUserEmail.set(this.auth.getEmail() ?? '');
 
     this.loadAllData();
     return true;
@@ -428,7 +462,7 @@ export class AdminStateService {
 
   private loadAllData(): void {
     this.initialLoading.set(true);
-    let pending = 12;
+    let pending = 13;
     const done = () => {
       pending--;
       if (pending <= 0) {
@@ -501,6 +535,10 @@ export class AdminStateService {
         done();
       },
       error: fail('chatbot-model')
+    });
+    this.adminService.getCvMeta().subscribe({
+      next: d => { if (d) this.cvMeta.set(d); done(); },
+      error: fail('cv-meta')
     });
   }
 
@@ -595,6 +633,66 @@ export class AdminStateService {
     });
     this.profileTextsStatus.set('idle');
     this.profileTextsError.set('');
+  }
+
+  // ─── CV descargables ───
+  cvUrl(lang: 'es' | 'en'): string {
+    return `${environment.apiUrl}/profile/cv/${lang}?v=${this.cvMeta()[lang].updated_at}`;
+  }
+  cvFileName(lang: 'es' | 'en'): string { return this.cvState()[lang].fileName; }
+  cvDataUrl(lang: 'es' | 'en'): string | null { return this.cvState()[lang].dataUrl; }
+  cvUploading(lang: 'es' | 'en'): boolean { return this.cvState()[lang].uploading; }
+  cvStatus(lang: 'es' | 'en'): 'idle' | 'saved' | 'error' { return this.cvState()[lang].status; }
+  cvError(lang: 'es' | 'en'): string { return this.cvState()[lang].error; }
+
+  private patchCv(lang: 'es' | 'en', patch: Partial<CvUploadState>): void {
+    this.cvState.update(s => ({ ...s, [lang]: { ...s[lang], ...patch } }));
+  }
+
+  onCvFileSelected(lang: 'es' | 'en', event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const okType = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+    if (!okType || file.size > 5 * 1024 * 1024) {
+      this.patchCv(lang, {
+        dataUrl: null, fileName: '',
+        status: 'error', error: this.i18n.t('admin.profile.cv.invalid')
+      });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.patchCv(lang, {
+        dataUrl: String(reader.result || ''), fileName: file.name,
+        status: 'idle', error: ''
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  uploadCv(lang: 'es' | 'en'): void {
+    const current = this.cvState()[lang];
+    if (!current.dataUrl || current.uploading) return;
+    this.patchCv(lang, { uploading: true, status: 'idle', error: '' });
+    this.adminService.uploadCv(lang, current.dataUrl).subscribe({
+      next: (res) => {
+        this.cvMeta.update(m => ({
+          ...m,
+          [lang]: { ...m[lang], custom: true, updated_at: res?.updated_at ?? Date.now() }
+        }));
+        this.patchCv(lang, { uploading: false, status: 'saved', dataUrl: null, fileName: '' });
+        setTimeout(() => this.patchCv(lang, { status: 'idle' }), 4000);
+      },
+      error: (err) => {
+        this.patchCv(lang, {
+          uploading: false, status: 'error',
+          error: err?.error?.message || this.i18n.t('admin.profile.cv.error')
+        });
+        console.error(err);
+      }
+    });
   }
 
   cancelEditProfileTexts(): void {
@@ -784,29 +882,17 @@ export class AdminStateService {
   private buildTokensLineChart(): void {
     const { w, h, padL, padR, padT, padB } = this.tokensChart();
 
-    const tokenMsgs = this.chatbotMessages().filter(m => m.created_at && m.tokens_used);
-
-    if (tokenMsgs.length === 0) {
-      this.tokensPoints.set([]);
-      this.tokensLinePath.set('');
-      this.tokensAreaPath.set('');
-      this.tokensChartTicks.set([]);
-      this.tokensChartXAxis.set([]);
-      return;
-    }
-
-    const startTs = Math.min(...tokenMsgs.map(m => new Date(m.created_at).getTime()));
-    const startKey = new Date(startTs).toISOString().substring(0, 10);
-    const endKey = new Date().toISOString().substring(0, 10);
-
+    // Últimos 14 días
+    const days = 14;
     const buckets: Record<string, number> = {};
-    const cursor = new Date(startKey + 'T00:00:00Z');
-    const end = new Date(endKey + 'T00:00:00Z');
-    while (cursor.getTime() <= end.getTime()) {
-      buckets[cursor.toISOString().substring(0, 10)] = 0;
-      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    const now = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      buckets[d.toISOString().substring(0, 10)] = 0;
     }
 
+    const tokenMsgs = this.chatbotMessages().filter(m => m.created_at && m.tokens_used);
     for (const m of tokenMsgs) {
       const key = new Date(m.created_at).toISOString().substring(0, 10);
       if (key in buckets) buckets[key] += m.tokens_used;
@@ -845,19 +931,11 @@ export class AdminStateService {
     }
     this.tokensChartTicks.set(ticks);
 
-    const maxLabels = 10;
-    const stride = Math.max(1, Math.ceil(n / maxLabels));
-    const spansMonths = series[0].date.substring(0, 7) !== series[n - 1].date.substring(0, 7);
-    this.tokensChartXAxis.set(series.map((s, i) => {
-      const show = i % stride === 0 || i === n - 1;
-      let label = '';
-      if (show) {
-        const day = Number(s.date.substring(8, 10));
-        const month = Number(s.date.substring(5, 7));
-        label = spansMonths ? `${day}/${month}` : String(day);
-      }
-      return { x: padL + i * stepX, label, date: s.date };
-    }));
+    this.tokensChartXAxis.set(series.map((s, i) => ({
+      x: padL + i * stepX,
+      label: (i % 2 === 0 || i === n - 1) ? s.label : '',
+      date: s.date
+    })));
   }
 
   onChartHover(i: number | null): void { this.hoverIndex.set(i); }
@@ -1074,6 +1152,10 @@ export class AdminStateService {
   }
 
   editProject(p: any): void {
+    if (p?.notebook_url) {
+      this.editNotebook(p);
+      return;
+    }
     const images = Array.isArray(p.images) ? p.images.map((img: any) => ({ ...img })) : [];
     this.editingProject.set({
       ...p,
@@ -1082,6 +1164,85 @@ export class AdminStateService {
     });
     this.projectImagesUploading.set(0);
     this.projectImagesUploadError.set('');
+  }
+
+  //  Notebooks (.ipynb)
+  newNotebook(): void {
+    this.editingNotebook.set({
+      id: null,
+      title: '', title_en: '', description: '', description_en: '',
+      project_date: '', tags: '', is_featured: false,
+      notebook_url: '', project_type: 'ai', status: '',
+      repo_url: null, live_url: null, images: []
+    });
+  }
+
+  editNotebook(p: any): void {
+    this.editingNotebook.set({
+      ...p,
+      project_type: 'ai',
+      notebook_url: p.notebook_url || '',
+      project_date: p.project_date ? p.project_date.substring(0, 10) : '',
+      images: []
+    });
+  }
+
+  cancelNotebookEdit(): void { this.editingNotebook.set(null); }
+
+  notebookLinkValid(): boolean {
+    return isNotebookUrl(this.editingNotebook()?.notebook_url);
+  }
+
+  notebookLinkName(): string {
+    const ref = parseNotebookUrl(this.editingNotebook()?.notebook_url);
+    return ref && /\.ipynb$/i.test(ref.path) ? notebookName(ref) : '';
+  }
+
+  saveNotebook(): void {
+    const n = this.editingNotebook();
+    if (!n || !this.notebookLinkValid()) return;
+    const payload = {
+      ...n,
+      project_type: 'ai',
+      images: [],
+      repo_url: n.repo_url ?? null,
+      live_url: n.live_url ?? null
+    };
+    this.editingNotebook.set(null);
+
+    if (payload.id) {
+      const list = this.projects();
+      const idx = list.findIndex(x => x.id === payload.id);
+      const prev = idx >= 0 ? list[idx] : null;
+      if (idx >= 0) {
+        this.projects.set([
+          ...list.slice(0, idx),
+          { ...list[idx], ...payload },
+          ...list.slice(idx + 1)
+        ]);
+      }
+      this.adminService.updateProject(payload.id, payload).subscribe({
+        error: (err) => {
+          if (idx >= 0 && prev) {
+            const cur = this.projects();
+            this.projects.set([
+              ...cur.slice(0, idx),
+              prev,
+              ...cur.slice(idx + 1)
+            ]);
+          }
+          alert(this.i18n.t('admin.error.project.save'));
+          console.error(err);
+        }
+      });
+    } else {
+      this.adminService.createProject(payload).subscribe({
+        next: (res: any) => {
+          this.projects.set([{ ...payload, id: res?.id }, ...this.projects()]);
+        },
+        error: (err) => { alert(this.i18n.t('admin.error.project.create')); console.error(err); }
+      });
+    }
   }
 
   // ─── Galería del proyecto en edición ───
@@ -1384,6 +1545,54 @@ export class AdminStateService {
     );
   }
 
+  deleteVisitorLog(v: any): void {
+    if (!this.isAdmin()) return;
+    this.askConfirm(
+      this.i18n.t('admin.confirm.visitor.title'),
+      this.i18n.t('admin.confirm.visitor.msg', {
+        ip: v.ip_address || '—',
+        date: new Date(v.entry_time).toLocaleString()
+      }),
+      () => {
+        const prev = this.visitorLogs();
+        this.visitorLogs.set(prev.filter(x => x.id !== v.id));
+        this.buildCharts();
+        this.adminService.deleteVisitorLog(v.id).subscribe({
+          error: (err) => {
+            this.visitorLogs.set(prev);
+            this.buildCharts();
+            alert(this.i18n.t('admin.error.visitor.delete'));
+            console.error(err);
+          }
+        });
+      }
+    );
+  }
+
+  deleteLoginLog(l: any): void {
+    if (!this.isAdmin()) return;
+    this.askConfirm(
+      this.i18n.t('admin.confirm.login.title'),
+      this.i18n.t('admin.confirm.login.msg', {
+        email: l.email || '—',
+        date: new Date(l.login_time).toLocaleString()
+      }),
+      () => {
+        const prev = this.loginLogs();
+        this.loginLogs.set(prev.filter(x => x.id !== l.id));
+        this.buildCharts();
+        this.adminService.deleteLoginLog(l.id).subscribe({
+          error: (err) => {
+            this.loginLogs.set(prev);
+            this.buildCharts();
+            alert(this.i18n.t('admin.error.login.delete'));
+            console.error(err);
+          }
+        });
+      }
+    );
+  }
+
   // ═══════════════════════════════════════════════════════
   //  Confirm modal
   // ═══════════════════════════════════════════════════════
@@ -1671,5 +1880,125 @@ export class AdminStateService {
     if (ua.includes('Firefox')) return 'Firefox';
     if (ua.includes('Safari')) return 'Safari';
     return ua.substring(0, 24) + '…';
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Backup BD
+  // ═══════════════════════════════════════════════════════
+  async downloadDbBackup(): Promise<void> {
+    if (this.backupDownloading()) return;
+    this.backupDownloading.set(true);
+    this.backupStatus.set('idle');
+    this.backupError.set('');
+
+    try {
+      const res = await fetch(`${environment.apiUrl}/admin/backup`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        const msg = await res.text().catch(() => '');
+        throw new Error(msg || `HTTP ${res.status}`);
+      }
+
+      const dispo = res.headers.get('Content-Disposition') || '';
+      const match = /filename="?([^";]+)"?/i.exec(dispo);
+      const filename = match?.[1] ?? `backup-${Date.now()}.sql`;
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.backupStatus.set('saved');
+      setTimeout(() => this.backupStatus.set('idle'), 3500);
+    } catch (err: any) {
+      console.error('[admin] backup error', err);
+      this.backupError.set(err?.message || 'Error');
+      this.backupStatus.set('error');
+    } finally {
+      this.backupDownloading.set(false);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Backup a Google Drive
+  // ═══════════════════════════════════════════════════════
+  async uploadDriveBackup(): Promise<void> {
+    if (this.driveBackupUploading()) return;
+    this.driveBackupUploading.set(true);
+    this.driveBackupStatus.set('idle');
+    this.driveBackupError.set('');
+
+    try {
+      const res = await fetch(`${environment.apiUrl}/admin/backup/drive`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.detail || data?.message || `HTTP ${res.status}`);
+      }
+      this.driveBackupStatus.set('saved');
+      setTimeout(() => this.driveBackupStatus.set('idle'), 4000);
+    } catch (err: any) {
+      console.error('[admin] drive backup error', err);
+      this.driveBackupError.set(err?.message || 'Error');
+      this.driveBackupStatus.set('error');
+    } finally {
+      this.driveBackupUploading.set(false);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Restaurar BD
+  // ═══════════════════════════════════════════════════════
+  onRestoreFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    this.askConfirm(
+      this.i18n.t('admin.profile.restore.confirm.title'),
+      this.i18n.t('admin.profile.restore.confirm.message').replace('{file}', file.name),
+      () => this.uploadRestore(file),
+      this.i18n.t('admin.profile.restore.button')
+    );
+  }
+
+  private async uploadRestore(file: File): Promise<void> {
+    if (this.restoreUploading()) return;
+    this.restoreUploading.set(true);
+    this.restoreStatus.set('idle');
+    this.restoreError.set('');
+
+    try {
+      const sql = await file.text();
+      const res = await fetch(`${environment.apiUrl}/admin/restore`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/sql' },
+        body: sql
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.detail || data?.message || `HTTP ${res.status}`);
+      }
+      this.restoreStatus.set('saved');
+      setTimeout(() => this.restoreStatus.set('idle'), 5000);
+      this.loadAllData();
+    } catch (err: any) {
+      console.error('[admin] restore error', err);
+      this.restoreError.set(err?.message || 'Error');
+      this.restoreStatus.set('error');
+    } finally {
+      this.restoreUploading.set(false);
+    }
   }
 }

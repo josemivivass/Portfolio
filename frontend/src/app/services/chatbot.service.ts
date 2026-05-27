@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -27,13 +27,8 @@ export class ChatbotService {
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token') || '';
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
-  }
-
   sendMessage(message: string): Observable<ChatResponse> {
-    return this.http.post<ChatResponse>(this.apiUrl, { message }, { headers: this.getHeaders() });
+    return this.http.post<ChatResponse>(this.apiUrl, { message });
   }
 
   sendAnonymousMessage(message: string, sessionId: string): Observable<ChatResponse> {
@@ -41,10 +36,10 @@ export class ChatbotService {
   }
 
   getHistory(): Observable<ChatHistory> {
-    return this.http.get<ChatHistory>(`${this.apiUrl}/history`, { headers: this.getHeaders() });
+    return this.http.get<ChatHistory>(`${this.apiUrl}/history`);
   }
 
   clearChat(): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/clear`, {}, { headers: this.getHeaders() });
+    return this.http.post<{ message: string }>(`${this.apiUrl}/clear`, {});
   }
 }

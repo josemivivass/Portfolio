@@ -13,6 +13,7 @@
     <div class="bar-chart">
       @for (bar of state.visitorChart(); track bar.date) {
         <div class="bar-col" [title]="bar.date + ' · ' + bar.value">
+          <span class="bar-value" [class.is-zero]="bar.value === 0">{{ bar.value }}</span>
           <div class="bar bar-blue" [style.height.%]="bar.height"></div>
           <span class="bar-label">{{ bar.label }}</span>
         </div>
@@ -44,19 +45,31 @@
             <span>{{ state.i18n.t('admin.visitors.col.logged') }}</span>
             <span class="sort-icon" [attr.data-dir]="state.sortDir('visitors','is_logged_in')"></span>
           </th>
+          @if (state.isAdmin()) {
+            <th style="width:60px;text-align:right"></th>
+          }
         </tr>
       </thead>
       <tbody>
-        @for (v of state.sortedVisitorLogs(); track $index) {
+        @for (v of state.sortedVisitorLogs(); track v.id) {
           <tr>
             <td class="mono">{{ v.entry_time | date:'dd-MM-yyyy' }}</td>
             <td class="mono">{{ v.visitor_uuid?.substring(0, 8) }}…</td>
             <td class="mono">{{ v.ip_address || '—' }}</td>
             <td>{{ state.shortUA(v.user_agent) }}</td>
             <td>{{ v.is_logged_in ? state.i18n.t('admin.projects.yes') : state.i18n.t('admin.projects.no') }}</td>
+            @if (state.isAdmin()) {
+              <td style="text-align:right">
+                <div class="actions">
+                  <button type="button" class="btn-delete" (click)="state.deleteVisitorLog(v)" [attr.aria-label]="state.i18n.t('admin.action.delete')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                </div>
+              </td>
+            }
           </tr>
         } @empty {
-          <tr><td colspan="5" class="empty">{{ state.i18n.t('admin.visitors.empty') }}</td></tr>
+          <tr><td [attr.colspan]="state.isAdmin() ? 6 : 5" class="empty">{{ state.i18n.t('admin.visitors.empty') }}</td></tr>
         }
       </tbody>
     </table>
@@ -78,7 +91,7 @@
   </div>
 
   <div class="mobile-list log-list">
-    @for (v of state.sortedVisitorLogs(); track $index) {
+    @for (v of state.sortedVisitorLogs(); track v.id) {
       <article class="mobile-card log-card">
         <header class="log-card-head">
           <time>{{ v.entry_time | date:'dd/MM/yyyy HH:mm' }}</time>
@@ -89,6 +102,11 @@
           <div><dt>{{ state.i18n.t('admin.visitors.col.browser') }}</dt><dd>{{ state.shortUA(v.user_agent) }}</dd></div>
           <div class="full"><dt>{{ state.i18n.t('admin.visitors.col.uuid') }}</dt><dd class="mono">{{ v.visitor_uuid }}</dd></div>
         </dl>
+        @if (state.isAdmin()) {
+          <footer class="mobile-card-actions">
+            <button class="btn-delete" (click)="state.deleteVisitorLog(v)">{{ state.i18n.t('admin.action.delete') }}</button>
+          </footer>
+        }
       </article>
     } @empty {
       <div class="empty-state">

@@ -4,9 +4,14 @@ frontend/node_modules/
 backend/node_modules/
 backend/src/data/projects/
 
+# CV subidos desde el panel
+backend/src/data/cv/
+
 # Entornos
 .env
 .env.*
+# Plantilla de ejemplo
+!.env.example
 
 # Compilados de Angular
 dist/

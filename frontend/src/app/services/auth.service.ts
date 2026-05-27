@@ -7,6 +7,15 @@ import { environment } from '../../environments/environment';
 
 export type UserRole = 'admin' | 'editor' | 'user' | null;
 
+// Datos NO sensibles del usuario, solo para pintar la UI. La autenticación real
+// es la cookie httpOnly que valida el backend.
+interface SessionInfo {
+  role: Exclude<UserRole, null>;
+  email: string;
+}
+
+const STORAGE_KEY = 'auth';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -14,36 +23,56 @@ export class AuthService {
   private apiUrl = environment.apiUrl;
   private loggedIn = new BehaviorSubject<boolean>(false);
   private role = new BehaviorSubject<UserRole>(null);
+  private email: string | null = null;
 
   constructor(
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
-    this.loggedIn.next(this.hasToken());
-    this.role.next(this.readRoleFromToken());
-  }
-
-  private hasToken(): boolean {
-    if (isPlatformBrowser(this.platformId)) {
-      return !!localStorage.getItem('token');
+    const session = this.readSession();
+    if (session) {
+      this.email = session.email;
+      this.loggedIn.next(true);
+      this.role.next(session.role);
     }
-    return false;
   }
 
-  private readRoleFromToken(): UserRole {
+  private readSession(): SessionInfo | null {
     if (!isPlatformBrowser(this.platformId)) return null;
-    const token = localStorage.getItem('token');
-    if (!token) return null;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return (payload?.role as UserRole) ?? null;
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.role && parsed.email) {
+        return { role: parsed.role, email: parsed.email };
+      }
     } catch {
-      return null;
+      /* dato corrupto: se ignora */
     }
+    return null;
+  }
+
+  private storeSession(session: SessionInfo): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    }
+  }
+
+  private clearSession(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+    this.email = null;
+    this.loggedIn.next(false);
+    this.role.next(null);
   }
 
   isLoggedIn(): Observable<boolean> {
     return this.loggedIn.asObservable();
+  }
+
+  isAuthenticated(): boolean {
+    return this.loggedIn.value;
   }
 
   role$(): Observable<UserRole> {
@@ -54,9 +83,8 @@ export class AuthService {
     return this.role.value;
   }
 
-  getToken(): string | null {
-    if (!isPlatformBrowser(this.platformId)) return null;
-    return localStorage.getItem('token');
+  getEmail(): string | null {
+    return this.email;
   }
 
   isAdmin(): boolean { return this.role.value === 'admin'; }
@@ -70,12 +98,16 @@ export class AuthService {
       ...credentials,
       deviceInfo: this.getDeviceInfo()
     };
+    // El backend responde fijando la cookie httpOnly de sesión y devuelve
+    // { role, email } (datos no sensibles) para la UI.
     return this.http.post(`${this.apiUrl}/login`, payload).pipe(
       tap((res: any) => {
-        if (res && res.token && isPlatformBrowser(this.platformId)) {
-          localStorage.setItem('token', res.token);
+        if (res && res.role && res.email) {
+          const session: SessionInfo = { role: res.role, email: res.email };
+          this.storeSession(session);
+          this.email = res.email;
           this.loggedIn.next(true);
-          this.role.next(this.readRoleFromToken());
+          this.role.next(res.role);
         }
       })
     );
@@ -85,12 +117,9 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/register`, user);
   }
 
-  logout(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('token');
-    }
-    this.loggedIn.next(false);
-    this.role.next(null);
+  logout(): Observable<any> {
+    this.clearSession();
+    return this.http.post(`${this.apiUrl}/logout`, {});
   }
 
   private getDeviceInfo() {
