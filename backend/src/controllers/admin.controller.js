@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const archiver = require('archiver');
 const pool = require('../config/db');
 const { streamBackup, backupFilename } = require('../services/backup.service');
 const backupScheduler = require('../services/backup-scheduler');
@@ -623,6 +624,42 @@ exports.downloadBackup = async (req, res) => {
       res.end();
     }
   }
+};
+
+// Descarga un .zip con todo el contenido de src/data
+exports.downloadDataBackup = async (req, res) => {
+  const dataDir = path.dirname(PROJECTS_DIR);
+  if (!fs.existsSync(dataDir)) {
+    return res.status(404).json({ message: 'Carpeta data no encontrada' });
+  }
+
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, '0');
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const yyyy = now.getFullYear();
+  const filename = `Backup_Archivos_Portfolio_${dd}-${mm}-${yyyy}.zip`;
+
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader('Cache-Control', 'no-store');
+
+  const archive = archiver('zip', { zlib: { level: 9 } });
+
+  archive.on('warning', (err) => {
+    console.warn('[data-backup] warning:', err);
+  });
+  archive.on('error', (err) => {
+    console.error('[data-backup] error:', err);
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Error al generar el zip' });
+    } else {
+      try { res.end(); } catch { /* noop */ }
+    }
+  });
+
+  archive.pipe(res);
+  archive.directory(dataDir, false);
+  archive.finalize();
 };
 
 // Genera un backup y lo sube a Google Drive de inmediato

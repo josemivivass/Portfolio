@@ -145,6 +145,11 @@ export class AdminStateService {
   readonly backupStatus = signal<'idle' | 'saved' | 'error'>('idle');
   readonly backupError = signal('');
 
+  // ─── Backup de archivos (data/) ───
+  readonly dataBackupDownloading = signal(false);
+  readonly dataBackupStatus = signal<'idle' | 'saved' | 'error'>('idle');
+  readonly dataBackupError = signal('');
+
   // ─── Backup a Google Drive ───
   readonly driveBackupUploading = signal(false);
   readonly driveBackupStatus = signal<'idle' | 'saved' | 'error'>('idle');
@@ -1939,6 +1944,50 @@ export class AdminStateService {
       this.backupStatus.set('error');
     } finally {
       this.backupDownloading.set(false);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Backup de archivos (carpeta data/ en .zip)
+  // ═══════════════════════════════════════════════════════
+  async downloadDataBackup(): Promise<void> {
+    if (this.dataBackupDownloading()) return;
+    this.dataBackupDownloading.set(true);
+    this.dataBackupStatus.set('idle');
+    this.dataBackupError.set('');
+
+    try {
+      const res = await fetch(`${environment.apiUrl}/admin/backup/data`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        const msg = await res.text().catch(() => '');
+        throw new Error(msg || `HTTP ${res.status}`);
+      }
+
+      const dispo = res.headers.get('Content-Disposition') || '';
+      const match = /filename="?([^";]+)"?/i.exec(dispo);
+      const filename = match?.[1] ?? `data-backup-${Date.now()}.zip`;
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      this.dataBackupStatus.set('saved');
+      setTimeout(() => this.dataBackupStatus.set('idle'), 3500);
+    } catch (err: any) {
+      console.error('[admin] data backup error', err);
+      this.dataBackupError.set(err?.message || 'Error');
+      this.dataBackupStatus.set('error');
+    } finally {
+      this.dataBackupDownloading.set(false);
     }
   }
 

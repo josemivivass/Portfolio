@@ -184,11 +184,28 @@
             </button>
             <button type="button"
                     class="btn-primary"
+                    [disabled]="state.dataBackupDownloading()"
+                    (click)="state.downloadDataBackup()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 7v10"/><polyline points="7 12 12 17 17 12"/></svg>
+              <span>{{ state.dataBackupDownloading() ? state.i18n.t('admin.profile.backup.files.loading') : state.i18n.t('admin.profile.backup.files.button') }}</span>
+            </button>
+            <button type="button"
+                    class="btn-primary"
                     [disabled]="state.driveBackupUploading()"
                     (click)="state.uploadDriveBackup()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
               <span>{{ state.driveBackupUploading() ? state.i18n.t('admin.profile.drive.loading') : state.i18n.t('admin.profile.drive.button') }}</span>
             </button>
+            @if (state.dataBackupStatus() === 'saved') {
+              <span class="profile-status profile-status--ok">
+                ✓ {{ state.i18n.t('admin.profile.backup.files.saved') }}
+              </span>
+            }
+            @if (state.dataBackupStatus() === 'error') {
+              <span class="profile-status profile-status--err">
+                ✗ {{ state.dataBackupError() || state.i18n.t('admin.profile.backup.files.error') }}
+              </span>
+            }
             @if (state.backupStatus() === 'saved') {
               <span class="profile-status profile-status--ok">
                 ✓ {{ state.i18n.t('admin.profile.backup.saved') }}
