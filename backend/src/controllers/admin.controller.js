@@ -141,6 +141,11 @@ const normNotebookUrl = (v) => {
   return t.slice(0, 500);
 };
 
+const normRichText = (v) => {
+  if (typeof v !== 'string') return v;
+  return v.replace(/&nbsp;/g, ' ').replace(/ /g, ' ');
+};
+
 async function replaceProjectImages(connection, projectId, images) {
   const [prev] = await connection.query(
     'SELECT image_url FROM project_images WHERE project_id = ?',
@@ -190,6 +195,11 @@ exports.createProject = async (req, res) => {
     images
   } = req.body;
 
+  const cleanTitle = normRichText(title);
+  const cleanTitleEn = normRichText(title_en);
+  const cleanDescription = normRichText(description);
+  const cleanDescriptionEn = normRichText(description_en);
+
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -199,12 +209,12 @@ exports.createProject = async (req, res) => {
          repo_url, live_url, notebook_url, tags, is_featured,
          project_type, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [title, title_en, description, description_en, project_date,
+      [cleanTitle, cleanTitleEn, cleanDescription, cleanDescriptionEn, project_date,
        repo_url, live_url, normNotebookUrl(notebook_url), tags, !!is_featured,
        normType(project_type),
        normStatus(status)]
     );
-    await promotePendingImages(images, result.insertId, title);
+    await promotePendingImages(images, result.insertId, cleanTitle);
     await replaceProjectImages(connection, result.insertId, images);
     await normalizeProjectImages(connection, result.insertId, title);
     await connection.commit();
@@ -227,6 +237,11 @@ exports.updateProject = async (req, res) => {
     images
   } = req.body;
 
+  const cleanTitle = normRichText(title);
+  const cleanTitleEn = normRichText(title_en);
+  const cleanDescription = normRichText(description);
+  const cleanDescriptionEn = normRichText(description_en);
+
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -237,7 +252,7 @@ exports.updateProject = async (req, res) => {
          tags = ?, is_featured = ?,
          project_type = ?, status = ?
        WHERE id = ?`,
-      [title, title_en, description, description_en, project_date,
+      [cleanTitle, cleanTitleEn, cleanDescription, cleanDescriptionEn, project_date,
        repo_url, live_url, normNotebookUrl(notebook_url), tags, !!is_featured,
        normType(project_type),
        normStatus(status), id]
@@ -250,13 +265,13 @@ exports.updateProject = async (req, res) => {
     if (Array.isArray(images)) {
       orphanUrls = await replaceProjectImages(connection, id, images);
     }
-    
+
     await Promise.all(orphanUrls.map(async (u) => {
       const fp = resolveLocalImagePath(u);
       if (!fp) return;
       try { await fs.promises.unlink(fp); } catch { /* ENOENT ok */ }
     }));
-    await normalizeProjectImages(connection, id, title);
+    await normalizeProjectImages(connection, id, cleanTitle);
     await connection.commit();
     res.status(200).json({ message: 'Proyecto actualizado' });
   } catch (err) {

@@ -182,13 +182,13 @@
             <header class="showcase-card-header">
               <span class="showcase-num-inline">{{ i + 1 | number:'2.0-0' }}</span>
               <h3 class="showcase-card-title"
-                  [innerHTML]="i18n.lang === 'en' && project.title_en ? project.title_en : project.title">
+                  [innerHTML]="projectTitle(project)">
               </h3>
               <span class="showcase-date">{{ project.project_date | date:'MMM yyyy' }}</span>
             </header>
 
             <div class="showcase-desc"
-               [innerHTML]="i18n.lang === 'en' && project.description_en ? project.description_en : project.description">
+               [innerHTML]="projectDescription(project)">
             </div>
 
             <!-- FOOTER: abajo-izquierda tags+botones · abajo-derecha QR -->

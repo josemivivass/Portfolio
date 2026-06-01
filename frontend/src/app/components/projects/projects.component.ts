@@ -133,6 +133,20 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     return !!parseNotebookUrl(project?.notebook_url);
   }
 
+  projectTitle(project: any): string {
+    const raw = (this.i18n.lang === 'en' && project?.title_en) ? project.title_en : project?.title;
+    return this.stripNbsp(raw);
+  }
+
+  projectDescription(project: any): string {
+    const raw = (this.i18n.lang === 'en' && project?.description_en) ? project.description_en : project?.description;
+    return this.stripNbsp(raw);
+  }
+
+  private stripNbsp(value: string | null | undefined): string {
+    return (value || '').replace(/&nbsp;/g, ' ').replace(/ /g, ' ');
+  }
+
   notebookFileName(project: any): string {
     const ref = parseNotebookUrl(project?.notebook_url);
     return ref ? notebookName(ref) : '';
