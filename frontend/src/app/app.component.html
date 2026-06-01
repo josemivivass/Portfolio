@@ -6,23 +6,18 @@
      [class.is-standalone-route]="!isHomeRoute">
 
   <div *ngIf="isHomeRoute" class="page-corner">
-    <ng-container *ngIf="isLoggedIn; else loggedOutCorner">
+    <ng-container *ngIf="isLoggedIn">
       <span class="user-status">{{ i18n.t('nav.connected') }}</span>
       <span class="page-corner-sep"></span>
       <a href="javascript:void(0)" (click)="logout()">{{ i18n.t('nav.logout') }}</a>
     </ng-container>
-    <ng-template #loggedOutCorner>
-      <a routerLink="/login">{{ i18n.t('nav.login') }}</a>
-      <span class="page-corner-sep"></span>
-      <a routerLink="/register">{{ i18n.t('nav.register') }}</a>
-    </ng-template>
 
     <ng-container *ngIf="canAccessAdmin">
-      <span class="page-corner-sep"></span>
+      <span class="page-corner-sep" *ngIf="isLoggedIn"></span>
       <a href="javascript:void(0)" (click)="enterAdmin()" class="admin-link">{{ i18n.t('nav.admin') }}</a>
     </ng-container>
 
-    <span class="page-corner-line"></span>
+    <span class="page-corner-line" *ngIf="isLoggedIn || canAccessAdmin"></span>
 
     <a href="javascript:void(0)" (click)="scrollToProjects($event)">{{ i18n.t('nav.projects') }}</a>
     <span class="page-corner-sep"></span>
@@ -63,15 +58,11 @@
     <a routerLink="/contacto" routerLinkActive="active" class="nav-link" (click)="closeMobileMenu()">{{ i18n.t('nav.contact') }}</a>
     <a *ngIf="canAccessAdmin" href="javascript:void(0)" (click)="enterAdmin(); closeMobileMenu()" class="nav-link admin-link">{{ i18n.t('nav.admin') }}</a>
 
-    <span class="menu-label menu-label-spaced">{{ i18n.t('nav.account') }}</span>
-    <ng-container *ngIf="isLoggedIn; else loggedOutMobile">
+    <ng-container *ngIf="isLoggedIn">
+      <span class="menu-label menu-label-spaced">{{ i18n.t('nav.account') }}</span>
       <span class="user-status">{{ i18n.t('nav.connected') }}</span>
       <button class="nav-link btn-logout" (click)="logout(); closeMobileMenu()">{{ i18n.t('nav.logout') }}</button>
     </ng-container>
-    <ng-template #loggedOutMobile>
-      <a routerLink="/login" class="nav-link" (click)="closeMobileMenu()">{{ i18n.t('nav.login') }}</a>
-      <a routerLink="/register" class="nav-link highlight" (click)="closeMobileMenu()">{{ i18n.t('nav.register') }}</a>
-    </ng-template>
     <button class="lang-toggle" (click)="i18n.toggle()" [attr.aria-label]="'Switch to ' + i18n.t('nav.lang')">
       {{ i18n.t('nav.lang') }}
     </button>

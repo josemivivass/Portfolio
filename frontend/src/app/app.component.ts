@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { RouterOutlet, RouterModule, Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { filter, Subscription } from 'rxjs';
+import { filter, skip, Subscription } from 'rxjs';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -93,7 +93,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.canAccessAdmin = this.auth.canAccessAdminPanel();
 
     this.tracking.logEntry();
-    this.auth.role$().subscribe(() => {
+    this.auth.role$().pipe(skip(1)).subscribe(() => {
       this.canAccessAdmin = this.auth.canAccessAdminPanel();
       this.cdr.detectChanges();
     });
