@@ -67,13 +67,12 @@ function escapeRegex(s) {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// `${slug}_Foto<N>.<ext>` con N libre en el directorio.
 async function nextPhotoName(dirPath, slug, ext) {
   let entries = [];
   try {
     entries = await fs.promises.readdir(dirPath);
   } catch { /* dir aún no existe */ }
-  const re = new RegExp(`^${escapeRegex(slug)}_Foto(\\d+)\\.[a-z0-9]+$`, 'i');
+  const re = new RegExp(`^${escapeRegex(slug)}_Foto(\\d+)(?:_[a-z0-9]+)?\\.[a-z0-9]+$`, 'i');
   let maxN = 0;
   for (const e of entries) {
     const m = re.exec(e);
@@ -82,12 +81,8 @@ async function nextPhotoName(dirPath, slug, ext) {
       if (n > maxN) maxN = n;
     }
   }
-  let candidate;
-  do {
-    maxN += 1;
-    candidate = `${slug}_Foto${maxN}.${ext}`;
-  } while (entries.includes(candidate));
-  return candidate;
+  const uniq = Date.now().toString(36) + crypto.randomBytes(3).toString('hex');
+  return `${slug}_Foto${maxN + 1}_${uniq}.${ext}`;
 }
 
 async function promotePendingImages(images, projectId, projectTitle) {
@@ -126,8 +121,8 @@ async function promotePendingImages(images, projectId, projectTitle) {
   }
 }
 
-// Sincroniza FS y BD para un proyecto:
-async function normalizeProjectImages(connection, projectId, projectTitle) {
+// Sincroniza BD con FS para un proyecto sin renombrar archivos
+async function normalizeProjectImages(connection, projectId, /* projectTitle */ _unused) {
   const dir = path.join(PROJECTS_DIR, String(projectId));
   let fsEntries = [];
   try {
@@ -136,77 +131,46 @@ async function normalizeProjectImages(connection, projectId, projectTitle) {
     return; // carpeta inexistente
   }
   const fsImgs = fsEntries.filter((f) => IMG_EXT_RE.test(f));
+  const fsSet = new Set(fsImgs);
 
   const [dbRows] = await connection.query(
     'SELECT id, image_url, position FROM project_images WHERE project_id = ? ORDER BY position ASC, id ASC',
     [projectId]
   );
 
-  // Orden final: 1) BD en su orden (con archivo presente), 2) huérfanos del FS alfabéticos.
-  const dbFilenames = new Set();
-  const ordered = [];
+  // 1) Borra rows fantasma (BD sin archivo en disco).
+  const validRows = [];
+  const ghostIds = [];
   for (const row of dbRows) {
-    const fname = path.basename(row.image_url);
-    dbFilenames.add(fname);
-    if (fsImgs.includes(fname)) {
-      ordered.push({ dbId: row.id, currentFilename: fname });
+    if (fsSet.has(path.basename(row.image_url))) {
+      validRows.push(row);
+    } else {
+      ghostIds.push(row.id);
     }
   }
-  const orphanFiles = fsImgs.filter((f) => !dbFilenames.has(f)).sort();
-  for (const f of orphanFiles) ordered.push({ dbId: null, currentFilename: f });
-
-  // Limpia entradas fantasma de BD (estaban en BD pero no en disco).
-  const validIds = new Set(ordered.filter((it) => it.dbId).map((it) => it.dbId));
-  const ghostIds = dbRows.filter((r) => !validIds.has(r.id)).map((r) => r.id);
   if (ghostIds.length > 0) {
     await connection.query('DELETE FROM project_images WHERE id IN (?)', [ghostIds]);
   }
 
-  if (ordered.length === 0) return;
-
-  const slug = slugifyProjectTitle(projectTitle);
-  for (let i = 0; i < ordered.length; i++) {
-    const it = ordered[i];
-    const ext = (path.extname(it.currentFilename).slice(1) || 'png').toLowerCase();
-    it.targetName = `${slug}_Foto${i + 1}.${ext}`;
-  }
-
-  // Fase 1: renombrar a temporal los que cambian (evita colisiones por swap).
-  const needsRename = ordered.filter((it) => it.currentFilename !== it.targetName);
-  for (const it of needsRename) {
-    const tempName = `_norm_${crypto.randomBytes(6).toString('hex')}_${it.targetName}`;
-    try {
-      await fs.promises.rename(path.join(dir, it.currentFilename), path.join(dir, tempName));
-      it.tempName = tempName;
-    } catch (e) {
-      console.warn('[normalize] rename a temporal falló:', e.message);
-    }
-  }
-  // Fase 2: temporal → final.
-  for (const it of needsRename) {
-    if (!it.tempName) continue;
-    try {
-      await fs.promises.rename(path.join(dir, it.tempName), path.join(dir, it.targetName));
-    } catch (e) {
-      console.warn('[normalize] rename a final falló:', e.message);
-    }
-  }
-
-  // Sync BD con el orden y URL finales.
-  for (let i = 0; i < ordered.length; i++) {
-    const it = ordered[i];
-    const newUrl = `${PROJECT_IMG_URL_PREFIX}${projectId}/${it.targetName}`;
-    if (it.dbId) {
+  // 2) Reindexa posiciones contiguas (0..N-1) preservando el orden previo.
+  for (let i = 0; i < validRows.length; i++) {
+    if (validRows[i].position !== i) {
       await connection.query(
-        'UPDATE project_images SET image_url = ?, position = ? WHERE id = ?',
-        [newUrl, i, it.dbId]
-      );
-    } else {
-      await connection.query(
-        'INSERT INTO project_images (project_id, image_url, position) VALUES (?, ?, ?)',
-        [projectId, newUrl, i]
+        'UPDATE project_images SET position = ? WHERE id = ?',
+        [i, validRows[i].id]
       );
     }
+  }
+
+  // 3) Inserta orphans del FS (archivos sin row en BD) al final del orden.
+  const dbFilenames = new Set(validRows.map((r) => path.basename(r.image_url)));
+  const orphans = fsImgs.filter((f) => !dbFilenames.has(f)).sort();
+  for (let i = 0; i < orphans.length; i++) {
+    const url = `${PROJECT_IMG_URL_PREFIX}${projectId}/${orphans[i]}`;
+    await connection.query(
+      'INSERT INTO project_images (project_id, image_url, position) VALUES (?, ?, ?)',
+      [projectId, url, validRows.length + i]
+    );
   }
 }
 

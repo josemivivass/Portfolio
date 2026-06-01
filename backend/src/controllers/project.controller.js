@@ -1,12 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const pool = require('../config/db');
-const {
-  PROJECTS_DIR,
-  IMG_EXT_RE,
-  normalizeProjectImages,
-  isProjectImagesOutOfSync
-} = require('../utils/project-images');
+const { PROJECTS_DIR } = require('../utils/project-images');
 
 const EXT_TO_MIME = {
   '.jpg': 'image/jpeg',
@@ -18,23 +13,6 @@ const EXT_TO_MIME = {
 
 async function attachImages(projects) {
   if (!Array.isArray(projects) || projects.length === 0) return projects;
-
-  for (const p of projects) {
-    let outOfSync = false;
-    try { outOfSync = await isProjectImagesOutOfSync(pool, p.id); } catch { /* noop */ }
-    if (!outOfSync) continue;
-    const conn = await pool.getConnection();
-    try {
-      await conn.beginTransaction();
-      await normalizeProjectImages(conn, p.id, p.title);
-      await conn.commit();
-    } catch (err) {
-      await conn.rollback().catch(() => {});
-      console.warn('[attachImages] normalize falló para proyecto', p.id, err?.message);
-    } finally {
-      conn.release();
-    }
-  }
 
   const ids = projects.map((p) => p.id);
   const [images] = await pool.query(
@@ -105,6 +83,6 @@ exports.getProjectImage = (req, res) => {
   const ext = path.extname(safeFile).toLowerCase();
   const mime = EXT_TO_MIME[ext] || 'application/octet-stream';
   res.setHeader('Content-Type', mime);
-  res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+  res.setHeader('Cache-Control', 'public, max-age=86400, must-revalidate');
   fs.createReadStream(filePath).pipe(res);
 };

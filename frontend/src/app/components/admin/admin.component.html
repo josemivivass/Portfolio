@@ -257,7 +257,7 @@
         </div>
         <div class="edit-modal-footer">
           <button type="button" class="btn-secondary" (click)="state.cancelProjectEdit()">{{ state.i18n.t('admin.action.cancel') }}</button>
-          <button type="submit" class="btn-primary">{{ state.i18n.t('admin.action.save') }}</button>
+          <button type="submit" class="btn-primary" [disabled]="state.projectImagesUploading() > 0">{{ state.i18n.t('admin.action.save') }}</button>
         </div>
       </form>
     </div>
