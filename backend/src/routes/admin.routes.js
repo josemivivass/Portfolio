@@ -18,6 +18,7 @@ router.delete('/users/:id', adminOnly, admin.deleteUser);
 // Projects
 router.post('/projects', editorOrAdmin, admin.createProject);
 router.put('/projects/:id', editorOrAdmin, admin.updateProject);
+router.patch('/projects/:id/featured', editorOrAdmin, admin.updateProjectFeatured);
 router.delete('/projects/:id', adminOnly, admin.deleteProject);
 router.post('/projects/upload-image', editorOrAdmin, admin.uploadProjectImage);
 

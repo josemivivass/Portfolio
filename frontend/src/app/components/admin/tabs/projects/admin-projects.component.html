@@ -58,7 +58,12 @@
                 }
               </div>
             </td>
-            <td>{{ p.is_featured ? state.i18n.t('admin.projects.yes') : state.i18n.t('admin.projects.no') }}</td>
+            <td>
+              <input type="checkbox"
+                     [checked]="!!p.is_featured"
+                     (change)="state.toggleProjectFeatured(p)"
+                     [attr.aria-label]="state.i18n.t('admin.projects.col.featured')" />
+            </td>
             <td class="mono">{{ p.project_date | date:'dd-MM-yyyy' }}</td>
             <td style="text-align:right">
               <div class="actions">
@@ -103,9 +108,13 @@
             <div class="rich-text-title font-bold" [innerHTML]="p.title"></div>
             <span class="mobile-card-sub">{{ p.project_date | date:'dd/MM/yyyy' }}</span>
           </div>
-          @if (p.is_featured) {
-            <span class="pill pill-amber">★ {{ state.i18n.t('admin.projects.col.featured') }}</span>
-          }
+          <label class="mobile-featured-toggle">
+            <input type="checkbox"
+                   [checked]="!!p.is_featured"
+                   (change)="state.toggleProjectFeatured(p)"
+                   [attr.aria-label]="state.i18n.t('admin.projects.col.featured')" />
+            <span>{{ state.i18n.t('admin.projects.col.featured') }}</span>
+          </label>
         </header>
         <div class="mobile-card-body">
           @if (p.description) {

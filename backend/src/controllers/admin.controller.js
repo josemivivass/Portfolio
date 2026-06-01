@@ -267,6 +267,24 @@ exports.updateProject = async (req, res) => {
   }
 };
 
+exports.updateProjectFeatured = async (req, res) => {
+  const { id } = req.params;
+  const { is_featured } = req.body;
+  try {
+    const [result] = await pool.query(
+      'UPDATE projects SET is_featured = ? WHERE id = ?',
+      [is_featured ? 1 : 0, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Proyecto no encontrado' });
+    }
+    res.status(200).json({ message: 'Proyecto actualizado' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error al actualizar proyecto' });
+  }
+};
+
 exports.deleteProject = async (req, res) => {
   const { id } = req.params;
   try {

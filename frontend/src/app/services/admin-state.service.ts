@@ -1388,6 +1388,23 @@ export class AdminStateService {
 
   cancelProjectEdit(): void { this.editingProject.set(null); }
 
+  toggleProjectFeatured(p: any): void {
+    const next = !p.is_featured;
+    const prev = p.is_featured;
+    this.projects.update(list => list.map(x =>
+      x.id === p.id ? { ...x, is_featured: next } : x
+    ));
+    this.adminService.updateProjectFeatured(p.id, next).subscribe({
+      error: (err) => {
+        this.projects.update(list => list.map(x =>
+          x.id === p.id ? { ...x, is_featured: prev } : x
+        ));
+        alert(this.i18n.t('admin.error.project.save'));
+        console.error(err);
+      }
+    });
+  }
+
   deleteProject(p: any): void {
     if (!this.isAdmin()) return;
     this.askConfirm(
@@ -1662,11 +1679,10 @@ export class AdminStateService {
       if (aNil && bNil) return 0;
       if (aNil) return 1;
       if (bNil) return -1;
-      if (typeof av === 'number' && typeof bv === 'number') {
-        return (av - bv) * mult;
-      }
-      if (typeof av === 'boolean' && typeof bv === 'boolean') {
-        return ((av ? 1 : 0) - (bv ? 1 : 0)) * mult;
+      const aBoolish = typeof av === 'number' || typeof av === 'boolean';
+      const bBoolish = typeof bv === 'number' || typeof bv === 'boolean';
+      if (aBoolish && bBoolish) {
+        return (Number(av) - Number(bv)) * mult;
       }
       if (typeof av === 'string' && typeof bv === 'string' && dateRe.test(av) && dateRe.test(bv)) {
         const ad = Date.parse(av);

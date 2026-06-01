@@ -62,6 +62,13 @@ export class AdminService {
   updateProject(id: number, p: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/admin/projects/${id}`, p, { headers: this.headers() });
   }
+  updateProjectFeatured(id: number, is_featured: boolean): Observable<any> {
+    return this.http.patch(
+      `${this.apiUrl}/admin/projects/${id}/featured`,
+      { is_featured },
+      { headers: this.headers() }
+    );
+  }
   deleteProject(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/admin/projects/${id}`, { headers: this.headers() });
   }

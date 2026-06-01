@@ -990,6 +990,24 @@
     flex-shrink: 0;
     align-self: center;
   }
+  .admin-shell .mobile-featured-toggle {
+    flex-shrink: 0;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--ff-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-text-muted);
+    cursor: pointer;
+  }
+  .admin-shell .mobile-featured-toggle input[type="checkbox"] {
+    cursor: pointer;
+    margin: 0;
+  }
   .admin-shell .mobile-card-body {
     display: flex;
     flex-direction: column;
