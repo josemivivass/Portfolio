@@ -1,6 +1,6 @@
 import {
   Component, OnInit, OnDestroy, Inject, PLATFORM_ID,
-  ChangeDetectorRef, ElementRef, ViewChild, EventEmitter, Output,
+  ChangeDetectorRef, ChangeDetectionStrategy, ElementRef, ViewChild, EventEmitter, Output,
   HostListener
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -14,12 +14,35 @@ import { NotebookComponent } from '../notebook/notebook.component';
 
 type ProjectFilterId = 'all' | 'web' | 'android' | 'ai' | 'other';
 
+/* Vista precalculada de un proyecto. */
+interface ProjectVM {
+  id: number;
+  type: ProjectFilterId;
+  isNotebook: boolean;
+  images: { url: string }[];
+  hasMultipleImages: boolean;
+  notebookFileName: string;
+  colabUrl: string;
+  shortLiveUrl: string;
+  displayTitle: string;
+  displayDesc: string;
+  tagList: string[];
+  is_featured?: any;
+  status?: string;
+  project_date?: any;
+  repo_url?: string;
+  live_url?: string;
+  notebook_url: string | null;
+  [key: string]: any;
+}
+
 @Component({
   selector: 'app-projects',
   standalone: true,
   imports: [CommonModule, NotebookComponent],
   templateUrl: './projects.component.html',
-  styleUrls: ['./projects.component.css']
+  styleUrls: ['./projects.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectsComponent implements OnInit, OnDestroy {
   @ViewChild('showcaseList') showcaseList!: ElementRef;
@@ -27,7 +50,10 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   //Datos
   projects: any[] = [];
+  vms: ProjectVM[] = [];
+  filteredProjects: ProjectVM[] = [];
   errorMessage = '';
+  private yearRange = '';
 
   //Filtro por tipo de proyecto
   projectFilters: { id: ProjectFilterId; labelKey: string }[] = [
@@ -40,7 +66,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   openQrId: number | null = null;
   lightboxOpen = false;
-  lightboxProject: any = null;
+  lightboxProject: ProjectVM | null = null;
 
   readonly colabMask = `url(${techIcon('colab')})`;
 
@@ -65,12 +91,16 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.langSub = this.i18n.lang$.subscribe(() => this.cdr.detectChanges());
+    this.langSub = this.i18n.lang$.subscribe(() => {
+      this.rebuildViewModels();
+      this.cdr.markForCheck();
+    });
 
     this.projectService.getFeaturedProjects().subscribe({
       next: (data) => {
         this.projects = data ?? [];
-        this.cdr.detectChanges();
+        this.rebuildViewModels();
+        this.cdr.markForCheck();
         if (isPlatformBrowser(this.platformId)) {
           ScrollTrigger.refresh();
         }
@@ -79,10 +109,57 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error de red al cargar proyectos:', err);
         this.errorMessage = 'Error al cargar los proyectos.';
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
         this.loaded.emit([]);
       }
     });
+  }
+
+  // Precalcula las vistas de proyecto una sola vez (al cargar o al cambiar idioma).
+  private rebuildViewModels(): void {
+    this.vms = (this.projects ?? []).map(p => this.toViewModel(p));
+    this.applyFilter();
+    this.yearRange = this.computeYearRange();
+  }
+
+  private toViewModel(p: any): ProjectVM {
+    const ref = parseNotebookUrl(p?.notebook_url);
+    const images = (Array.isArray(p?.images) ? p.images : [])
+      .filter((img: any) => img && typeof img.url === 'string' && img.url.length > 0)
+      .map((img: any) => ({ url: resolveApiAssetUrl(img.url) }));
+    const t = (p?.project_type || '').toLowerCase();
+    const type: ProjectFilterId =
+      (t === 'android' || t === 'ai' || t === 'other' || t === 'web') ? t : 'web';
+    const titleRaw = (this.i18n.lang === 'en' && p?.title_en) ? p.title_en : p?.title;
+    const descRaw = (this.i18n.lang === 'en' && p?.description_en) ? p.description_en : p?.description;
+    const tagList = typeof p?.tags === 'string'
+      ? p.tags.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0)
+      : [];
+    return {
+      ...p,
+      id: p?.id,
+      notebook_url: p?.notebook_url ?? null,
+      type,
+      isNotebook: !!ref,
+      images,
+      hasMultipleImages: images.length > 1,
+      notebookFileName: ref ? notebookName(ref) : '',
+      colabUrl: ref ? colabUrl(ref) : '',
+      shortLiveUrl: this.shortUrl(p?.live_url),
+      displayTitle: this.stripNbsp(titleRaw),
+      displayDesc: this.stripNbsp(descRaw),
+      tagList,
+    };
+  }
+
+  private applyFilter(): void {
+    this.filteredProjects = this.activeFilter === 'all'
+      ? this.vms
+      : this.vms.filter(v => v.type === this.activeFilter);
+  }
+
+  trackByProjectId(_index: number, vm: ProjectVM): number {
+    return vm?.id ?? _index;
   }
 
   ngOnDestroy(): void {
@@ -114,53 +191,20 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     return `https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=6&data=${encodeURIComponent(target)}`;
   }
 
-  getType(project: any): ProjectFilterId {
-    const t = (project?.project_type || '').toLowerCase();
-    if (t === 'android' || t === 'ai' || t === 'other' || t === 'web') return t;
-    return 'web';
-  }
-
-  get filteredProjects(): any[] {
-    if (this.activeFilter === 'all') return this.projects;
-    return this.projects.filter(p => this.getType(p) === this.activeFilter);
-  }
-
   get shownFilters(): { id: ProjectFilterId; labelKey: string }[] {
     return this.projectFilters.filter(f => f.id === 'all' || this.countByFilter(f.id) > 0);
-  }
-
-  isNotebook(project: any): boolean {
-    return !!parseNotebookUrl(project?.notebook_url);
-  }
-
-  projectTitle(project: any): string {
-    const raw = (this.i18n.lang === 'en' && project?.title_en) ? project.title_en : project?.title;
-    return this.stripNbsp(raw);
-  }
-
-  projectDescription(project: any): string {
-    const raw = (this.i18n.lang === 'en' && project?.description_en) ? project.description_en : project?.description;
-    return this.stripNbsp(raw);
   }
 
   private stripNbsp(value: string | null | undefined): string {
     return (value || '').replace(/&nbsp;/g, ' ').replace(/ /g, ' ');
   }
 
-  notebookFileName(project: any): string {
-    const ref = parseNotebookUrl(project?.notebook_url);
-    return ref ? notebookName(ref) : '';
-  }
-
-  colabUrlFor(project: any): string {
-    const ref = parseNotebookUrl(project?.notebook_url);
-    return ref ? colabUrl(ref) : '';
-  }
-
   setFilter(id: ProjectFilterId): void {
     if (this.activeFilter === id) return;
     this.activeFilter = id;
     this.openQrId = null;
+    this.applyFilter();
+    this.cdr.markForCheck();
     if (isPlatformBrowser(this.platformId)) {
       // Reposiciona ScrollTrigger porque el alto del listado puede cambiar.
       setTimeout(() => ScrollTrigger.refresh(), 0);
@@ -168,11 +212,15 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   }
 
   countByFilter(id: ProjectFilterId): number {
-    if (id === 'all') return this.projects.length;
-    return this.projects.filter(p => this.getType(p) === id).length;
+    if (id === 'all') return this.vms.length;
+    return this.vms.filter(v => v.type === id).length;
   }
 
   get projectsYearRange(): string {
+    return this.yearRange;
+  }
+
+  private computeYearRange(): string {
     const years = this.projects
       .map(p => p?.project_date ? this.toDate(p.project_date).getFullYear() : NaN)
       .filter(y => Number.isFinite(y));
@@ -209,24 +257,16 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     hideIconOnError(event);
   }
 
-  //Carrusel de capturas
+  //Carrusel de capturas (las imágenes ya vienen resueltas en el VM)
 
-  imagesFor(project: any): { url: string }[] {
-    if (!project) return [];
-    const arr = Array.isArray(project.images) ? project.images : [];
-    return arr
-      .filter((img: any) => img && typeof img.url === 'string' && img.url.length > 0)
-      .map((img: any) => ({ url: resolveApiAssetUrl(img.url) }));
-  }
-
-  activeImageIndex(project: any, key?: number): number {
+  activeImageIndex(project: ProjectVM, key?: number): number {
     const k = (key !== undefined) ? key : (project?.id ?? 0);
     return this.carouselIndex[k] ?? 0;
   }
 
-  prevImage(project: any, event?: Event, key?: number): void {
+  prevImage(project: ProjectVM, event?: Event, key?: number): void {
     if (event) { event.stopPropagation(); }
-    const total = this.imagesFor(project).length;
+    const total = project?.images?.length ?? 0;
     if (total <= 1) return;
     const k = (key !== undefined) ? key : (project?.id ?? 0);
     const cur = this.carouselIndex[k] ?? 0;
@@ -234,9 +274,9 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.resetLightboxZoom();
   }
 
-  nextImage(project: any, event?: Event, key?: number): void {
+  nextImage(project: ProjectVM, event?: Event, key?: number): void {
     if (event) { event.stopPropagation(); }
-    const total = this.imagesFor(project).length;
+    const total = project?.images?.length ?? 0;
     if (total <= 1) return;
     const k = (key !== undefined) ? key : (project?.id ?? 0);
     const cur = this.carouselIndex[k] ?? 0;
@@ -244,9 +284,9 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.resetLightboxZoom();
   }
 
-  goToImage(project: any, idx: number, event?: Event, key?: number): void {
+  goToImage(project: ProjectVM, idx: number, event?: Event, key?: number): void {
     if (event) { event.stopPropagation(); }
-    const total = this.imagesFor(project).length;
+    const total = project?.images?.length ?? 0;
     if (idx < 0 || idx >= total) return;
     const k = (key !== undefined) ? key : (project?.id ?? 0);
     this.carouselIndex[k] = idx;
@@ -259,7 +299,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   lightboxImage(): string | null {
     if (!this.lightboxProject) return null;
-    const imgs = this.imagesFor(this.lightboxProject);
+    const imgs = this.lightboxProject.images;
     if (imgs.length === 0) return null;
     const idx = this.activeImageIndex(this.lightboxProject);
     return imgs[Math.min(Math.max(0, idx), imgs.length - 1)]?.url ?? null;
@@ -267,15 +307,15 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   //Acciones de la card
 
-  toggleQr(project: any, event: Event): void {
+  toggleQr(project: ProjectVM, event: Event): void {
     event.stopPropagation();
     this.openQrId = this.openQrId === project.id ? null : project.id;
   }
 
-  openLightboxFor(project: any, event?: Event): void {
+  openLightboxFor(project: ProjectVM, event?: Event): void {
     if (event) { event.stopPropagation(); }
     if (!project) return;
-    if (this.imagesFor(project).length === 0) return;
+    if (!project.images || project.images.length === 0) return;
     const alreadyOpen = this.lightboxOpen;
     this.lightboxProject = project;
     this.lightboxOpen = true;
