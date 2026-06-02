@@ -143,7 +143,7 @@ const normNotebookUrl = (v) => {
 
 const normRichText = (v) => {
   if (typeof v !== 'string') return v;
-  return v.replace(/&nbsp;/g, ' ').replace(/ /g, ' ');
+  return v.replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ').replace(/\s*style\s*=\s*("[^"]*"|'[^']*')/gi, '');
 };
 
 async function replaceProjectImages(connection, projectId, images) {

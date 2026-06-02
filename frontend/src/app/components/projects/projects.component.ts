@@ -146,8 +146,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       notebookFileName: ref ? notebookName(ref) : '',
       colabUrl: ref ? colabUrl(ref) : '',
       shortLiveUrl: this.shortUrl(p?.live_url),
-      displayTitle: this.stripNbsp(titleRaw),
-      displayDesc: this.stripNbsp(descRaw),
+      displayTitle: this.cleanRichText(titleRaw),
+      displayDesc: this.cleanRichText(descRaw),
       tagList,
     };
   }
@@ -195,8 +195,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     return this.projectFilters.filter(f => f.id === 'all' || this.countByFilter(f.id) > 0);
   }
 
-  private stripNbsp(value: string | null | undefined): string {
-    return (value || '').replace(/&nbsp;/g, ' ').replace(/ /g, ' ');
+  private cleanRichText(value: string | null | undefined): string {
+    return (value || '').replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ').replace(/\s*style\s*=\s*("[^"]*"|'[^']*')/gi, '');
   }
 
   setFilter(id: ProjectFilterId): void {

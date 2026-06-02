@@ -41,7 +41,7 @@
         @for (e of state.sortedExperiences(); track e.id) {
           <tr>
             <td class="mono">{{ e.id }}</td>
-            <td class="rich-text-cell" [innerHTML]="e.title"></td>
+            <td class="rich-text-cell" [innerHTML]="e.title | cleanHtml"></td>
             <td>{{ e.company }}</td>
             <td class="mono">{{ e.start_date | date:'dd-MM-yyyy' }}</td>
             <td class="mono">{{ e.end_date ? (e.end_date | date:'dd-MM-yyyy') : state.i18n.t('admin.experience.current') }}</td>
@@ -85,7 +85,7 @@
       <article class="mobile-card experience-card">
         <header class="mobile-card-head">
           <div class="mobile-card-title">
-            <div class="rich-text-title font-bold" [innerHTML]="e.title"></div>
+            <div class="rich-text-title font-bold" [innerHTML]="e.title | cleanHtml"></div>
             <span class="mobile-card-sub">{{ e.company }}</span>
           </div>
           <span class="pill" [class.pill-dark]="!e.end_date">
@@ -94,7 +94,7 @@
         </header>
         <div class="mobile-card-body">
           @if (e.description) {
-            <div class="mobile-card-desc rich-text-cell" [innerHTML]="e.description"></div>
+            <div class="mobile-card-desc rich-text-cell" [innerHTML]="e.description | cleanHtml"></div>
           }
           @if (e.location) {
             <div class="mobile-meta-row">

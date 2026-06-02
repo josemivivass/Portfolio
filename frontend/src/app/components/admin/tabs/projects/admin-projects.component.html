@@ -45,7 +45,7 @@
         @for (p of state.sortedProjects(); track p.id) {
           <tr>
             <td class="mono">{{ p.id }}</td>
-            <td class="rich-text-cell" [innerHTML]="p.title"></td>
+            <td class="rich-text-cell" [innerHTML]="p.title | cleanHtml"></td>
             <td class="tag-cell">
               <div class="tag-cell-inner">
                 @for (t of (p.tags || '').split(','); track $index) {
@@ -105,7 +105,7 @@
       <article class="mobile-card project-card">
         <header class="mobile-card-head">
           <div class="mobile-card-title">
-            <div class="rich-text-title font-bold" [innerHTML]="p.title"></div>
+            <div class="rich-text-title font-bold" [innerHTML]="p.title | cleanHtml"></div>
             <span class="mobile-card-sub">{{ p.project_date | date:'dd/MM/yyyy' }}</span>
           </div>
           <label class="mobile-featured-toggle">
@@ -118,7 +118,7 @@
         </header>
         <div class="mobile-card-body">
           @if (p.description) {
-            <div class="mobile-card-desc rich-text-cell" [innerHTML]="p.description"></div>
+            <div class="mobile-card-desc rich-text-cell" [innerHTML]="p.description | cleanHtml"></div>
           }
           @if (p.tags) {
             <div class="mobile-tags">
