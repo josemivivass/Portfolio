@@ -18,6 +18,7 @@ const {
   promotePendingImages,
   normalizeProjectImages
 } = require('../utils/project-images');
+const { normType, normStatus, normNotebookUrl, normRichText } = require('../utils/sanitize');
 
 exports.listUsers = async (req, res) => {
   try {
@@ -128,22 +129,6 @@ exports.deleteUser = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: 'Error al eliminar usuario' });
   }
-};
-
-const ALLOWED_TYPES   = ['web', 'android', 'ai', 'other'];
-const ALLOWED_STATUS  = ['production', 'development', 'archived'];
-const normType   = (v) => ALLOWED_TYPES.includes(v) ? v : 'web';
-const normStatus = (v) => ALLOWED_STATUS.includes(v) ? v : null;
-const normNotebookUrl = (v) => {
-  if (typeof v !== 'string') return null;
-  const t = v.trim();
-  if (!t || !/^https?:\/\//i.test(t)) return null;
-  return t.slice(0, 500);
-};
-
-const normRichText = (v) => {
-  if (typeof v !== 'string') return v;
-  return v.replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ').replace(/\s*style\s*=\s*("[^"]*"|'[^']*')/gi, '');
 };
 
 async function replaceProjectImages(connection, projectId, images) {
