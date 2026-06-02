@@ -1,0 +1,196 @@
+/* Mapa-mundo de visitas — choropleth + ciudades. Hereda el card editorial
+   (.card.chart-card + .chart-head + .chart-legend del admin-shared.css)
+   y sólo añade los estilos específicos del SVG, tooltip y lista lateral. */
+
+.map-card .chart-head { margin-bottom: 18px; }
+
+.map-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: var(--ff-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  user-select: none;
+}
+.map-toggle input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.18s, border-color 0.18s;
+}
+.map-toggle input:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.map-toggle input:checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.map-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 24px;
+  align-items: start;
+}
+
+.map-svgwrap {
+  position: relative;
+  width: 100%;
+}
+.map-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.map-ocean { fill: var(--surface-alt); }
+
+.map-country {
+  stroke: var(--border-strong);
+  stroke-width: 0.6;
+  transition: stroke 0.15s, stroke-width 0.15s;
+  cursor: default;
+}
+.map-country.has-data { cursor: pointer; }
+.map-country:hover {
+  stroke: var(--accent);
+  stroke-width: 1.2;
+}
+
+.map-cities { pointer-events: none; }
+.map-city {
+  fill: var(--brand);
+  fill-opacity: 0.7;
+  stroke: var(--brand);
+  stroke-width: 1;
+  pointer-events: all;
+}
+.map-city:hover { fill-opacity: 1; }
+
+.map-tooltip {
+  position: absolute;
+  transform: translate(12px, -100%);
+  pointer-events: none;
+  background: var(--brand);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 5;
+  filter: drop-shadow(0 4px 12px rgba(30, 45, 61, 0.25));
+  white-space: nowrap;
+}
+.map-tooltip-name {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.95rem;
+}
+.map-tooltip-count {
+  font-family: var(--ff-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.map-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.map-side-label {
+  font-family: var(--ff-mono);
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.map-side-label::before {
+  content: '';
+  width: 20px;
+  height: 1px;
+  background: var(--accent);
+}
+.map-side-empty {
+  margin: 0;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+.map-side-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.map-side-list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-light);
+  font-family: var(--ff-serif);
+  font-size: 0.92rem;
+  color: var(--text-body);
+}
+.map-side-list li:last-child { border-bottom: none; }
+.side-name {
+  font-weight: 300;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.side-count {
+  font-family: var(--ff-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1180px) {
+  .map-wrap { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 860px) {
+  .map-card .chart-head { margin-bottom: 14px; gap: 10px; }
+  .map-wrap { gap: 16px; }
+  .map-tooltip { font-size: 0.85rem; }
+  .map-tooltip-name { font-size: 0.88rem; }
+}
+
+@media (max-width: 480px) {
+  .map-toggle { font-size: 0.56rem; letter-spacing: 0.14em; }
+}

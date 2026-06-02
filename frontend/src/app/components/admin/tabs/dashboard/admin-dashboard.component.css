@@ -79,43 +79,6 @@
   align-items: flex-start;
   margin-bottom: 10px;
 }
-.chart-legend {
-  display: flex;
-  gap: 16px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-.legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
-}
-.legend-item strong {
-  color: var(--text);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-}
-.legend-dot-blue {
-  background: var(--c-primary);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.18);
-}
-.legend-dot-amber {
-  background: var(--c-amber);
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
-}
-.legend-dot-green {
-  background: var(--c-green-vivid);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
-}
-
 .line-chart-wrap {
   width: 100%;
   margin: 4px 0 0;

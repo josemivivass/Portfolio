@@ -439,6 +439,48 @@
   letter-spacing: 0.2em;
 }
 
+/* Leyenda de gráficas (dashboard, mapa, etc.) */
+.admin-shell .chart-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.admin-shell .legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.admin-shell .legend-item strong {
+  color: var(--text);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.admin-shell .legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.admin-shell .legend-dot-blue {
+  background: var(--c-primary);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.18);
+}
+.admin-shell .legend-dot-amber {
+  background: var(--c-amber);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+}
+.admin-shell .legend-dot-green {
+  background: var(--c-green-vivid);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+}
+.admin-shell .legend-dot-dark {
+  background: var(--brand);
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.18);
+}
+
 .admin-shell .bar-chart {
   display: flex;
   align-items: flex-end;

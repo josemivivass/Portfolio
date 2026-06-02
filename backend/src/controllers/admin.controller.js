@@ -367,7 +367,9 @@ exports.updateExperience = async (req, res) => {
 exports.listVisitorLogs = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT id, visitor_uuid, entry_time, ip_address, user_agent, is_logged_in
+      `SELECT id, visitor_uuid, entry_time, ip_address,
+              country_code, country_name, region, city, latitude, longitude,
+              user_agent, is_logged_in
        FROM visitor_logs
        ORDER BY entry_time DESC
        LIMIT 500`

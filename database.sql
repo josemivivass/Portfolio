@@ -29,8 +29,15 @@ CREATE TABLE visitor_logs (
     visitor_uuid VARCHAR(36) NOT NULL,
     entry_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ip_address VARCHAR(45),
+    country_code CHAR(2) DEFAULT NULL,
+    country_name VARCHAR(80) DEFAULT NULL,
+    region VARCHAR(80) DEFAULT NULL,
+    city VARCHAR(120) DEFAULT NULL,
+    latitude DECIMAL(8,5) DEFAULT NULL,
+    longitude DECIMAL(8,5) DEFAULT NULL,
     user_agent TEXT,
-    is_logged_in BOOLEAN DEFAULT FALSE
+    is_logged_in BOOLEAN DEFAULT FALSE,
+    INDEX idx_visitor_logs_country (country_code)
 );
 
 CREATE TABLE projects (

@@ -1,0 +1,83 @@
+<div class="card chart-card map-card">
+  <div class="chart-head">
+    <div>
+      <h3>{{ state.i18n.t('admin.visitors.map.title') }}</h3>
+      <div class="chart-legend">
+        <span class="legend-item">
+          <span class="legend-dot legend-dot-blue"></span>
+          {{ state.i18n.t('admin.visitors.map.legend.countries') }} <strong>{{ totalCountries() }}</strong>
+        </span>
+        <span class="legend-item">
+          <span class="legend-dot legend-dot-dark"></span>
+          {{ state.i18n.t('admin.visitors.map.legend.cities') }} <strong>{{ totalCities() }}</strong>
+        </span>
+      </div>
+    </div>
+    <label class="map-toggle">
+      <input type="checkbox" [checked]="showCities()" (change)="toggleCities()" />
+      <span>{{ state.i18n.t('admin.visitors.map.show.cities') }}</span>
+    </label>
+  </div>
+
+  <div class="map-wrap">
+    <div class="map-svgwrap">
+      <svg [attr.viewBox]="'0 0 ' + width + ' ' + height"
+           class="map-svg"
+           role="img"
+           [attr.aria-label]="state.i18n.t('admin.visitors.map.title')">
+
+        <rect [attr.width]="width" [attr.height]="height" class="map-ocean" />
+
+        <g class="map-countries">
+          @for (c of countries(); track c.id) {
+            <path [attr.d]="c.d"
+                  [style.fill]="fillFor(c.alpha2)"
+                  class="map-country"
+                  [class.has-data]="visitsByCountry().get(c.alpha2)"
+                  (mousemove)="onCountryEnter($event, c)"
+                  (mouseleave)="onCountryLeave()"
+                  [attr.aria-label]="displayName(c)"></path>
+          }
+        </g>
+
+        @if (showCities()) {
+          <g class="map-cities">
+            @for (city of cities(); track city.city + city.country_code) {
+              <circle [attr.cx]="city.x"
+                      [attr.cy]="city.y"
+                      [attr.r]="city.r"
+                      class="map-city">
+                <title>{{ city.city }} · {{ city.count }}</title>
+              </circle>
+            }
+          </g>
+        }
+      </svg>
+
+      @if (hovered(); as h) {
+        <div class="map-tooltip"
+             [style.left.%]="h.x"
+             [style.top.%]="h.y">
+          <span class="map-tooltip-name">{{ h.name }}</span>
+          <span class="map-tooltip-count">{{ h.visits }} {{ state.i18n.t('admin.visitors.map.visits') }}</span>
+        </div>
+      }
+    </div>
+
+    <aside class="map-side">
+      <span class="map-side-label">{{ state.i18n.t('admin.visitors.map.top.countries') }}</span>
+      @if (topCountries().length === 0) {
+        <p class="map-side-empty">{{ state.i18n.t('admin.visitors.map.empty') }}</p>
+      } @else {
+        <ol class="map-side-list">
+          @for (s of topCountries(); track s.alpha2) {
+            <li>
+              <span class="side-name">{{ s.name }}</span>
+              <span class="side-count">{{ s.count }}</span>
+            </li>
+          }
+        </ol>
+      }
+    </aside>
+  </div>
+</div>
