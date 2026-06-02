@@ -1284,10 +1284,9 @@
   .section-title    { font-size: clamp(1.8rem, 7vw, 2.4rem); gap: 14px; }
   .section-num      { font-size: 0.66rem; min-width: 0; }
 
-  /* La fecha pasa a la segunda fila, pegada al borde derecho,
-     dejando libre el top-right para el menú hamburguesa. */
+  /* En móvil ocultamos el rango de años: con 4 filtros no cabe junto al menú. */
   .showcase-sub--desktop { display: none; }
-  .showcase-sub--mobile  { display: inline-block; margin-left: auto; }
+  .showcase-sub--mobile  { display: none; }
   .portfolio-footer { padding: 14px 18px 22px; margin-top: 16px; }
   .sp-projects-curtain .portfolio-footer { padding: 12px 0 24px; }
   .footer-inner     { padding-right: 70px; gap: 6px 14px; }
