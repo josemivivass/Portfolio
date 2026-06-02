@@ -125,6 +125,16 @@ backend/
 - **Backup de archivos** (`/api/admin/backup/data`): descarga un `.zip` (vía `archiver`) con la carpeta `data` —las imágenes de proyectos subidas, que viven en disco y no en la BD, por lo que el dump `.sql` no las cubre—. Complementa al backup de la BD para tener un respaldo completo.
 - **Refresh token de Drive:** se obtiene una sola vez con `node scripts/get-drive-token.js`.
 
+## Tests
+
+Tests unitarios con el runner nativo de Node (`node:test`), sin dependencias extra:
+
+```bash
+npm test        # node --test
+```
+
+Cubren la lógica pura (ficheros `*.test.js` junto al código): saneo y normalización (`utils/sanitize.js`) y utilidades de imágenes/backup (`utils/project-images.js`). Se ejecutan también en CI (`.github/workflows/ci.yml`).
+
 ## Producción
 
 En la EC2, el proceso se gestiona con **PM2** tras un reverse proxy de **Caddy** que termina TLS con Let's Encrypt:

@@ -109,6 +109,14 @@ La subida usa la API de Google Drive vía OAuth2; el job programado corre con `n
 
 ---
 
+## Tests
+
+- **Frontend:** Vitest (`@angular/build:unit-test`) — `cd frontend && npm test`. Specs `*.spec.ts` junto al código (utils y servicios).
+- **Backend:** runner nativo de Node (`node:test`, sin dependencias) — `cd backend && npm test`. Ficheros `*.test.js`.
+- **CI:** `.github/workflows/ci.yml` ejecuta ambas suites en cada push a `main` y en cada PR. Es informativo (no bloquea pushes ni merges).
+
+---
+
 ## Autor
 
 *José Miguel Vivas Sánchez* — [LinkedIn](https://linkedin.com/in/josemiguelvivassanchez/) · [GitHub](https://github.com/josemivivass)

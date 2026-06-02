@@ -38,7 +38,9 @@ La configuración de entorno vive en `src/environments/environment.ts` (dev) y `
 | `npm run build` | Build de producción (bundle browser + server SSR) |
 | `npm run watch` | Build en modo development con watch |
 | `npm run serve:ssr:frontend` | Sirve el bundle SSR construido (puerto 4000) |
-| `npm test` | Tests con Vitest |
+| `npm test` | Tests con Vitest (specs `*.spec.ts`) |
+
+Los tests se ejecutan también en CI (`.github/workflows/ci.yml`) en cada push a `main` y en cada PR.
 
 ## Estructura
 
