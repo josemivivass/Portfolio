@@ -13,8 +13,9 @@ API REST en **Node.js + Express 5** sobre **MariaDB / MySQL** que da servicio al
 | Email | `nodemailer` (Gmail SMTP) |
 | IA | `groq-sdk` (Groq Cloud) |
 | Rate limit | `express-rate-limit` |
-| Anti-bot | Google reCAPTCHA v3 |
+| Anti-bot | Google reCAPTCHA v2 |
 | Backups | `googleapis` (Drive OAuth2) + `node-cron` |
+| Geolocalización IP | `geoip-lite` (MaxMind GeoLite2 offline) |
 
 ## Requisitos
 
@@ -124,6 +125,13 @@ backend/
 - **Manual desde el admin** (`/api/admin/backup`, `/api/admin/backup/drive`, `/api/admin/restore`): descarga del `.sql`, subida puntual a Drive y restauración subiendo un `.sql`. La restauración usa `multipleStatements: true` así que también sirve para aplicar migraciones puntuales — basta con que el archivo empiece por `USE portfolio;`.
 - **Backup de archivos** (`/api/admin/backup/data`): descarga un `.zip` (vía `archiver`) con la carpeta `data` —las imágenes de proyectos subidas, que viven en disco y no en la BD, por lo que el dump `.sql` no las cubre—. Complementa al backup de la BD para tener un respaldo completo.
 - **Refresh token de Drive:** se obtiene una sola vez con `node scripts/get-drive-token.js`.
+
+## Geolocalización de visitas
+
+- En cada `POST /api/tracking/entry`, el controlador resuelve la IP del visitante con `geoip-lite` (base MaxMind GeoLite2 offline, sin llamadas externas) y guarda `country_code`, `country_name`, `region`, `city`, `latitude` y `longitude` en `visitor_logs`. Las IPs locales/privadas/CGNAT se filtran y quedan en `NULL`.
+- Util en `src/utils/geo.js`. El nombre del país se resuelve con `Intl.DisplayNames` en español o inglés.
+- Para rellenar filas históricas tras añadir las columnas: `node scripts/backfill-geo.js` (flags `--dry-run` y `--all`). Es idempotente.
+- El frontend pinta los datos en el mapa-mundo del dashboard del admin.
 
 ## Tests
 

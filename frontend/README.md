@@ -11,6 +11,7 @@ SPA en **Angular 21** con SSR (Express + `@angular/ssr`), animaciones GSAP / Thr
 | Animación | GSAP + ScrollTrigger, Three.js |
 | Editor rico | ngx-quill (admin) |
 | Notebooks | Marked + highlight.js (visor `.ipynb`) |
+| Mapa | `d3-geo` + `topojson-client` + `world-atlas` (admin dashboard) |
 | SEO | servicio propio + `Title` / `Meta` de Angular |
 | Estilos | CSS plano con variables (`colors.css`, `fonts.css`)
 | Lenguaje | TypeScript 5.9 |
@@ -58,16 +59,17 @@ src/
 │   │   ├── preloader/        Intro animada
 │   │   ├── login/ register/  Auth
 │   │   └── admin/            Panel admin con tabs (dashboard, profile, projects, …)
+│   │                         dashboard/map/ — mapa-mundo de visitas (d3-geo + TopoJSON)
 │   ├── services/             translation, auth, seo, profile, project, experience, chatbot, tracking, …
 │   ├── guards/               admin.guard, admin-exit.guard
 │   ├── interceptors/         auth.interceptor (envía la cookie de sesión con withCredentials)
 │   ├── pipes/safe-html.pipe.ts  Sanitización para el visor de notebooks
-│   ├── utils/                tech-icons (tecnología → SVG), notebook (parser .ipynb), notebook-render
+│   ├── utils/                tech-icons (tecnología → SVG), notebook (parser .ipynb), notebook-render, iso-country (alpha-2 ↔ numérico ISO + nombre de país)
 │   └── app.routes.ts
 ├── environments/             environment.ts / environment.prod.ts
 ├── styles.css  colors.css  fonts.css
 └── server.ts                 Entrada SSR
-public/                       Assets servidos en la raíz (/icons, CVs en PDF, og-image, robots.txt, sitemap.xml, favicon)
+public/                       Assets servidos en la raíz (/icons, CVs en PDF, world-110m.json del mapa, og-image, robots.txt, sitemap.xml, favicon)
 ```
 
 ## Configuración de entornos

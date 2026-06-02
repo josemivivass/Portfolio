@@ -22,7 +22,8 @@ Monorepo con dos aplicaciones:
 - **Panel admin** protegido por sesión JWT en cookie `httpOnly`: gestión de perfil, experiencias, proyectos (web · móvil · IA), notebooks, educación, habilidades, mensajes, visitas, usuarios y chatbot.
 - **Visor de notebooks** (.ipynb) integrado: convierte los notebooks de IA enlazados desde GitHub y los renderiza con resaltado de sintaxis.
 - **Chatbot** con LLM vía Groq Cloud y selector de modelo desde el admin.
-- **Tracking** de accesos y formulario de contacto con envío por email (Gmail + reCAPTCHA v3).
+- **Tracking** de accesos con **geolocalización por IP** (`geoip-lite`/MaxMind GeoLite2) y formulario de contacto con envío por email (Gmail + reCAPTCHA v2).
+- **Mapa de visitas** en el dashboard del admin: choropleth mundial con `d3-geo` + TopoJSON, marcadores por ciudad y leyenda con nombres de país traducidos según el idioma activo.
 - **CVs descargables** en Español e Inglés directamente desde el hero, actualizables desde el panel admin.
 - **Backups automáticos** de la base de datos a Google Drive (diarios, con rotación), además de backup y restauración manual desde el panel admin, y descarga de un ZIP con los archivos (imágenes de proyectos en disco).
 - **SEO**: meta tags y descripción, Open Graph / Twitter Cards para la previsualización al compartir, datos estructurados JSON-LD, `robots.txt` y `sitemap.xml`. Bilingüe (ES / EN).
