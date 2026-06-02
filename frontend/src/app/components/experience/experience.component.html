@@ -73,7 +73,7 @@
             </div>
 
             <div class="exp-card-rule"></div>
-            <p class="exp-card-desc" [innerHTML]="i18n.lang === 'en' && exp.description_en ? exp.description_en : exp.description"></p>
+            <div class="exp-card-desc" [innerHTML]="i18n.lang === 'en' && exp.description_en ? exp.description_en : exp.description"></div>
 
             <div class="exp-card-tags" *ngIf="exp.tags">
               <span class="exp-card-tag" *ngFor="let tag of exp.tags.split(',')">
