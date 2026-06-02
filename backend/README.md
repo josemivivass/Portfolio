@@ -122,6 +122,7 @@ backend/
 
 - **Automático:** `node-cron` corre cada noche el dump de la BD (`mysqldump`), lo sube a una carpeta de Google Drive vía OAuth2 y borra los más antiguos según `GOOGLE_DRIVE_BACKUP_KEEP`. Si las credenciales de Drive están vacías el job se salta solo.
 - **Manual desde el admin** (`/api/admin/backup`, `/api/admin/backup/drive`, `/api/admin/restore`): descarga del `.sql`, subida puntual a Drive y restauración subiendo un `.sql`. La restauración usa `multipleStatements: true` así que también sirve para aplicar migraciones puntuales — basta con que el archivo empiece por `USE portfolio;`.
+- **Backup de archivos** (`/api/admin/backup/data`): descarga un `.zip` (vía `archiver`) con la carpeta `data` —las imágenes de proyectos subidas, que viven en disco y no en la BD, por lo que el dump `.sql` no las cubre—. Complementa al backup de la BD para tener un respaldo completo.
 - **Refresh token de Drive:** se obtiene una sola vez con `node scripts/get-drive-token.js`.
 
 ## Producción

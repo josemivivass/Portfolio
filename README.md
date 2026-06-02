@@ -24,7 +24,7 @@ Monorepo con dos aplicaciones:
 - **Chatbot** con LLM vía Groq Cloud y selector de modelo desde el admin.
 - **Tracking** de accesos y formulario de contacto con envío por email (Gmail + reCAPTCHA v3).
 - **CVs descargables** en Español e Inglés directamente desde el hero, actualizables desde el panel admin.
-- **Backups automáticos** de la base de datos a Google Drive (diarios, con rotación), además de backup y restauración manual desde el panel admin.
+- **Backups automáticos** de la base de datos a Google Drive (diarios, con rotación), además de backup y restauración manual desde el panel admin, y descarga de un ZIP con los archivos (imágenes de proyectos en disco).
 - **SEO**: meta tags y descripción, Open Graph / Twitter Cards para la previsualización al compartir, datos estructurados JSON-LD, `robots.txt` y `sitemap.xml`. Bilingüe (ES / EN).
 
 ---
@@ -103,7 +103,7 @@ La base de datos se respalda de forma automática en **Google Drive**:
 - **Cuándo:** todos los días a las 03:00 (configurable con `BACKUP_CRON`).
 - **Qué:** un volcado `.sql` completo — estructura y datos de todas las tablas.
 - **Dónde:** una carpeta `backups` del Drive, conservando los últimos N (`GOOGLE_DRIVE_BACKUP_KEEP`); los más antiguos se eliminan solos.
-- **Manual:** desde el panel admin (*Perfil*) se puede descargar el `.sql`, subirlo a Drive al instante o restaurar la BD desde un `.sql`.
+- **Manual:** desde el panel admin (*Perfil*) se puede descargar el `.sql`, subirlo a Drive al instante o restaurar la BD desde un `.sql`. También se puede descargar un `.zip` con la carpeta `data` (las imágenes de proyectos subidas, que no van en el `.sql`).
 
 La subida usa la API de Google Drive vía OAuth2; el job programado corre con `node-cron` dentro del backend. La primera vez se obtiene un *refresh token* ejecutando `node backend/scripts/get-drive-token.js`. Todas las variables necesarias están documentadas en `backend/.env.example`.
 
