@@ -10,9 +10,12 @@ import { ProjectService, resolveApiAssetUrl } from '../../services/project.servi
 import { TranslationService } from '../../services/translation.service';
 import { techIcon, hideIconOnError } from '../../utils/tech-icons';
 import { parseNotebookUrl, colabUrl, notebookName } from '../../utils/notebook';
+import {
+  cleanRichText, projectType, shortUrl, yearRange as computeYearRange, ProjectType
+} from '../../utils/project-view';
 import { NotebookComponent } from '../notebook/notebook.component';
 
-type ProjectFilterId = 'all' | 'web' | 'android' | 'ai' | 'other';
+type ProjectFilterId = 'all' | ProjectType;
 
 /* Vista precalculada de un proyecto. */
 interface ProjectVM {
@@ -119,7 +122,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   private rebuildViewModels(): void {
     this.vms = (this.projects ?? []).map(p => this.toViewModel(p));
     this.applyFilter();
-    this.yearRange = this.computeYearRange();
+    this.yearRange = computeYearRange((this.projects ?? []).map(p => p?.project_date));
   }
 
   private toViewModel(p: any): ProjectVM {
@@ -127,9 +130,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     const images = (Array.isArray(p?.images) ? p.images : [])
       .filter((img: any) => img && typeof img.url === 'string' && img.url.length > 0)
       .map((img: any) => ({ url: resolveApiAssetUrl(img.url) }));
-    const t = (p?.project_type || '').toLowerCase();
-    const type: ProjectFilterId =
-      (t === 'android' || t === 'ai' || t === 'other' || t === 'web') ? t : 'web';
     const titleRaw = (this.i18n.lang === 'en' && p?.title_en) ? p.title_en : p?.title;
     const descRaw = (this.i18n.lang === 'en' && p?.description_en) ? p.description_en : p?.description;
     const tagList = typeof p?.tags === 'string'
@@ -139,15 +139,15 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       ...p,
       id: p?.id,
       notebook_url: p?.notebook_url ?? null,
-      type,
+      type: projectType(p?.project_type),
       isNotebook: !!ref,
       images,
       hasMultipleImages: images.length > 1,
       notebookFileName: ref ? notebookName(ref) : '',
       colabUrl: ref ? colabUrl(ref) : '',
-      shortLiveUrl: this.shortUrl(p?.live_url),
-      displayTitle: this.cleanRichText(titleRaw),
-      displayDesc: this.cleanRichText(descRaw),
+      shortLiveUrl: shortUrl(p?.live_url),
+      displayTitle: cleanRichText(titleRaw),
+      displayDesc: cleanRichText(descRaw),
       tagList,
     };
   }
@@ -195,10 +195,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     return this.projectFilters.filter(f => f.id === 'all' || this.countByFilter(f.id) > 0);
   }
 
-  private cleanRichText(value: string | null | undefined): string {
-    return (value || '').replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ').replace(/\s*style\s*=\s*("[^"]*"|'[^']*')/gi, '');
-  }
-
   setFilter(id: ProjectFilterId): void {
     if (this.activeFilter === id) return;
     this.activeFilter = id;
@@ -218,35 +214,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   get projectsYearRange(): string {
     return this.yearRange;
-  }
-
-  private computeYearRange(): string {
-    const years = this.projects
-      .map(p => p?.project_date ? this.toDate(p.project_date).getFullYear() : NaN)
-      .filter(y => Number.isFinite(y));
-    if (years.length === 0) return '';
-    const min = Math.min(...years);
-    const max = Math.max(...years);
-    return min === max ? `${min}` : `${min}-${max}`;
-  }
-
-  private toDate(val: any): Date {
-    if (!val) return new Date(NaN);
-    if (val instanceof Date) return val;
-    return new Date(String(val).substring(0, 10) + 'T00:00:00');
-  }
-
-  shortUrl(url?: string): string {
-    if (!url) return 'localhost';
-    try {
-      const u = new URL(url);
-      const host = u.host.replace(/^www\./, '');
-      const path = u.pathname.length > 1 ? u.pathname : '';
-      const full = `${host}${path}`;
-      return full.length > 38 ? full.slice(0, 35) + '…' : full;
-    } catch {
-      return url.length > 38 ? url.slice(0, 35) + '…' : url;
-    }
   }
 
   techIcon(rawTag: string): string {
