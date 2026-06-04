@@ -218,6 +218,7 @@ export class AdminStateService {
   readonly tokensAreaPath = signal('');
 
   private chartIsMobile = false;
+  private chartsSideBySide = false;
 
   // ─── Sort state ───
   readonly sortState = signal<Record<SortTable, SortState>>({
@@ -394,8 +395,8 @@ export class AdminStateService {
     const v = this.visitorPoints()[idx];
     const l = this.loginPoints()[idx];
     if (!v) return null;
-    const valueFontPx = this.chartIsMobile ? 17 : 11;
-    const dateFontPx = this.chartIsMobile ? 15 : 10;
+    const valueFontPx = this.chartIsMobile ? 17 : this.chartsSideBySide ? 16 : 11;
+    const dateFontPx = this.chartIsMobile ? 15 : this.chartsSideBySide ? 14 : 10;
     const visText = `${this.i18n.t('admin.tab.visitors')}: ${v.value}`;
     const logText = `${this.i18n.t('admin.tab.logins')}: ${l?.value ?? 0}`;
     const tooltipW = this.computeTooltipWidth([
@@ -419,8 +420,8 @@ export class AdminStateService {
     if (idx === null) return null;
     const p = this.tokensPoints()[idx];
     if (!p) return null;
-    const valueFontPx = this.chartIsMobile ? 17 : 11;
-    const dateFontPx = this.chartIsMobile ? 15 : 10;
+    const valueFontPx = this.chartIsMobile ? 17 : this.chartsSideBySide ? 16 : 11;
+    const dateFontPx = this.chartIsMobile ? 15 : this.chartsSideBySide ? 14 : 10;
     const valueText = `${this.formatTokens(p.value)} tokens`;
     const tooltipW = this.computeTooltipWidth([
       { text: p.date, fontPx: dateFontPx, leftPad: 10, rightPad: 12 },
@@ -462,6 +463,12 @@ export class AdminStateService {
       this.lineChart.set({ w: 880, h: 280, padL: 52, padR: 28, padT: 24, padB: 46 });
       this.tokensChart.set({ w: 880, h: 280, padL: 62, padR: 28, padT: 24, padB: 46 });
     }
+    return true;
+  }
+
+  setChartsSideBySide(sideBySide: boolean): boolean {
+    if (sideBySide === this.chartsSideBySide) return false;
+    this.chartsSideBySide = sideBySide;
     return true;
   }
 

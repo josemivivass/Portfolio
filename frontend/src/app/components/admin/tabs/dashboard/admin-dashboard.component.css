@@ -68,6 +68,11 @@
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   margin-bottom: 28px;
+  align-items: stretch;
+}
+.chart-grid > .line-chart-card {
+  margin-bottom: 0;
+  min-width: 0;
 }
 
 /* ─── Line chart card ─── */
@@ -160,6 +165,14 @@
 /* ─── Responsive ─── */
 @media (max-width: 1100px) {
   .chart-grid { grid-template-columns: 1fr; }
+}
+
+/* Lado a lado: el SVG (viewBox 880) se escala a ~media anchura, así que el
+   texto interno necesita ir más grande para verse al tamaño del resto. */
+@media (min-width: 1101px) {
+  .chart-grid .line-chart-svg .axis-label { font-size: 16px; }
+  .chart-grid .line-chart-svg .tooltip-date { font-size: 14px; }
+  .chart-grid .line-chart-svg .tooltip-value { font-size: 16px; }
 }
 
 /* Laptop: stat-cards compactas para que las 6 quepan en una sola

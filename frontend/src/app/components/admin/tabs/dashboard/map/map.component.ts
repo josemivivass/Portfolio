@@ -66,6 +66,15 @@ export class MapComponent implements OnInit {
     return map;
   });
 
+  // Visitas cuya IP no se pudo geolocalizar (country_code nulo).
+  unknownVisits = computed(() => {
+    let n = 0;
+    for (const v of this.state.visitorLogs()) {
+      if (!(v as any).country_code) n++;
+    }
+    return n;
+  });
+
   topCountries = computed<CountryStat[]>(() => {
     const visits = this.visitsByCountry();
     const lang = this.lang();
@@ -74,7 +83,7 @@ export class MapComponent implements OnInit {
     for (const [a2, n] of visits.entries()) {
       stats.push({ alpha2: a2, name: countryName(a2, lang) || fallback.get(a2) || a2, count: n });
     }
-    return stats.sort((a, b) => b.count - a.count).slice(0, 10);
+    return stats.sort((a, b) => b.count - a.count);
   });
 
   cities = computed<CityPoint[]>(() => {

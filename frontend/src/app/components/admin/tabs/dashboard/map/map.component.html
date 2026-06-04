@@ -65,19 +65,27 @@
     </div>
 
     <aside class="map-side">
-      <span class="map-side-label">{{ state.i18n.t('admin.visitors.map.top.countries') }}</span>
-      @if (topCountries().length === 0) {
-        <p class="map-side-empty">{{ state.i18n.t('admin.visitors.map.empty') }}</p>
-      } @else {
-        <ol class="map-side-list">
-          @for (s of topCountries(); track s.alpha2) {
-            <li>
-              <span class="side-name">{{ s.name }}</span>
-              <span class="side-count">{{ s.count }}</span>
-            </li>
-          }
-        </ol>
-      }
+      <div class="map-side-inner">
+        <span class="map-side-label">{{ state.i18n.t('admin.visitors.map.top.countries') }}</span>
+        @if (topCountries().length === 0 && unknownVisits() === 0) {
+          <p class="map-side-empty">{{ state.i18n.t('admin.visitors.map.empty') }}</p>
+        } @else {
+          <ol class="map-side-list">
+            @for (s of topCountries(); track s.alpha2) {
+              <li>
+                <span class="side-name">{{ s.name }}</span>
+                <span class="side-count">{{ s.count }}</span>
+              </li>
+            }
+            @if (unknownVisits() > 0) {
+              <li class="side-unknown">
+                <span class="side-name">{{ state.i18n.t('admin.visitors.map.unknown') }}</span>
+                <span class="side-count">{{ unknownVisits() }}</span>
+              </li>
+            }
+          </ol>
+        }
+      </div>
     </aside>
   </div>
 </div>

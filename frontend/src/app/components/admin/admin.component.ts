@@ -64,7 +64,9 @@ export class AdminComponent implements OnInit {
 
   private applyChartDimensions(): boolean {
     if (!isPlatformBrowser(this.platformId)) return false;
-    return this.state.setChartMobile(window.innerWidth <= 768);
+    const mobileChanged = this.state.setChartMobile(window.innerWidth <= 768);
+    const sideChanged = this.state.setChartsSideBySide(window.innerWidth > 1100);
+    return mobileChanged || sideChanged;
   }
 
   @HostListener('window:resize')
