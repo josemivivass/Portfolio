@@ -1,6 +1,6 @@
 # Frontend — Portfolio
 
-SPA en **Angular 21** con SSR (Express + `@angular/ssr`), animaciones GSAP / Three.js, edición rica con Quill y servicio de i18n propio (ES / EN). Desplegada en AWS Amplify.
+SPA en **Angular 21** con SSR (Express + `@angular/ssr`), animaciones GSAP / Three.js, edición rica con Quill y servicio de i18n propio (ES / EN). Autohospedada junto al backend en un contenedor LXC, servida a través de Cloudflare Tunnel.
 
 ## Stack
 
@@ -62,7 +62,8 @@ src/
 │   │                         dashboard/map/ — mapa-mundo de visitas (d3-geo + TopoJSON)
 │   ├── services/             translation, auth, seo, profile, project, experience, chatbot, tracking, …
 │   ├── guards/               admin.guard, admin-exit.guard
-│   ├── interceptors/         auth.interceptor (envía la cookie de sesión con withCredentials)
+│   ├── interceptors/         auth.interceptor (cookie de sesión con withCredentials)
+│   │                         ssr-api.interceptor (reescribe la API a loopback en servidor)
 │   ├── pipes/safe-html.pipe.ts  Sanitización para el visor de notebooks
 │   ├── utils/                tech-icons (tecnología → SVG), notebook (parser .ipynb), notebook-render, iso-country (alpha-2 ↔ numérico ISO + nombre de país)
 │   └── app.routes.ts
@@ -79,12 +80,19 @@ public/                       Assets servidos en la raíz (/icons, CVs en PDF, w
 ```ts
 export const environment = {
   production: false,
-  apiHost: 'http://127.0.0.1:3000',
-  apiUrl: 'http://127.0.0.1:3000/api'
+  apiHost: 'http://localhost:3000',
+  apiUrl: 'http://localhost:3000/api',
+  ssrApiHost: 'http://localhost:3000'
 };
 ```
 
 `src/environments/environment.prod.ts` (prod) apunta a `https://api.josemivivass.com`. El swap se hace automáticamente en el build de producción.
+
+### `ssrApiHost` y el interceptor de SSR
+
+En producción, SSR y API viven en la misma máquina, detrás del mismo túnel de Cloudflare. Si el renderizado en servidor pidiese a `https://api.josemivivass.com`, la petición tendría que salir a internet y volver a entrar por el túnel — un rodeo lento que además el origen no puede completar.
+
+`ssr-api.interceptor.ts` lo evita: cuando detecta que corre en servidor (`isPlatformServer`), reescribe cualquier URL que empiece por `apiHost` para que apunte a `ssrApiHost` (`127.0.0.1:3000`). En el navegador es un no-op y el cliente sigue usando el dominio público.
 
 ## i18n
 
@@ -124,9 +132,11 @@ Ambos se pueden actualizar desde el panel admin (*Perfil → CVs descargables*),
 
 ## Producción
 
+El bundle SSR corre bajo PM2 (`portfolio-web`) en el puerto 4000, junto al backend, y Cloudflare Tunnel enruta `josemivivass.com` y `www.josemivivass.com` hacia él:
+
 ```bash
 npm run build
-node dist/frontend/server/server.mjs
+PORT=4000 node dist/frontend/server/server.mjs
 ```
 
-En producción el build lo lanza AWS Amplify automáticamente al hacer push a `main`.
+El build y el reinicio los hace automáticamente `.github/workflows/deploy.yml` en cada push a `main`, sobre un runner self-hosted dentro del propio contenedor. El `npm ci` solo se ejecuta si cambió `package-lock.json`, para no reinstalar dependencias en cada despliegue.

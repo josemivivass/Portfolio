@@ -8,7 +8,7 @@ API REST en **Node.js + Express 5** sobre **MariaDB / MySQL** que da servicio al
 |---|---|
 | Runtime | Node ≥ 20 (22 LTS en producción) |
 | Framework | Express 5 |
-| BD | MariaDB 10.5 / MySQL 8 vía `mysql2/promise` (pool) |
+| BD | MariaDB 10.11 / MySQL 8 vía `mysql2/promise` (pool) |
 | Auth | `jsonwebtoken` + `bcrypt` + `cookie-parser` (sesión en cookie `httpOnly`) |
 | Email | `nodemailer` (Gmail SMTP) |
 | IA | `groq-sdk` (Groq Cloud) |
@@ -20,7 +20,7 @@ API REST en **Node.js + Express 5** sobre **MariaDB / MySQL** que da servicio al
 ## Requisitos
 
 - Node ≥ 20
-- MySQL 8 o MariaDB 10.5 (recomendado XAMPP en local)
+- MySQL 8 o MariaDB 10.11 (recomendado XAMPP en local)
 - Cuentas / API keys: Gmail SMTP (app password), Groq Cloud, Google reCAPTCHA
 
 ## Instalación
@@ -40,7 +40,7 @@ Antes del primer arranque, importa el esquema en tu BD local.
 2. Abre [phpMyAdmin](http://localhost/phpmyadmin).
 3. Pestaña **SQL**, pega el contenido de `database.sql` y pulsa **Continuar**. El script ya hace `DROP/CREATE DATABASE portfolio` con `utf8mb4`.
 
-> En producción la BD vive en **MariaDB 10.5** dentro de la EC2 y se carga por consola con `sudo mysql < database.sql`.
+> En producción la BD vive en **MariaDB 10.11** dentro del contenedor LXC, escuchando solo en `127.0.0.1`, y se carga por consola con `sudo mysql < database.sql`.
 
 ## Variables de entorno
 
@@ -145,23 +145,24 @@ Cubren la lógica pura (ficheros `*.test.js` junto al código): saneo y normaliz
 
 ## Producción
 
-En la EC2, el proceso se gestiona con **PM2** tras un reverse proxy de **Caddy** que termina TLS con Let's Encrypt:
+El backend corre en un contenedor LXC (Debian 12, unprivileged) sobre Proxmox, gestionado con **PM2** y expuesto a internet mediante **Cloudflare Tunnel**. No hay reverse proxy local ni certificados en el origen: el TLS lo termina Cloudflare y `cloudflared` entrega la petición en claro a `127.0.0.1:3000`.
 
-```bash
-pm2 start server.js --name portfolio-api
-pm2 save
-```
+PM2 arranca desde un `ecosystem.config.js` situado fuera del repo (para que el `git reset --hard` del despliegue no lo toque), con dos apps: `portfolio-api` y `portfolio-web` (el SSR del frontend).
 
 Operaciones habituales:
 
 ```bash
 pm2 logs portfolio-api                      # ver logs
 pm2 restart portfolio-api --update-env      # reiniciar releyendo .env
+pm2 list                                    # estado de ambas apps
 ```
 
-- `app.set('trust proxy', 1)` está activado para que `express-rate-limit` y el logging funcionen tras el proxy.
+- `app.set('trust proxy', 1)` es **imprescindible** aquí: `cloudflared` conecta desde loopback y pasa la IP real del visitante en `X-Forwarded-For`. Sin esto, `express-rate-limit` limitaría a todo el mundo como si fuese un único cliente y `geoip-lite` geolocalizaría el túnel en vez de al visitante.
+- `CORS_ORIGINS` acota los orígenes a los dominios propios. Las llamadas del SSR llegan sin cabecera `Origin` (loopback) y quedan permitidas.
 - Variables sensibles en `~/portfolio/backend/.env` con permisos `600`, nunca commiteadas.
 
 ### Despliegue automático
 
-Cualquier push a `main` que toque `backend/**` dispara `.github/workflows/deploy-backend.yml`: SSH al EC2 → `git reset --hard origin/main` → `npm install --omit=dev` → `pm2 restart portfolio-api --update-env`.
+Cualquier push a `main` dispara `.github/workflows/deploy.yml`, que corre en un **runner self-hosted** instalado dentro del propio contenedor: `git reset --hard origin/main` → `npm install --omit=dev` → build del frontend → `pm2 restart` de ambas apps → healthcheck contra `/api/health` y el SSR.
+
+El runner establece la conexión saliente hacia GitHub, de modo que el despliegue no necesita ningún puerto abierto ni credenciales SSH almacenadas en el repositorio.

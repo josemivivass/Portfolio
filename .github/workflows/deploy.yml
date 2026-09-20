@@ -1,6 +1,5 @@
 name: Deploy al servidor de casa
 
-# Sustituye al antiguo deploy-backend.yml (SSH a la EC2).
 # Corre en el runner self-hosted que vive dentro del LXC de Proxmox,
 # así que no necesita ningún puerto abierto: el runner sale hacia GitHub.
 on:

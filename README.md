@@ -1,6 +1,6 @@
 # Portfolio — José Miguel Vivas Sánchez
 
-Portfolio personal full-stack con landing animada, panel de administración y chatbot con IA. Bilingüe (ES / EN) y desplegado en AWS.
+Portfolio personal full-stack con landing animada, panel de administración y chatbot con IA. Bilingüe (ES / EN) y **autohospedado** en un servidor propio con Proxmox, publicado a internet con Cloudflare Tunnel.
 
 - **Web:** [josemivivass.com](https://josemivivass.com)
 - **API:** [api.josemivivass.com](https://api.josemivivass.com)
@@ -45,7 +45,7 @@ cd Portfolio
 2. Abre [phpMyAdmin](http://localhost/phpmyadmin).
 3. Pestaña **SQL**, pega el contenido de `database.sql` y pulsa **Continuar**. El script ya hace `DROP/CREATE DATABASE portfolio` con `utf8mb4`.
 
-> En producción la BD vive en **MariaDB 10.5** dentro de la EC2 y se carga por consola con `sudo mysql < database.sql`.
+> En producción la BD vive en **MariaDB 10.11** dentro del contenedor LXC y se carga por consola con `sudo mysql < database.sql`.
 
 **2. Backend** ([detalles](./backend/README.md))
 
@@ -80,19 +80,23 @@ Portfolio/
 
 ## Despliegue
 
-Infraestructura actual en AWS Free Tier:
+Front, API y base de datos conviven en un único contenedor LXC sobre **Proxmox VE**, en un servidor doméstico. Se publica con **Cloudflare Tunnel**:
 
 ```
-Cloudflare DNS
-  ├── josemivivass.com         → AWS Amplify Hosting (SSR Angular)
-  └── api.josemivivass.com  →  EC2 t3.micro
-                                  └── Caddy (HTTPS Let's Encrypt)
-                                       └── PM2 → Node + Express
-                                               └── MariaDB
+Cloudflare (DNS · TLS · CDN)
+  │
+  └── cloudflared ──túnel saliente──► LXC Debian 12
+        ├── josemivivass.com      → PM2 → Angular SSR   (:4000)
+        ├── www.josemivivass.com  → PM2 → Angular SSR   (:4000)
+        └── api.josemivivass.com  → PM2 → Node + Express (:3000)
+                                            └── MariaDB 10.11 (bind 127.0.0.1)
 ```
 
-- **Frontend:** AWS Amplify, despliegue automático en push a `main`.
-- **Backend:** EC2 + Caddy (reverse proxy con HTTPS) + PM2 (process manager) + MariaDB 10.5. Despliegue automático en push a `main` vía **GitHub Actions** (`.github/workflows/deploy-backend.yml`): SSH al EC2 → `git reset --hard origin/main` → `npm install --omit=dev` → `pm2 restart portfolio-api --update-env`.
+- **Sin puertos abiertos.** El túnel lo establece el servidor *hacia* Cloudflare, así que el router no expone nada y la IP doméstica no aparece en ningún registro DNS. Funciona igual con IP dinámica o CGNAT.
+- **TLS** lo termina Cloudflare en el edge: no hace falta certificado ni reverse proxy en el origen (adiós Caddy y Let's Encrypt).
+- **SSR y API en la misma máquina.** El renderizado en servidor llama al backend por loopback en vez de salir a internet y volver a entrar por el túnel; lo resuelve `frontend/src/app/interceptors/ssr-api.interceptor.ts`, que reescribe la URL solo cuando corre en servidor y deja intacto al navegador.
+- **Despliegue automático:** push a `main` → `.github/workflows/deploy.yml` sobre un **runner self-hosted** dentro del contenedor: `git reset --hard origin/main` → deps del backend → `npm ci` del front solo si cambió el lockfile → build SSR → `pm2 restart` → healthcheck. El runner también sale hacia GitHub, así que tampoco requiere puertos abiertos.
+- **Proceso:** PM2 con dos apps (`portfolio-api`, `portfolio-web`) definidas en un `ecosystem.config.js` fuera del repo, resucitadas por systemd al arrancar.
 - **DNS y registrar:** Cloudflare.
 
 ---
@@ -107,6 +111,8 @@ La base de datos se respalda de forma automática en **Google Drive**:
 - **Manual:** desde el panel admin (*Perfil*) se puede descargar el `.sql`, subirlo a Drive al instante o restaurar la BD desde un `.sql`. También se puede descargar un `.zip` con la carpeta `data` (las imágenes de proyectos subidas, que no van en el `.sql`).
 
 La subida usa la API de Google Drive vía OAuth2; el job programado corre con `node-cron` dentro del backend. La primera vez se obtiene un *refresh token* ejecutando `node backend/scripts/get-drive-token.js`. Todas las variables necesarias están documentadas en `backend/.env.example`.
+
+A nivel de infraestructura, Proxmox hace además un **`vzdump` diario del contenedor completo** (03:30, retención de 7 diarios y 4 semanales), que sirve para volver atrás ante un error de configuración.
 
 ---
 
