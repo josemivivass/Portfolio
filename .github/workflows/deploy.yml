@@ -1,0 +1,71 @@
+name: Deploy al servidor de casa
+
+# Sustituye al antiguo deploy-backend.yml (SSH a la EC2).
+# Corre en el runner self-hosted que vive dentro del LXC de Proxmox,
+# así que no necesita ningún puerto abierto: el runner sale hacia GitHub.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-produccion
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Pull, build y restart
+    runs-on: self-hosted
+
+    env:
+      APP_DIR: /root/portfolio
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+    steps:
+      - name: Traer los cambios
+        run: |
+          set -euo pipefail
+          cd "$APP_DIR"
+          git fetch origin main
+          git reset --hard origin/main
+          echo "Desplegando $(git rev-parse --short HEAD)"
+
+      - name: Dependencias del backend
+        run: |
+          set -euo pipefail
+          cd "$APP_DIR/backend"
+          npm install --omit=dev --no-audit --no-fund
+
+      - name: Dependencias del frontend (solo si cambió el lockfile)
+        run: |
+          set -euo pipefail
+          cd "$APP_DIR/frontend"
+          mkdir -p /root/.cache/deploy
+          if ! cmp -s package-lock.json /root/.cache/deploy/frontend-lock.json; then
+            echo "Lockfile cambiado: npm ci"
+            npm ci --no-audit --no-fund
+            cp package-lock.json /root/.cache/deploy/frontend-lock.json
+          else
+            echo "Lockfile intacto: me salto npm ci"
+          fi
+
+      - name: Build del frontend (SSR)
+        run: |
+          set -euo pipefail
+          cd "$APP_DIR/frontend"
+          NODE_OPTIONS=--max-old-space-size=3072 npm run build
+
+      - name: Reiniciar procesos
+        run: |
+          set -euo pipefail
+          pm2 restart portfolio-api --update-env
+          pm2 restart portfolio-web --update-env
+          pm2 save
+
+      - name: Comprobar que todo responde
+        run: |
+          set -euo pipefail
+          sleep 6
+          curl -fsS localhost:3000/api/health
+          echo
+          curl -fsS -o /dev/null -w "SSR: HTTP %{http_code}\n" localhost:4000/
