@@ -40,10 +40,17 @@ COPY frontend/public /frontend/public
 RUN mkdir -p /app/src/data/projects /app/src/data/cv \
  && chown -R node:node /app/src/data
 
-USER node
+# El volumen de datos llega con los permisos del host, asi que el entrypoint
+# arranca como root, le da la carpeta a "node" y lanza la API como "node".
+# El sed quita los CRLF por si el script se edita desde Windows.
+COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+ && chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD curl -fsS "http://127.0.0.1:${PORT}/api/health" || exit 1
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "server.js"]
