@@ -18,7 +18,7 @@ const {
   promotePendingImages,
   normalizeProjectImages
 } = require('../utils/project-images');
-const { normType, normStatus, normNotebookUrl, normRichText } = require('../utils/sanitize');
+const { normType, normStatus, normNotebookUrl, normRichText, normDate } = require('../utils/sanitize');
 
 exports.listUsers = async (req, res) => {
   try {
@@ -194,7 +194,7 @@ exports.createProject = async (req, res) => {
          repo_url, live_url, notebook_url, tags, is_featured,
          project_type, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [cleanTitle, cleanTitleEn, cleanDescription, cleanDescriptionEn, project_date,
+      [cleanTitle, cleanTitleEn, cleanDescription, cleanDescriptionEn, normDate(project_date),
        repo_url, live_url, normNotebookUrl(notebook_url), tags, !!is_featured,
        normType(project_type),
        normStatus(status)]
@@ -207,7 +207,7 @@ exports.createProject = async (req, res) => {
   } catch (err) {
     await connection.rollback();
     console.error(err);
-    res.status(500).json({ message: 'Error al crear proyecto' });
+    res.status(500).json({ message: 'Error al crear proyecto', code: err.code });
   } finally {
     connection.release();
   }
@@ -237,7 +237,7 @@ exports.updateProject = async (req, res) => {
          tags = ?, is_featured = ?,
          project_type = ?, status = ?
        WHERE id = ?`,
-      [cleanTitle, cleanTitleEn, cleanDescription, cleanDescriptionEn, project_date,
+      [cleanTitle, cleanTitleEn, cleanDescription, cleanDescriptionEn, normDate(project_date),
        repo_url, live_url, normNotebookUrl(notebook_url), tags, !!is_featured,
        normType(project_type),
        normStatus(status), id]
@@ -262,7 +262,7 @@ exports.updateProject = async (req, res) => {
   } catch (err) {
     await connection.rollback();
     console.error(err);
-    res.status(500).json({ message: 'Error al actualizar proyecto' });
+    res.status(500).json({ message: 'Error al actualizar proyecto', code: err.code });
   } finally {
     connection.release();
   }
@@ -282,7 +282,7 @@ exports.updateProjectFeatured = async (req, res) => {
     res.status(200).json({ message: 'Proyecto actualizado' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Error al actualizar proyecto' });
+    res.status(500).json({ message: 'Error al actualizar proyecto', code: err.code });
   }
 };
 

@@ -47,6 +47,17 @@ interface CvUploadState {
   error: string;
 }
 
+// La API devuelve las fechas DATE en UTC (p.ej. 2026-10-19T22:00:00Z para el 20/10);
+// recortar el ISO restaba un día en cada guardado. Se formatea en hora local.
+function toLocalDateInput(v: any): string {
+  if (!v) return '';
+  if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+  const d = new Date(v);
+  if (isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminStateService {
   private adminService = inject(AdminService);
@@ -1171,7 +1182,7 @@ export class AdminStateService {
     const images = Array.isArray(p.images) ? p.images.map((img: any) => ({ ...img })) : [];
     this.editingProject.set({
       ...p,
-      project_date: p.project_date ? p.project_date.substring(0, 10) : '',
+      project_date: toLocalDateInput(p.project_date),
       images
     });
     this.projectImagesUploading.set(0);
@@ -1194,7 +1205,7 @@ export class AdminStateService {
       ...p,
       project_type: 'ai',
       notebook_url: p.notebook_url || '',
-      project_date: p.project_date ? p.project_date.substring(0, 10) : '',
+      project_date: toLocalDateInput(p.project_date),
       images: []
     });
   }
@@ -1252,7 +1263,7 @@ export class AdminStateService {
         next: (res: any) => {
           this.projects.set([{ ...payload, id: res?.id }, ...this.projects()]);
         },
-        error: (err) => { alert(this.i18n.t('admin.error.project.create')); console.error(err); }
+        error: (err) => { alert(this.i18n.t('admin.error.project.create') + (err?.error?.code ? ` (${err.error.code})` : '')); console.error(err); }
       });
     }
   }
@@ -1393,7 +1404,7 @@ export class AdminStateService {
           const created = { ...payload, id: res?.id, images: promoted };
           this.projects.set([created, ...this.projects()]);
         },
-        error: (err) => { alert(this.i18n.t('admin.error.project.create')); console.error(err); }
+        error: (err) => { alert(this.i18n.t('admin.error.project.create') + (err?.error?.code ? ` (${err.error.code})` : '')); console.error(err); }
       });
     }
   }
@@ -1465,8 +1476,8 @@ export class AdminStateService {
   editExperience(e: any): void {
     this.editingExperience.set({
       ...e,
-      start_date: e.start_date ? e.start_date.substring(0, 10) : '',
-      end_date: e.end_date ? e.end_date.substring(0, 10) : ''
+      start_date: toLocalDateInput(e.start_date),
+      end_date: toLocalDateInput(e.end_date)
     });
   }
 
@@ -1763,8 +1774,8 @@ export class AdminStateService {
   editEducation(e: any): void {
     this.editingEducation.set({
       ...e,
-      start_date: e.start_date ? e.start_date.substring(0, 10) : '',
-      end_date: e.end_date ? e.end_date.substring(0, 10) : ''
+      start_date: toLocalDateInput(e.start_date),
+      end_date: toLocalDateInput(e.end_date)
     });
   }
 

@@ -7,6 +7,13 @@ const normType = (v) => (ALLOWED_TYPES.includes(v) ? v : 'web');
 
 const normStatus = (v) => (ALLOWED_STATUS.includes(v) ? v : null);
 
+// '' o fechas inválidas → NULL (MySQL en modo estricto rechaza '' en columnas DATE).
+const normDate = (v) => {
+  if (typeof v !== 'string') return v instanceof Date ? v : null;
+  const m = /^(\d{4}-\d{2}-\d{2})/.exec(v.trim());
+  return m ? m[1] : null;
+};
+
 const normNotebookUrl = (v) => {
   if (typeof v !== 'string') return null;
   const t = v.trim();
@@ -29,5 +36,6 @@ module.exports = {
   normType,
   normStatus,
   normNotebookUrl,
+  normDate,
   normRichText,
 };
